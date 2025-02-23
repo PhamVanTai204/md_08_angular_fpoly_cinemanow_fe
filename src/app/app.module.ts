@@ -8,12 +8,32 @@ import { LayoutComponent } from './components/layout/layout.component';
 import { LoginComponent } from './components/login/login.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ButtonModule } from 'primeng/button';
+import { TheLoaiPhimComponent } from './components/the-loai-phim/the-loai-phim.component';
+import { PhimComponent } from './components/phim/phim.component';
+import { RapComponent } from './components/rap/rap.component';
+import { LichChieuComponent } from './components/lich-chieu/lich-chieu.component';
+import { DonDatVeComponent } from './components/don-dat-ve/don-dat-ve.component';
+import { ThanhToanComponent } from './components/thanh-toan/thanh-toan.component';
+import { KhuyenMaiComponent } from './components/khuyen-mai/khuyen-mai.component';
+import { ThongKeComponent } from './components/thong-ke/thong-ke.component';
+import { NhanVienComponent } from './components/nhan-vien/nhan-vien.component';
+import { NguoiDungComponent } from './components/nguoi-dung/nguoi-dung.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LayoutComponent,
-    LoginComponent
+    LoginComponent,
+    TheLoaiPhimComponent,
+    PhimComponent,
+    RapComponent,
+    LichChieuComponent,
+    DonDatVeComponent,
+    ThanhToanComponent,
+    KhuyenMaiComponent,
+    ThongKeComponent,
+    NhanVienComponent,
+    NguoiDungComponent,
 
   ],
   imports: [
