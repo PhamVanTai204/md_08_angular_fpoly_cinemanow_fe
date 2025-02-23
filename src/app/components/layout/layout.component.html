@@ -1,83 +1,144 @@
 <!-- layout.component.html -->
+<!-- Nhớ thêm link Material Icons (nếu cần) -->
 <link
-rel="stylesheet"
-href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-<div class="min-h-screen flex flex-col">
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/icon?family=Material+Icons"
+/>
 
-    <!-- Header trên cùng -->
-    <header class="bg-blue-500 flex items-center justify-between px-6 py-3 text-white">
-      <div class="text-xl font-bold">ADMIN ACCOUNT</div>
-      <button class="bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-100 transition">
-        Đăng xuất
-      </button>
-    </header>
-  
-    <!-- Khu vực chính: Sidebar (menu) + Nội dung -->
-    <div class="flex flex-1">
-  
-      <!-- Sidebar (menu) bên trái -->
-      <nav class="w-64 bg-white border-r border-gray-200 p-4">
-        <ul class="space-y-1">
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">movie_filter</span>
-              <span>Thể loại phim</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">movie</span>
-              <span>Phim</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">store</span>
-              <span>Rạp</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">event</span>
-              <span>Lịch chiếu</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">confirmation_number</span>
-              <span>Đơn đặt vé</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">credit_card</span>
-              <span>Thanh toán</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">local_offer</span>
-              <span>Khuyến mãi</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">bar_chart</span>
-              <span>Thống kê</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">badge</span>
-              <span>Nhân viên</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition" href="#">
-              <span class="material-icons">person</span>
-              <span>Người dùng</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
-  
+<div class="relative w-full h-[166px] bg-[#6392DB]">
+
+  <!-- ADMIN ACCOUNT -->
+  <div
+    class="
+      absolute
+      top-[34px]
+      left-[47px]
+      w-[142px]
+      h-[19px]
+      font-['Inter']
+      font-extrabold
+      text-[16px]
+      leading-[19.36px]
+      text-white
+    "
+  >
+    ADMIN ACCOUNT
+  </div>
+
+  <!-- Nút ĐĂNG XUẤT: cách trên 30px, phải 30px -->
+  <button
+    class="
+      absolute
+      top-[30px]
+      right-[30px]
+      w-[123px]
+      h-[28px]
+      rounded-[10px]
+      bg-white
+      text-black
+      hover:bg-gray-100
+      transition
+    "
+  >
+    Đăng xuất
+  </button>
+
+  <!-- Sidebar (menu) đặt bên dưới, cố định bằng absolute -->
+  <nav
+    class="absolute bg-white border border-gray-200 p-4 shadow-lg
+           w-[192px] h-[705px] top-[83px] left-[22px]"
+  >
+    <ul class="space-y-1">
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">movie_filter</span>
+          <span>Thể loại phim</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">movie</span>
+          <span>Phim</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">store</span>
+          <span>Rạp</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">event</span>
+          <span>Lịch chiếu</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">confirmation_number</span>
+          <span>Đơn đặt vé</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">credit_card</span>
+          <span>Thanh toán</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">local_offer</span>
+          <span>Khuyến mãi</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">bar_chart</span>
+          <span>Thống kê</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">badge</span>
+          <span>Nhân viên</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition"
+          href="#"
+        >
+          <span class="material-icons">person</span>
+          <span>Người dùng</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
