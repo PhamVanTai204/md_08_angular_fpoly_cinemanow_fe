@@ -1,22 +1,21 @@
 <div class="p-8 bg-gray-100 min-h-screen text-gray-700">
-    <!-- Tiêu đề THỐNG KÊ -->
+  
     <h1 class="text-2xl font-bold mb-4">THỐNG KÊ</h1>
   
-    <!-- 3 thẻ (card) thống kê -->
     <div class="grid grid-cols-3 gap-4 mb-8">
-      <!-- Card 1: Doanh thu theo ngày -->
+
       <div class="bg-white shadow rounded p-4">
         <div class="text-gray-700 font-medium mb-2">Doanh thu theo ngày</div>
         <div class="text-xl font-bold text-red-500 mb-1">0 VND</div>
         <div class="text-sm text-gray-500">01/01/2025 - 01/02/2025</div>
       </div>
-      <!-- Card 2: Tổng số vé -->
+ 
       <div class="bg-white shadow rounded p-4">
         <div class="text-gray-700 font-medium mb-2">Tổng số vé</div>
         <div class="text-xl font-bold text-red-500 mb-1">0 vé</div>
         <div class="text-sm text-gray-500">01/01/2025 - 01/02/2025</div>
       </div>
-      <!-- Card 3: Tổng doanh thu -->
+    
       <div class="bg-white shadow rounded p-4">
         <div class="text-gray-700 font-medium mb-2">Tổng doanh thu</div>
         <div class="text-xl font-bold text-red-500 mb-1">650,000 VND</div>
@@ -24,13 +23,13 @@
       </div>
     </div>
   
-    <!-- Tiêu đề THỐNG KÊ DOANH THU -->
+  
     <h2 class="text-xl font-bold mb-4">THỐNG KÊ DOANH THU</h2>
   
-    <!-- Form nhập ngày, chọn rạp, nút THỐNG KÊ -->
+  
     <div class="bg-white shadow rounded p-4 mb-8">
       <div class="grid grid-cols-4 gap-4">
-        <!-- Ngày bắt đầu -->
+    
         <div>
           <label class="block text-sm font-medium mb-1">Ngày bắt đầu</label>
           <input
@@ -39,7 +38,7 @@
             [(ngModel)]="startDate"
           />
         </div>
-        <!-- Ngày kết thúc -->
+   
         <div>
           <label class="block text-sm font-medium mb-1">Ngày kết thúc</label>
           <input
@@ -48,7 +47,7 @@
             [(ngModel)]="endDate"
           />
         </div>
-        <!-- Chọn rạp -->
+    
         <div>
           <label class="block text-sm font-medium mb-1">CHỌN RẠP</label>
           <select
@@ -60,7 +59,7 @@
             <option>Cinema Hồ Chí Minh</option>
           </select>
         </div>
-        <!-- Nút Thống kê -->
+  
         <div class="flex items-end">
           <button
             (click)="handleThongKe()"
@@ -71,9 +70,9 @@
         </div>
       </div>
   
-      <!-- Lọc theo thời gian & Chọn phim (tuỳ chọn) -->
+ 
       <div class="grid grid-cols-2 gap-4 mt-4">
-        <!-- Lọc theo thời gian -->
+ 
         <div>
           <label class="block text-sm font-medium mb-1">Lọc theo thời gian</label>
           <select
@@ -85,7 +84,7 @@
             <option>Lọc theo 1 ngày</option>
           </select>
         </div>
-        <!-- Chọn phim -->
+
         <div>
           <label class="block text-sm font-medium mb-1">Chọn phim</label>
           <select
@@ -100,9 +99,9 @@
       </div>
     </div>
   
-    <!-- Hai bảng: Doanh thu theo phim & Doanh thu theo rạp -->
+
     <div class="grid grid-cols-2 gap-4">
-      <!-- Bảng 1: Doanh thu theo phim -->
+  
       <div class="bg-white shadow rounded p-4">
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-semibold">Doanh thu theo phim</h3>
@@ -133,7 +132,7 @@
         </div>
       </div>
   
-      <!-- Bảng 2: Doanh thu theo rạp -->
+  
       <div class="bg-white shadow rounded p-4">
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-semibold">Doanh thu theo rạp</h3>
