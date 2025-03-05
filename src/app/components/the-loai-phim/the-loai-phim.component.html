@@ -1,1 +1,75 @@
-<p>the-loai-phim works!</p>
+<div class="p-5">
+  <div class="bg-white shadow-md rounded-md p-4 border">
+    <div class="flex justify-between items-center pb-4 border-b">
+      <h2 class="text-lg font-semibold">THỂ LOẠI PHIM</h2>
+      <button (click)="openDialog()" class="bg-blue-500 text-white px-4 py-2 rounded-md">THÊM</button>
+    </div>
+
+    <!-- Bảng danh sách thể loại -->
+    <table class="w-full mt-4 border-collapse">
+      <thead>
+        <tr class="border-b">
+          <th class="text-left p-2">Thể loại</th>
+          <th class="text-left p-2">Trạng thái</th>
+          <th class="text-right p-2">Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let genre of genres; let i = index" class="border-b">
+          <td class="p-2 font-semibold">{{ genre.name }}</td>
+          <td class="p-2">
+            <span class="bg-green-500 text-white px-3 py-1 rounded-md">{{ genre.status }}</span>
+          </td>
+          <td class="p-2 text-right">
+            <button (click)="openEditDialog(i)" class="text-blue-500 p-2">✏️</button>
+            <button (click)="deleteGenre(i)" class="text-red-500 p-2">🗑</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Dialog thêm thể loại -->
+  <div *ngIf="showDialog" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+    <div class="bg-white rounded-md shadow-lg p-5 w-96">
+      <h2 class="text-lg font-bold border-b pb-2">THÊM THỂ LOẠI</h2>
+
+      <div class="mt-4">
+        <label class="block font-medium">Thể loại</label>
+        <input
+          type="text"
+          [(ngModel)]="genreName"
+          placeholder="Nhập tên thể loại"
+          class="w-full border rounded-md p-2 mt-1"
+        />
+      </div>
+
+      <div class="mt-4 flex justify-end gap-2">
+        <button (click)="closeDialog()" class="bg-gray-400 text-white px-4 py-2 rounded-md">ĐÓNG</button>
+        <button (click)="saveGenre()" class="bg-red-500 text-white px-4 py-2 rounded-md">LƯU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog sửa thể loại -->
+  <div *ngIf="showEditDialog" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+    <div class="bg-white rounded-md shadow-lg p-5 w-96">
+      <h2 class="text-lg font-bold border-b pb-2">CHỈNH SỬA THỂ LOẠI</h2>
+
+      <div class="mt-4">
+        <label class="block font-medium">Thể loại</label>
+        <input
+          type="text"
+          [(ngModel)]="genreName"
+          placeholder="Nhập tên thể loại"
+          class="w-full border rounded-md p-2 mt-1"
+        />
+      </div>
+
+      <div class="mt-4 flex justify-end gap-2">
+        <button (click)="closeDialog()" class="bg-gray-400 text-white px-4 py-2 rounded-md">HỦY</button>
+        <button (click)="updateGenre()" class="bg-blue-500 text-white px-4 py-2 rounded-md">CẬP NHẬT</button>
+      </div>
+    </div>
+  </div>
+</div>
