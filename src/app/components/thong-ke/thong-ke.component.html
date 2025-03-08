@@ -1,167 +1,146 @@
-<div class="p-8 bg-gray-100 min-h-screen text-gray-700">
-  
-    <h1 class="text-2xl font-bold mb-4">THỐNG KÊ</h1>
-  
-    <div class="grid grid-cols-3 gap-4 mb-8">
+<div class="p-8 bg-white min-h-screen text-gray-700">
 
-      <div class="bg-white shadow rounded p-4">
-        <div class="text-gray-700 font-medium mb-2">Doanh thu theo ngày</div>
-        <div class="text-xl font-bold text-red-500 mb-1">0 VND</div>
-        <div class="text-sm text-gray-500">01/01/2025 - 01/02/2025</div>
+  <h1 class="text-2xl font-bold mb-4">THỐNG KÊ</h1>
+
+  <div class="grid grid-cols-3 gap-4 mb-8">
+
+    <div class="bg-white shadow rounded p-4">
+      <div class="text-gray-700 font-medium mb-2">Doanh thu theo ngày</div>
+      <div class="text-xl font-bold text-red-500 mb-1">0 VND</div>
+      <div class="text-sm text-gray-500">01/01/2025 - 01/02/2025</div>
+    </div>
+
+    <div class="bg-white shadow rounded p-4">
+      <div class="text-gray-700 font-medium mb-2">Tổng số vé</div>
+      <div class="text-xl font-bold text-red-500 mb-1">0 vé</div>
+      <div class="text-sm text-gray-500">01/01/2025 - 01/02/2025</div>
+    </div>
+
+    <div class="bg-white shadow rounded p-4">
+      <div class="text-gray-700 font-medium mb-2">Tổng doanh thu</div>
+      <div class="text-xl font-bold text-red-500 mb-1">650,000 VND</div>
+      <div class="text-sm text-gray-500">01/01/2025 - 01/02/2025</div>
+    </div>
+  </div>
+
+
+  <h2 class="text-xl font-bold mb-4">THỐNG KÊ DOANH THU</h2>
+
+
+  <div class="bg-white shadow rounded p-4 mb-8">
+    <div class="grid grid-cols-4 gap-4">
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Ngày bắt đầu</label>
+        <input type="date" class="w-full border rounded p-2" [(ngModel)]="startDate" />
       </div>
- 
-      <div class="bg-white shadow rounded p-4">
-        <div class="text-gray-700 font-medium mb-2">Tổng số vé</div>
-        <div class="text-xl font-bold text-red-500 mb-1">0 vé</div>
-        <div class="text-sm text-gray-500">01/01/2025 - 01/02/2025</div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Ngày kết thúc</label>
+        <input type="date" class="w-full border rounded p-2" [(ngModel)]="endDate" />
       </div>
-    
-      <div class="bg-white shadow rounded p-4">
-        <div class="text-gray-700 font-medium mb-2">Tổng doanh thu</div>
-        <div class="text-xl font-bold text-red-500 mb-1">650,000 VND</div>
-        <div class="text-sm text-gray-500">01/01/2025 - 01/02/2025</div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">CHỌN RẠP</label>
+        <select class="w-full border rounded p-2" [(ngModel)]="selectedCinema">
+          <option>Cinema Hà Nội</option>
+          <option>Cinema Đà Nẵng</option>
+          <option>Cinema Hồ Chí Minh</option>
+        </select>
+      </div>
+
+      <div class="flex items-end">
+        <button (click)="handleThongKe()" class="bg-red-500 text-white px-4 py-2 rounded">
+          THỐNG KÊ
+        </button>
       </div>
     </div>
-  
-  
-    <h2 class="text-xl font-bold mb-4">THỐNG KÊ DOANH THU</h2>
-  
-  
-    <div class="bg-white shadow rounded p-4 mb-8">
-      <div class="grid grid-cols-4 gap-4">
-    
-        <div>
-          <label class="block text-sm font-medium mb-1">Ngày bắt đầu</label>
-          <input
-            type="date"
-            class="w-full border rounded p-2"
-            [(ngModel)]="startDate"
-          />
-        </div>
-   
-        <div>
-          <label class="block text-sm font-medium mb-1">Ngày kết thúc</label>
-          <input
-            type="date"
-            class="w-full border rounded p-2"
-            [(ngModel)]="endDate"
-          />
-        </div>
-    
-        <div>
-          <label class="block text-sm font-medium mb-1">CHỌN RẠP</label>
-          <select
-            class="w-full border rounded p-2"
-            [(ngModel)]="selectedCinema"
-          >
-            <option>Cinema Hà Nội</option>
-            <option>Cinema Đà Nẵng</option>
-            <option>Cinema Hồ Chí Minh</option>
-          </select>
-        </div>
-  
-        <div class="flex items-end">
-          <button
-            (click)="handleThongKe()"
-            class="bg-red-500 text-white px-4 py-2 rounded"
-          >
-            THỐNG KÊ
-          </button>
-        </div>
-      </div>
-  
- 
-      <div class="grid grid-cols-2 gap-4 mt-4">
- 
-        <div>
-          <label class="block text-sm font-medium mb-1">Lọc theo thời gian</label>
-          <select
-            class="w-full border rounded p-2"
-            [(ngModel)]="timeFilter"
-          >
-            <option>Lọc theo 1 tháng</option>
-            <option>Lọc theo 1 tuần</option>
-            <option>Lọc theo 1 ngày</option>
-          </select>
-        </div>
 
-        <div>
-          <label class="block text-sm font-medium mb-1">Chọn phim</label>
-          <select
-            class="w-full border rounded p-2"
-            [(ngModel)]="selectedMovie"
-          >
-            <option>NGƯỜI ĐẸP VÀ QUÁI VẬT</option>
-            <option>PHIM ABC</option>
-            <option>PHIM XYZ</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  
 
-    <div class="grid grid-cols-2 gap-4">
-  
-      <div class="bg-white shadow rounded p-4">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="font-semibold">Doanh thu theo phim</h3>
-          <a href="#" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
-        </div>
-        <div class="border rounded overflow-hidden">
-          <table class="w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="p-2 text-left text-gray-700">Tên phim</th>
-                <th class="p-2 text-center text-gray-700">Số vé</th>
-                <th class="p-2 text-right text-gray-700">Doanh thu</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-t">
-                <td class="p-2">NGƯỜI ĐẸP VÀ QUÁI VẬT</td>
-                <td class="p-2 text-center">120</td>
-                <td class="p-2 text-right">1,200,000 VND</td>
-              </tr>
-              <tr class="border-t">
-                <td class="p-2">PHIM ABC</td>
-                <td class="p-2 text-center">90</td>
-                <td class="p-2 text-right">900,000 VND</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="grid grid-cols-2 gap-4 mt-4">
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Lọc theo thời gian</label>
+        <select class="w-full border rounded p-2" [(ngModel)]="timeFilter">
+          <option>Lọc theo 1 tháng</option>
+          <option>Lọc theo 1 tuần</option>
+          <option>Lọc theo 1 ngày</option>
+        </select>
       </div>
-  
-  
-      <div class="bg-white shadow rounded p-4">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="font-semibold">Doanh thu theo rạp</h3>
-          <a href="#" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
-        </div>
-        <div class="border rounded overflow-hidden">
-          <table class="w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="p-2 text-left text-gray-700">Tên rạp</th>
-                <th class="p-2 text-center text-gray-700">Số vé</th>
-                <th class="p-2 text-right text-gray-700">Doanh thu</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-t">
-                <td class="p-2">Cinema Hà Nội</td>
-                <td class="p-2 text-center">80</td>
-                <td class="p-2 text-right">800,000 VND</td>
-              </tr>
-              <tr class="border-t">
-                <td class="p-2">Cinema Hồ Chí Minh</td>
-                <td class="p-2 text-center">100</td>
-                <td class="p-2 text-right">1,000,000 VND</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Chọn phim</label>
+        <select class="w-full border rounded p-2" [(ngModel)]="selectedMovie">
+          <option>NGƯỜI ĐẸP VÀ QUÁI VẬT</option>
+          <option>PHIM ABC</option>
+          <option>PHIM XYZ</option>
+        </select>
       </div>
     </div>
   </div>
-  
+
+
+  <div class="grid grid-cols-2 gap-4">
+
+    <div class="bg-white shadow rounded p-4">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="font-semibold">Doanh thu theo phim</h3>
+        <a href="#" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
+      </div>
+      <div class="border rounded overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="p-2 text-left text-gray-700">Tên phim</th>
+              <th class="p-2 text-center text-gray-700">Số vé</th>
+              <th class="p-2 text-right text-gray-700">Doanh thu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t">
+              <td class="p-2">NGƯỜI ĐẸP VÀ QUÁI VẬT</td>
+              <td class="p-2 text-center">120</td>
+              <td class="p-2 text-right">1,200,000 VND</td>
+            </tr>
+            <tr class="border-t">
+              <td class="p-2">PHIM ABC</td>
+              <td class="p-2 text-center">90</td>
+              <td class="p-2 text-right">900,000 VND</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="bg-white shadow rounded p-4">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="font-semibold">Doanh thu theo rạp</h3>
+        <a href="#" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
+      </div>
+      <div class="border rounded overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="p-2 text-left text-gray-700">Tên rạp</th>
+              <th class="p-2 text-center text-gray-700">Số vé</th>
+              <th class="p-2 text-right text-gray-700">Doanh thu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t">
+              <td class="p-2">Cinema Hà Nội</td>
+              <td class="p-2 text-center">80</td>
+              <td class="p-2 text-right">800,000 VND</td>
+            </tr>
+            <tr class="border-t">
+              <td class="p-2">Cinema Hồ Chí Minh</td>
+              <td class="p-2 text-center">100</td>
+              <td class="p-2 text-right">1,000,000 VND</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
