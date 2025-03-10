@@ -1,1 +1,225 @@
-<p>rap works!</p>
+<div class="p-4">
+  <h1 class="text-2xl font-bold mb-4">DANH SÁCH RẠP</h1>
+
+  <!-- Bảng hiển thị danh sách rạp -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-200 text-sm">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="px-4 py-2 border-b border-gray-200 text-left">Tên rạp</th>
+          <th class="px-4 py-2 border-b border-gray-200 text-left">Địa chỉ</th>
+          <th class="px-4 py-2 border-b border-gray-200 text-left">Thành phố</th>
+          <th class="px-4 py-2 border-b border-gray-200 text-left w-32">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rap of rapList; let i = index" class="hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-2 border-b border-gray-200">{{ rap.name }}</td>
+          <td class="px-4 py-2 border-b border-gray-200">{{ rap.address }}</td>
+          <td class="px-4 py-2 border-b border-gray-200">{{ rap.city }}</td>
+          <td class="px-4 py-2 border-b border-gray-200">
+            <!-- Nút Chỉnh sửa -->
+            <button
+              (click)="openEditModal(rap, i)"
+              class="inline-flex items-center justify-center w-8 h-8 mr-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
+              title="Chỉnh sửa"
+            >
+              <i class="fas fa-pencil-alt text-sm"></i>
+            </button>
+            <!-- Nút Xóa -->
+            <button
+              (click)="deleteRap(rap)"
+              class="inline-flex items-center justify-center w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded"
+              title="Xóa"
+            >
+              <i class="fas fa-trash text-sm"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Nút Thêm rạp (floating button) -->
+  <button
+    (click)="openAddModal()"
+    class="fixed bottom-8 right-8 bg-red-500 hover:bg-red-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl"
+    title="Thêm rạp"
+  >
+    <i class="fas fa-plus"></i>
+  </button>
+</div>
+
+<!-- ========== DIALOG TẠO RẠP MỚI ========== -->
+<div
+  *ngIf="isAddModalOpen"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+>
+  <div class="bg-white rounded p-6 w-full max-w-md">
+    <h2 class="text-xl font-bold mb-4">Tạo rạp mới</h2>
+
+    <!-- Tên rạp -->
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Tên rạp</label>
+      <input
+        type="text"
+        [(ngModel)]="newRap.name"
+        class="border rounded w-full px-3 py-2"
+        placeholder="Tên rạp"
+      />
+    </div>
+    <!-- Địa chỉ -->
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Địa chỉ</label>
+      <input
+        type="text"
+        [(ngModel)]="newRap.address"
+        class="border rounded w-full px-3 py-2"
+        placeholder="Địa chỉ"
+      />
+    </div>
+    <!-- Thành phố -->
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Thành phố</label>
+      <select
+        [(ngModel)]="newRap.city"
+        class="border rounded w-full px-3 py-2"
+      >
+        <option value="HÀ NỘI">HÀ NỘI</option>
+        <option value="HỒ CHÍ MINH">HỒ CHÍ MINH</option>
+        <option value="ĐÀ NẴNG">ĐÀ NẴNG</option>
+      </select>
+    </div>
+
+    <div class="flex justify-end space-x-2">
+      <button
+        (click)="closeAddModal()"
+        class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+      >
+        Đóng
+      </button>
+      <button
+        (click)="saveNewRap()"
+        class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white"
+      >
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DIALOG CHỈNH SỬA RẠP ========== -->
+<div
+  *ngIf="isEditModalOpen"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+>
+  <div class="bg-white rounded p-6 w-full max-w-2xl">
+    <h2 class="text-xl font-bold mb-4">Chỉnh sửa rạp</h2>
+
+    <!-- Tên rạp / Địa chỉ -->
+    <div class="mb-4 flex space-x-4">
+      <div class="w-1/2">
+        <label class="block font-medium mb-1">Tên rạp</label>
+        <input
+          type="text"
+          [(ngModel)]="editRapData.name"
+          class="border rounded w-full px-3 py-2"
+          placeholder="Tên rạp"
+        />
+      </div>
+      <div class="w-1/2">
+        <label class="block font-medium mb-1">Địa chỉ</label>
+        <input
+          type="text"
+          [(ngModel)]="editRapData.address"
+          class="border rounded w-full px-3 py-2"
+          placeholder="Địa chỉ"
+        />
+      </div>
+    </div>
+
+    <!-- Thành phố -->
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Thành phố</label>
+      <select
+        [(ngModel)]="editRapData.city"
+        class="border rounded w-full px-3 py-2"
+      >
+        <option value="HÀ NỘI">HÀ NỘI</option>
+        <option value="HỒ CHÍ MINH">HỒ CHÍ MINH</option>
+        <option value="ĐÀ NẴNG">ĐÀ NẴNG</option>
+      </select>
+    </div>
+
+    <!-- Bảng danh sách phòng -->
+    <div class="border border-gray-300 rounded">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="px-4 py-2 border-b border-gray-200 text-left">Tên</th>
+            <th class="px-4 py-2 border-b border-gray-200 text-left">Loại phòng</th>
+            <th class="px-4 py-2 border-b border-gray-200 text-left">Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let room of editRapData.rooms; let i = index"
+            class="hover:bg-gray-50 transition-colors"
+          >
+            <!-- Tên phòng -->
+            <td class="px-4 py-2 border-b border-gray-200">
+              <input
+                type="text"
+                [(ngModel)]="room.name"
+                class="border rounded w-full px-2 py-1"
+                placeholder="Phòng 1"
+              />
+            </td>
+            <!-- Loại phòng -->
+            <td class="px-4 py-2 border-b border-gray-200">
+              <input
+                type="text"
+                [(ngModel)]="room.type"
+                class="border rounded w-full px-2 py-1"
+                placeholder="2D, 3D, IMAX..."
+              />
+            </td>
+            <!-- Trạng thái -->
+            <td class="px-4 py-2 border-b border-gray-200">
+              <select
+                [(ngModel)]="room.status"
+                class="border rounded px-2 py-1 w-full"
+              >
+                <option value="ONLINE">ONLINE</option>
+                <option value="OFFLINE">OFFLINE</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Nút thêm phòng -->
+      <div
+        class="px-4 py-2 text-blue-600 hover:text-blue-800 font-semibold cursor-pointer"
+        (click)="addRoom()"
+      >
+        + THÊM PHÒNG
+      </div>
+    </div>
+
+    <!-- Nút Đóng & Lưu -->
+    <div class="flex justify-end space-x-2 mt-4">
+      <button
+        (click)="closeEditModal()"
+        class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+      >
+        Đóng
+      </button>
+      <button
+        (click)="saveEditRap()"
+        class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white"
+      >
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>
