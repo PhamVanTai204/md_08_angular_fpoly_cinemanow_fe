@@ -1,1 +1,84 @@
-<p>nguoi-dung works!</p>
+<div class="p-4 bg-white min-h-screen">
+  <!-- Tiêu đề trang -->
+  <h1 class="text-xl font-bold mb-4">Quản Lý Thành Viên</h1>
+
+  <!-- Bảng danh sách thành viên -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-200 text-sm">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="border border-gray-200 px-4 py-2 text-left">Avatar</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Họ tên</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Email</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Số ĐT</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Quyền</th>
+          <th class="border border-gray-200 px-4 py-2 text-center">Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <!-- Avatar -->
+          <td class="border border-gray-200 px-4 py-2">
+            <div class="flex items-center">
+              <!-- Nếu có avatarUrl, hiển thị ảnh; nếu không, hiển thị vòng tròn tên viết tắt -->
+              <ng-container *ngIf="user.avatarUrl; else noAvatar">
+                <img
+                  [src]="user.avatarUrl"
+                  alt="Avatar"
+                  class="w-10 h-10 rounded-full object-cover"
+                />
+              </ng-container>
+              <ng-template #noAvatar>
+                <div
+                  class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white"
+                >
+                  {{ user.name | slice:0:1 }}
+                </div>
+              </ng-template>
+            </div>
+          </td>
+
+          <!-- Họ tên -->
+          <td class="border border-gray-200 px-4 py-2">
+            <span class="font-semibold">{{ user.name }}</span>
+          </td>
+
+          <!-- Email -->
+          <td class="border border-gray-200 px-4 py-2">
+            {{ user.email }}
+          </td>
+
+          <!-- Số điện thoại (đổi màu theo trạng thái) -->
+          <td
+            class="border border-gray-200 px-4 py-2"
+            [ngClass]="{
+              'text-green-500': user.isActive,
+              'text-red-500': !user.isActive
+            }"
+          >
+            {{ user.phone }}
+          </td>
+
+          <!-- Quyền -->
+          <td class="border border-gray-200 px-4 py-2">
+            {{ user.role }}
+          </td>
+
+          <!-- Hành động (nút Khoá/Mở khoá) -->
+          <td class="border border-gray-200 px-4 py-2 text-center">
+            <button
+              (click)="toggleStatus(user)"
+              class="px-3 py-1 rounded text-white"
+              [ngClass]="{
+                'bg-red-500 hover:bg-red-600': user.isActive,
+                'bg-green-500 hover:bg-green-600': !user.isActive
+              }"
+            >
+              {{ user.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
