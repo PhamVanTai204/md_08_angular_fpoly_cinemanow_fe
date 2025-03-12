@@ -1,1 +1,65 @@
-<p>nhan-vien works!</p>
+<div class="p-4">
+  <h2 class="text-xl font-bold mb-4">Quản Lý Nhân Viên</h2>
+
+  <div class="overflow-x-auto w-full">
+    <table class="min-w-full divide-y divide-gray-200 bg-white">
+      <!-- Tiêu đề cột -->
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Avatar
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Họ Tên
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Email
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Số ĐT
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Quyền
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Hành Động
+          </th>
+        </tr>
+      </thead>
+      <!-- Danh sách nhân viên -->
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let nv of nhanViens">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <img
+              [src]="nv.avatar"
+              alt="Avatar"
+              class="h-10 w-10 rounded-full object-cover"
+            />
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            {{ nv.fullName }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            {{ nv.email }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            {{ nv.phone }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            {{ nv.role }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <!-- Nút khóa/mở khóa tài khoản -->
+            <button
+              (click)="toggleNhanVienStatus(nv)"
+              [ngClass]="nv.isActive ? 'bg-red-500 hover:bg-red-700' : 'bg-green-500 hover:bg-green-700'"
+              class="text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+            >
+              {{ nv.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
