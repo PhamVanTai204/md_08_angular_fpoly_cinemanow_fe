@@ -18,6 +18,7 @@ import { KhuyenMaiComponent } from './components/khuyen-mai/khuyen-mai.component
 import { ThongKeComponent } from './components/thong-ke/thong-ke.component';
 import { NhanVienComponent } from './components/nhan-vien/nhan-vien.component';
 import { NguoiDungComponent } from './components/nguoi-dung/nguoi-dung.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,7 @@ import { NguoiDungComponent } from './components/nguoi-dung/nguoi-dung.component
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-
+    HttpClientModule,
     ButtonModule
   ],
   providers: [],
