@@ -12,12 +12,12 @@ export class TheLoaiPhimComponent {
   genreName = '';           // Lưu giá trị nhập vào
   editIndex: number | null = null;  // Lưu index của mục đang chỉnh sửa
 
-  genres = [  // Danh sách thể loại phim
-    { name: 'TÂM LÝ', status: 'ONLINE' },
-    { name: 'HÀNH ĐỘNG', status: 'ONLINE' },
-    { name: 'TÌNH CẢM', status: 'ONLINE' },
-    { name: 'HÀI KỊCH', status: 'ONLINE' },
-    { name: 'CHÍNH TRỊ', status: 'ONLINE' }
+  genres = [  // Danh sách thể loại phim (đã bỏ status)
+    { name: 'TÂM LÝ' },
+    { name: 'HÀNH ĐỘNG' },
+    { name: 'TÌNH CẢM' },
+    { name: 'HÀI KỊCH' },
+    { name: 'CHÍNH TRỊ' }
   ];
 
   // Mở hộp thoại thêm thể loại
@@ -36,7 +36,7 @@ export class TheLoaiPhimComponent {
   // Thêm thể loại mới
   saveGenre() {
     if (this.genreName.trim()) {
-      this.genres.push({ name: this.genreName.trim().toUpperCase(), status: 'ONLINE' });
+      this.genres.push({ name: this.genreName.trim().toUpperCase() });
       this.closeDialog();
     }
   }
