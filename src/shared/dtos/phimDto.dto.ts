@@ -1,27 +1,27 @@
 export interface IPhimDto {
-    id: string;
-    statusFilm: number;
-    genreFilm: string[];
-    trailerFilm: string;
+    id?: string;
+    status_film: number;
+    genre_film: string[];
+    trailer_film: string;
     duration: string;
-    releaseDate: string;
-    endDate: string;
-    imageFilm: string;
+    release_date: string;
+    end_date: string;
+    image_film: string;
     title: string;
     describe: string;
   }
   
   export class PhimDto implements IPhimDto {
-    id!: string;
-    statusFilm!: number;
-    genreFilm!: string[];
-    trailerFilm!: string;
-    duration!: string;
-    releaseDate!: string;
-    endDate!: string;
-    imageFilm!: string;
-    title!: string;
-    describe!: string;
+    id?: string;
+    status_film: number = 1;
+    genre_film: string[] = [];
+    trailer_film: string = '';
+    duration: string = '';
+    release_date: string = '';
+    end_date: string = '';
+    image_film: string = '';
+    title: string = '';
+    describe: string = '';
   
     constructor(data?: IPhimDto) {
       if (data) {
@@ -36,13 +36,13 @@ export interface IPhimDto {
     init(_data?: any) {
       if (_data) {
         this.id = _data["_id"];
-        this.statusFilm = _data["status_film"];
-        this.genreFilm = _data["genre_film"];
-        this.trailerFilm = _data["trailer_film"];
+        this.status_film = _data["status_film"];
+        this.genre_film = _data["genre_film"];
+        this.trailer_film = _data["trailer_film"];
         this.duration = _data["duration"];
-        this.releaseDate = _data["release_date"];
-        this.endDate = _data["end_date"];
-        this.imageFilm = _data["image_film"];
+        this.release_date = _data["release_date"];
+        this.end_date = _data["end_date"];
+        this.image_film = _data["image_film"];
         this.title = _data["title"];
         this.describe = _data["describe"];
       }
@@ -57,14 +57,16 @@ export interface IPhimDto {
   
     toJSON(data?: any) {
       data = typeof data === 'object' ? data : {};
-      data["_id"] = this.id;
-      data["status_film"] = this.statusFilm;
-      data["genre_film"] = this.genreFilm;
-      data["trailer_film"] = this.trailerFilm;
+      if (this.id) {
+        data["_id"] = this.id;
+      }
+      data["status_film"] = this.status_film;
+      data["genre_film"] = this.genre_film;
+      data["trailer_film"] = this.trailer_film;
       data["duration"] = this.duration;
-      data["release_date"] = this.releaseDate;
-      data["end_date"] = this.endDate;
-      data["image_film"] = this.imageFilm;
+      data["release_date"] = this.release_date;
+      data["end_date"] = this.end_date;
+      data["image_film"] = this.image_film;
       data["title"] = this.title;
       data["describe"] = this.describe;
       return data;

@@ -64,10 +64,10 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr *ngFor="let phim of danhSachPhimDaLoc; let i = index">
-            <td class="px-4 py-2 whitespace-nowrap">{{ getGenreNames(phim.genreFilm) }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ getGenreNames(phim.genre_film) }}</td>
             <td class="px-4 py-2 whitespace-nowrap">
               <img
-                [src]="phim.imageFilm"
+                [src]="phim.image_film"
                 alt="{{ phim.title }}"
                 class="w-16 h-24 object-cover rounded-md"
               />
@@ -78,15 +78,15 @@
               <span
                 class="inline-block px-2 py-1 text-xs font-semibold rounded-full"
                 [ngClass]="{
-                  'bg-green-100 text-green-600': phim.statusFilm === 1,
-                  'bg-gray-100 text-gray-600': phim.statusFilm !== 1
+                  'bg-green-100 text-green-600': phim.status_film === 1,
+                  'bg-gray-100 text-gray-600': phim.status_film !== 1
                 }"
               >
-                {{ getTrangThaiText(phim.statusFilm) }}
+                {{ getTrangThaiText(phim.status_film) }}
               </span>
             </td>
             <td class="px-4 py-2 whitespace-nowrap">
-              {{ formatDate(phim.releaseDate) }}
+              {{ formatDate(phim.release_date) }}
             </td>
             <td class="px-4 py-2 whitespace-nowrap flex items-center justify-center space-x-2">
               <button
@@ -176,7 +176,7 @@
           <label class="block font-medium mb-1">Thể loại phim</label>
           <select 
             multiple 
-            [(ngModel)]="currentPhim.genreFilm" 
+            [(ngModel)]="currentPhim.genre_film" 
             class="border rounded w-full px-3 py-2"
           >
             <option *ngFor="let genre of danhSachTheLoai" [value]="genre.id">
@@ -189,11 +189,11 @@
         <div>
           <label class="block font-medium mb-1">Trạng thái</label>
           <select 
-            [(ngModel)]="currentPhim.statusFilm" 
+            [(ngModel)]="currentPhim.status_film" 
             class="border rounded w-full px-3 py-2"
           >
-            <option [value]="1">ONLINE</option>
-            <option [value]="0">OFFLINE</option>
+            <option [ngValue]="1">ONLINE</option>
+            <option [ngValue]="0">OFFLINE</option>
           </select>
         </div>
 
@@ -201,7 +201,7 @@
           <label class="block font-medium mb-1">Poster (URL)</label>
           <input
             type="text"
-            [(ngModel)]="currentPhim.imageFilm"
+            [(ngModel)]="currentPhim.image_film"
             class="border rounded w-full px-3 py-2"
           />
         </div>
@@ -210,7 +210,7 @@
           <label class="block font-medium mb-1">Trailer (URL)</label>
           <input
             type="text"
-            [(ngModel)]="currentPhim.trailerFilm"
+            [(ngModel)]="currentPhim.trailer_film"
             class="border rounded w-full px-3 py-2"
           />
         </div>
@@ -229,7 +229,7 @@
           <label class="block font-medium mb-1">Ngày phát hành</label>
           <input
             type="date"
-            [(ngModel)]="currentPhim.releaseDate"
+            [(ngModel)]="currentPhim.release_date"
             class="border rounded w-full px-3 py-2"
           />
         </div>
@@ -238,7 +238,7 @@
           <label class="block font-medium mb-1">Ngày kết thúc</label>
           <input
             type="date"
-            [(ngModel)]="currentPhim.endDate"
+            [(ngModel)]="currentPhim.end_date"
             class="border rounded w-full px-3 py-2"
           />
         </div>
@@ -300,9 +300,9 @@
         "<strong>{{ deletePhim?.title }}</strong>"?
       </p>
 
-      <label class="block font-medium mb-1"
-        >Nhập mật khẩu <strong>hiendz</strong> để xác nhận:</label
-      >
+      <label class="block font-medium mb-1">
+        Nhập mật khẩu <strong>hiendz</strong> để xác nhận:
+      </label>
       <input
         type="password"
         [(ngModel)]="deletePassword"
@@ -326,4 +326,4 @@
       </div>
     </div>
   </div>
-</div>  
+</div>

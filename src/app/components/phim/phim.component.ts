@@ -42,8 +42,11 @@ export class PhimComponent implements OnInit {
 
   loadPhims(): void {
     this.isLoading = true;
+    console.log('Loading films...');
+    
     this.phimService.getPhims(this.page, this.limit).subscribe({
       next: (data: PhimDto[]) => {
+        console.log('Films loaded successfully:', data);
         this.danhSachPhim = data;
         this.isLoading = false;
       },
@@ -108,10 +111,11 @@ export class PhimComponent implements OnInit {
     this.isEdit = false;
     this.editIndex = null;
     this.currentPhim = new PhimDto();
-    this.currentPhim.statusFilm = 1;
-    this.currentPhim.genreFilm = [];
-    this.currentPhim.releaseDate = new Date().toISOString().split('T')[0];
-    this.currentPhim.endDate = new Date().toISOString().split('T')[0];
+    // Use snake_case properties to match DTO
+    this.currentPhim.status_film = 1;
+    this.currentPhim.genre_film = [];
+    this.currentPhim.release_date = new Date().toISOString().split('T')[0];
+    this.currentPhim.end_date = new Date().toISOString().split('T')[0];
     this.showModal = true;
   }
 
@@ -123,43 +127,51 @@ export class PhimComponent implements OnInit {
   }
 
   savePhim(): void {
+    console.log('Saving film data:', this.currentPhim);
+    
     if (!this.validatePhimForm()) {
       alert('Vui lòng điền đầy đủ thông tin phim!');
       return;
     }
 
+    // Log what we're sending to the server for debugging
+    console.log('Sending to server:', this.currentPhim.toJSON());
+
     if (this.isEdit && this.currentPhim.id) {
       this.phimService.updatePhim(this.currentPhim.id, this.currentPhim).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Update response:', response);
           this.loadPhims();
           this.closeModal();
         },
         error: (error) => {
           console.error('Lỗi khi cập nhật phim:', error);
-          alert('Cập nhật phim thất bại!');
+          alert('Cập nhật phim thất bại! ' + error.message);
         }
       });
     } else {
       this.phimService.createPhim(this.currentPhim).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Create response:', response);
           this.loadPhims();
           this.closeModal();
         },
         error: (error) => {
           console.error('Lỗi khi thêm phim:', error);
-          alert('Thêm phim thất bại!');
+          alert('Thêm phim thất bại! ' + error.message);
         }
       });
     }
   }
 
   validatePhimForm(): boolean {
+    // Use snake_case properties to match DTO
     return !!(
       this.currentPhim.title &&
-      this.currentPhim.imageFilm &&
-      this.currentPhim.genreFilm?.length &&
+      this.currentPhim.image_film &&
+      this.currentPhim.genre_film?.length &&
       this.currentPhim.duration &&
-      this.currentPhim.releaseDate
+      this.currentPhim.release_date
     );
   }
 
@@ -180,7 +192,13 @@ export class PhimComponent implements OnInit {
       alert('Mật khẩu sai!');
       return;
     }
-
+  
+    // Check if ID exists before trying to use it
+    if (!this.deletePhim.id) {
+      alert('Không thể xóa phim: ID không tồn tại!');
+      return;
+    }
+  
     this.phimService.deletePhim(this.deletePhim.id).subscribe({
       next: () => {
         this.loadPhims();
