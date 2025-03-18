@@ -1,66 +1,112 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { GenresService } from '../../../shared/services/genres.service';
+import { GenresDto } from '../../../shared/dtos/genresDto.dto';
 
 @Component({
   selector: 'app-the-loai-phim',
-  standalone: false,
   templateUrl: './the-loai-phim.component.html',
-  styleUrls: ['./the-loai-phim.component.css']
+  styleUrls: ['./the-loai-phim.component.css'],
+  standalone: false
 })
-export class TheLoaiPhimComponent {
-  showDialog = false;       // Biến kiểm soát hộp thoại thêm
-  showEditDialog = false;   // Biến kiểm soát hộp thoại sửa
-  genreName = '';           // Lưu giá trị nhập vào
-  editIndex: number | null = null;  // Lưu index của mục đang chỉnh sửa
+export class TheLoaiPhimComponent implements OnInit {
+  showDialog = false;
+  showEditDialog = false;
+  genreName = '';
+  editIndex: number | null = null;
+  genres: GenresDto[] = [];
 
-  genres = [  // Danh sách thể loại phim (đã bỏ status)
-    { name: 'TÂM LÝ' },
-    { name: 'HÀNH ĐỘNG' },
-    { name: 'TÌNH CẢM' },
-    { name: 'HÀI KỊCH' },
-    { name: 'CHÍNH TRỊ' }
-  ];
+  constructor(private genresService: GenresService) { }
 
-  // Mở hộp thoại thêm thể loại
-  openDialog() {
-    this.genreName = '';  // Reset input
+  ngOnInit(): void {
+    this.loadGenres();
+  }
+
+  // Lấy danh sách thể loại
+  loadGenres(): void {
+    this.genresService.getGenres().subscribe({
+      next: (data: GenresDto[]) => {
+        this.genres = data;
+      },
+      error: (error) => {
+        console.error('Lỗi khi tải dữ liệu thể loại:', error);
+      }
+    });
+  }
+
+  // Mở dialog thêm mới
+  openDialog(): void {
+    this.genreName = '';
     this.showDialog = true;
   }
 
-  // Đóng hộp thoại
-  closeDialog() {
+  // Đóng tất cả dialog
+  closeDialog(): void {
     this.showDialog = false;
     this.showEditDialog = false;
-    this.genreName = '';  // Reset input
+    this.genreName = '';
+    this.editIndex = null;
   }
 
   // Thêm thể loại mới
-  saveGenre() {
+  saveGenre(): void {
     if (this.genreName.trim()) {
-      this.genres.push({ name: this.genreName.trim().toUpperCase() });
-      this.closeDialog();
+      const newGenre = new GenresDto();
+      newGenre.genreName = this.genreName.trim();
+      this.genresService.createGenre(newGenre).subscribe({
+        next: () => {
+          // Thay vì push vào mảng, ta gọi loadGenres() để cập nhật lại từ server
+          this.loadGenres();
+          this.closeDialog();
+        },
+        error: (error) => {
+          console.error('Lỗi khi thêm thể loại:', error);
+        }
+      });
     }
   }
 
-  // Mở hộp thoại chỉnh sửa
-  openEditDialog(index: number) {
+  // Mở dialog chỉnh sửa
+  openEditDialog(index: number): void {
     this.editIndex = index;
-    this.genreName = this.genres[index].name;
+    this.genreName = this.genres[index].genreName || '';
     this.showEditDialog = true;
   }
 
-  // Cập nhật thể loại sau khi chỉnh sửa
-  updateGenre() {
+  // Cập nhật thể loại
+  updateGenre(): void {
     if (this.genreName.trim() && this.editIndex !== null) {
-      this.genres[this.editIndex].name = this.genreName.trim().toUpperCase();
-      this.closeDialog();
+      const updatedGenre = new GenresDto();
+      updatedGenre.id = this.genres[this.editIndex].id;
+      updatedGenre.genreName = this.genreName.trim();
+
+      this.genresService.updateGenre(updatedGenre.id, updatedGenre).subscribe({
+        next: () => {
+          // Thay vì cập nhật mảng, gọi loadGenres() để đảm bảo dữ liệu mới
+          this.loadGenres();
+          this.closeDialog();
+        },
+        error: (error) => {
+          console.error('Lỗi khi cập nhật thể loại:', error);
+        }
+      });
     }
   }
 
-  // Xóa thể loại với xác nhận
-  deleteGenre(index: number) {
-    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa thể loại này không?");
-    if (confirmDelete) {
-      this.genres.splice(index, 1);
+  // Xóa thể loại
+  deleteGenre(index: number): void {
+    const genreToDelete = this.genres[index];
+    if (window.confirm("Bạn có chắc chắn muốn xóa thể loại này không?")) {
+      if (genreToDelete.id) {
+        this.genresService.deleteGenre(genreToDelete.id).subscribe({
+          next: () => {
+            // Thay vì splice mảng, gọi loadGenres()
+            this.loadGenres();
+          },
+          error: (error) => {
+            console.error('Lỗi khi xóa thể loại:', error);
+          }
+        });
+      }
     }
   }
 }

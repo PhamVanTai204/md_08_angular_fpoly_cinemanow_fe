@@ -17,18 +17,20 @@
         </thead>
         <tbody>
           <tr *ngFor="let genre of genres; let i = index" class="border-b hover:bg-gray-50 transition-colors duration-200">
-            <td class="p-3 font-medium text-gray-700">{{ genre.name }}</td>
+            <td class="p-3 font-medium text-gray-700">{{ genre.genreName }}</td>
             <td class="p-3 text-right">
               <button (click)="openEditDialog(i)" class="text-blue-500 hover:text-blue-600 transition-colors duration-200 mr-2">
                 <!-- Icon chỉnh sửa -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M16 3a2.828 2.828 0 113.999 3.999L7 21H3v-4L16 3z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15.232 5.232l3.536 3.536M16 3a2.828 2.828 0 113.999 3.999L7 21H3v-4L16 3z" />
                 </svg>
               </button>
               <button (click)="deleteGenre(i)" class="text-red-500 hover:text-red-600 transition-colors duration-200">
                 <!-- Icon xóa -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a2 2 0 00-2 2h8a2 2 0 00-2-2m-4 0h4" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a2 2 0 00-2 2h8a2 2 0 00-2-2m-4 0h4" />
                 </svg>
               </button>
             </td>
@@ -44,7 +46,8 @@
       <h2 class="text-xl font-semibold border-b pb-3 mb-4">THÊM THỂ LOẠI</h2>
       <div class="mb-4">
         <label class="block text-gray-700 font-medium mb-1">Thể loại</label>
-        <input type="text" [(ngModel)]="genreName" placeholder="Nhập tên thể loại" class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input type="text" [(ngModel)]="genreName" placeholder="Nhập tên thể loại"
+               class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
       <div class="flex justify-end gap-3">
         <button (click)="closeDialog()" class="bg-gray-500 hover:bg-gray-600 transition-colors duration-200 text-white px-4 py-2 rounded-md">
@@ -57,13 +60,14 @@
     </div>
   </div>
 
-  <!-- Dialog sửa thể loại -->
+  <!-- Dialog chỉnh sửa thể loại -->
   <div *ngIf="showEditDialog" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
     <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
       <h2 class="text-xl font-semibold border-b pb-3 mb-4">CHỈNH SỬA THỂ LOẠI</h2>
       <div class="mb-4">
         <label class="block text-gray-700 font-medium mb-1">Thể loại</label>
-        <input type="text" [(ngModel)]="genreName" placeholder="Nhập tên thể loại" class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input type="text" [(ngModel)]="genreName" placeholder="Nhập tên thể loại"
+               class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
       <div class="flex justify-end gap-3">
         <button (click)="closeDialog()" class="bg-gray-500 hover:bg-gray-600 transition-colors duration-200 text-white px-4 py-2 rounded-md">
