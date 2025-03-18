@@ -1,171 +1,211 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { PhimService } from '../../../shared/services/phim.service';
+import { GenresService } from '../../../shared/services/genres.service';
+import { PhimDto } from '../../../shared/dtos/phimDto.dto';
+import { GenresDto } from '../../../shared/dtos/genresDto.dto';
 
 @Component({
   selector: 'app-phim',
-  standalone: false, // Giữ hoặc bỏ nếu bạn không dùng Standalone Component
   templateUrl: './phim.component.html',
-  styleUrls: ['./phim.component.css']
+  styleUrls: ['./phim.component.css'],
+  standalone: false
 })
-export class PhimComponent {
-  // Biến lưu từ khoá tìm kiếm
+export class PhimComponent implements OnInit {
   searchTerm: string = '';
+  danhSachPhim: PhimDto[] = [];
+  danhSachTheLoai: GenresDto[] = [];
+  page: number = 1;
+  limit: number = 10;
+  totalPhim: number = 0;
+  isLoading: boolean = false;
 
-  // Danh sách phim (dữ liệu mẫu)
-  danhSachPhim = [
-    {
-      theLoai: 'Hành động Kinh Dị',
-      poster: 'https://d1j8r0kxyu9tj8.cloudfront.net/files/1618301042CTBAF7i4v3cXFfn.jpg',
-      tenPhim: 'RÒM',
-      thoiLuong: 120,
-      trangThai: 'ONLINE',
-      ngayPhatHanh: new Date(2025, 0, 23)
-    },
-    {
-      theLoai: 'Kịch Tính Tình Cảm',
-      poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqAcGHNJamloNStAZBGCIatqecki3f2HSMLw&s',
-      tenPhim: 'NHÀ BÀ NỮ',
-      thoiLuong: 120,
-      trangThai: 'ONLINE',
-      ngayPhatHanh: new Date(2025, 0, 23)
-    },
-    {
-      theLoai: 'Hài Kịch',
-      poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuscXpOzMpN3C2A2Cby0bPhP5Pqf0aDGGnlg&s',
-      tenPhim: 'TRANG QUỲNH',
-      thoiLuong: 120,
-      trangThai: 'ONLINE',
-      ngayPhatHanh: new Date(2025, 0, 23)
+  // Modal variables
+  showModal: boolean = false;
+  isEdit: boolean = false;
+  currentPhim: PhimDto = new PhimDto();
+  editIndex: number | null = null;
+
+  // Delete modal variables
+  showDeleteModal: boolean = false;
+  deletePhim: PhimDto | null = null;
+  deletePassword: string = '';
+
+  constructor(
+    private phimService: PhimService,
+    private genresService: GenresService
+  ) { }
+
+  ngOnInit(): void {
+    this.loadPhims();
+    this.loadGenres();
+  }
+
+  loadPhims(): void {
+    this.isLoading = true;
+    this.phimService.getPhims(this.page, this.limit).subscribe({
+      next: (data: PhimDto[]) => {
+        this.danhSachPhim = data;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Lỗi khi tải danh sách phim:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadGenres(): void {
+    this.genresService.getGenres().subscribe({
+      next: (data: GenresDto[]) => {
+        this.danhSachTheLoai = data;
+      },
+      error: (error) => {
+        console.error('Lỗi khi tải danh sách thể loại:', error);
+      }
+    });
+  }
+
+  getGenreNames(genreIds: string[]): string {
+    if (!genreIds || !this.danhSachTheLoai.length) return '';
+    
+    return genreIds
+      .map(id => this.danhSachTheLoai.find(genre => genre.id === id)?.genreName || '')
+      .filter(name => name !== '')
+      .join(', ');
+  }
+
+  searchPhims(): void {
+    if (this.searchTerm.trim() === '') {
+      this.loadPhims();
+      return;
     }
-  ];
 
-  /**
-   * Getter để lọc danh sách phim theo từ khoá tìm kiếm
-   */
-  get danhSachPhimDaLoc() {
-    if (!this.searchTerm) {
+    this.isLoading = true;
+    this.phimService.searchPhims(this.searchTerm).subscribe({
+      next: (data: PhimDto[]) => {
+        this.danhSachPhim = data;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Lỗi khi tìm kiếm phim:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  get danhSachPhimDaLoc(): PhimDto[] {
+    if (!this.searchTerm.trim()) {
       return this.danhSachPhim;
     }
+    
     const lowerSearch = this.searchTerm.toLowerCase();
     return this.danhSachPhim.filter(phim =>
-      phim.tenPhim.toLowerCase().includes(lowerSearch)
+      phim.title.toLowerCase().includes(lowerSearch)
     );
   }
 
-  // ---------------------
-  // CÁC BIẾN VÀ HÀM CHO MODAL THÊM/SỬA PHIM
-  // ---------------------
-  showModal: boolean = false;  // Ẩn/hiện modal Thêm/Sửa
-  isEdit: boolean = false;     // Xác định đang Sửa (true) hay Thêm (false)
-  editIndex: number | null = null; // Vị trí phim đang sửa
-  // Biến tạm để binding dữ liệu phim trong modal
-  currentPhim: any = {
-    theLoai: '',
-    poster: '',
-    tenPhim: '',
-    thoiLuong: 0,
-    trangThai: 'ONLINE',
-    ngayPhatHanh: new Date()
-  };
-
-  /**
-   * Mở modal Thêm phim
-   */
-  themPhim() {
+  themPhim(): void {
     this.isEdit = false;
     this.editIndex = null;
-    // Reset dữ liệu phim mới
-    this.currentPhim = {
-      theLoai: '',
-      poster: '',
-      tenPhim: '',
-      thoiLuong: 0,
-      trangThai: 'ONLINE',
-      ngayPhatHanh: new Date()
-    };
+    this.currentPhim = new PhimDto();
+    this.currentPhim.statusFilm = 1;
+    this.currentPhim.genreFilm = [];
+    this.currentPhim.releaseDate = new Date().toISOString().split('T')[0];
+    this.currentPhim.endDate = new Date().toISOString().split('T')[0];
     this.showModal = true;
   }
 
-  /**
-   * Mở modal Sửa phim
-   */
-  suaPhim(phim: any, index: number) {
+  suaPhim(phim: PhimDto, index: number): void {
     this.isEdit = true;
     this.editIndex = index;
-    // Tạo một bản sao để tránh sửa trực tiếp trên mảng
-    this.currentPhim = { ...phim };
+    this.currentPhim = phim.clone();
     this.showModal = true;
   }
 
-  /**
-   * Lưu phim (thêm mới hoặc cập nhật)
-   */
-  savePhim() {
-    if (this.isEdit && this.editIndex !== null) {
-      // Cập nhật phim
-      this.danhSachPhim[this.editIndex] = this.currentPhim;
-    } else {
-      // Thêm phim mới
-      this.danhSachPhim.push(this.currentPhim);
+  savePhim(): void {
+    if (!this.validatePhimForm()) {
+      alert('Vui lòng điền đầy đủ thông tin phim!');
+      return;
     }
-    // Đóng modal
+
+    if (this.isEdit && this.currentPhim.id) {
+      this.phimService.updatePhim(this.currentPhim.id, this.currentPhim).subscribe({
+        next: () => {
+          this.loadPhims();
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('Lỗi khi cập nhật phim:', error);
+          alert('Cập nhật phim thất bại!');
+        }
+      });
+    } else {
+      this.phimService.createPhim(this.currentPhim).subscribe({
+        next: () => {
+          this.loadPhims();
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('Lỗi khi thêm phim:', error);
+          alert('Thêm phim thất bại!');
+        }
+      });
+    }
+  }
+
+  validatePhimForm(): boolean {
+    return !!(
+      this.currentPhim.title &&
+      this.currentPhim.imageFilm &&
+      this.currentPhim.genreFilm?.length &&
+      this.currentPhim.duration &&
+      this.currentPhim.releaseDate
+    );
+  }
+
+  closeModal(): void {
     this.showModal = false;
   }
 
-  /**
-   * Đóng modal Thêm/Sửa (không lưu)
-   */
-  closeModal() {
-    this.showModal = false;
-  }
-
-  // ---------------------
-  // CÁC BIẾN VÀ HÀM CHO MODAL XÓA PHIM
-  // ---------------------
-  showDeleteModal: boolean = false; // Ẩn/hiện modal Xóa
-  deleteIndex: number | null = null; // Vị trí phim muốn xóa
-  deletePhim: any = null;           // Thông tin phim muốn xóa
-  deletePassword: string = '';      // Mật khẩu xác nhận
-
-  /**
-   * Mở modal Xóa phim (yêu cầu nhập mật khẩu hiendz)
-   */
-  xoaPhim(phim: any, index: number) {
-    this.showDeleteModal = true;
-    this.deleteIndex = index;
+  xoaPhim(phim: PhimDto, index: number): void {
     this.deletePhim = phim;
+    this.showDeleteModal = true;
     this.deletePassword = '';
   }
 
-  /**
-   * Xác nhận xóa phim
-   */
-  confirmXoaPhim() {
-    // Kiểm tra mật khẩu
+  confirmXoaPhim(): void {
+    if (!this.deletePhim) return;
+    
     if (this.deletePassword !== 'hiendz') {
       alert('Mật khẩu sai!');
       return;
     }
 
-    // Hỏi xác nhận
-    const isConfirm = confirm(`Bạn có chắc muốn xóa phim "${this.deletePhim.tenPhim}"?`);
-    if (!isConfirm) {
-      return;
-    }
-
-    // Tiến hành xóa
-    if (this.deleteIndex !== null) {
-      this.danhSachPhim.splice(this.deleteIndex, 1);
-    }
-    this.closeDeleteModal();
+    this.phimService.deletePhim(this.deletePhim.id).subscribe({
+      next: () => {
+        this.loadPhims();
+        this.closeDeleteModal();
+      },
+      error: (error) => {
+        console.error('Lỗi khi xóa phim:', error);
+        alert('Xóa phim thất bại!');
+      }
+    });
   }
 
-  /**
-   * Đóng modal Xóa (không xóa)
-   */
-  closeDeleteModal() {
+  closeDeleteModal(): void {
     this.showDeleteModal = false;
-    this.deleteIndex = null;
     this.deletePhim = null;
     this.deletePassword = '';
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+  }
+
+  getTrangThaiText(status: number): string {
+    return status === 1 ? 'ONLINE' : 'OFFLINE';
   }
 }
