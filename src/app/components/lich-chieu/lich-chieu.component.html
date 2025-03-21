@@ -26,8 +26,6 @@
       <thead class="bg-gray-100">
         <tr>
           <th class="border border-gray-200 px-4 py-2 text-left">Phim</th>
-          <th class="border border-gray-200 px-4 py-2 text-left">Rạp Chiếu</th>
-          <th class="border border-gray-200 px-4 py-2 text-left">Phòng Chiếu</th>
           <th class="border border-gray-200 px-4 py-2 text-left">Bắt Đầu</th>
           <th class="border border-gray-200 px-4 py-2 text-left">Kết Thúc</th>
           <th class="border border-gray-200 px-4 py-2 text-left">Trạng Thái</th>
@@ -37,8 +35,6 @@
       <tbody>
         <tr *ngFor="let lich of dsLichChieu">
           <td class="border border-gray-200 px-4 py-2">{{ lich.phim }}</td>
-          <td class="border border-gray-200 px-4 py-2">{{ lich.rapChieu }}</td>
-          <td class="border border-gray-200 px-4 py-2">{{ lich.phongChieu }}</td>
           <td class="border border-gray-200 px-4 py-2">{{ lich.batDau }}</td>
           <td class="border border-gray-200 px-4 py-2">{{ lich.ketThuc }}</td>
           <td class="border border-gray-200 px-4 py-2">
@@ -70,9 +66,9 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   d="M15.232 5.232l3.536 3.536m-2.036-7.036
-                     a2.828 2.828 0 014 4l-10 10a4 4 0 01-1.414.586l-3
-                     .5a.5.5 0 01-.586-.586l.5-3a4 4 0
-                     01.586-1.414l10-10z"
+                     a2.828 2.828 0 014 4l-10 10a4 4 0 01-1.414.586l
+                     -.5-3a.5.5 0 01.586-.586l3 .5a4 4 0 01.586
+                     -1.414l10-10z"
                 ></path>
               </svg>
             </button>
@@ -103,34 +99,6 @@
         </tr>
       </tbody>
     </table>
-  </div>
-
-  <!-- Phân trang -->
-  <div class="flex items-center justify-center mt-4">
-    <nav class="flex space-x-1">
-      <button
-        class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100"
-        (click)="goToPage(currentPage - 1)"
-      >
-        &laquo;
-      </button>
-      <button
-        *ngFor="let page of [].constructor(totalPages); let i = index"
-        class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100"
-        [ngClass]="{
-          'bg-blue-500 text-white': (i + 1) === currentPage
-        }"
-        (click)="goToPage(i + 1)"
-      >
-        {{ i + 1 }}
-      </button>
-      <button
-        class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100"
-        (click)="goToPage(currentPage + 1)"
-      >
-        &raquo;
-      </button>
-    </nav>
   </div>
 
   <!-- Nút thêm (float button) -->
@@ -201,26 +169,6 @@
         <label class="block mb-1 font-medium">Chọn phim</label>
         <input
           [(ngModel)]="lichChieuForm.phim"
-          type="text"
-          class="w-full border border-gray-300 rounded px-3 py-2
-                 focus:outline-none focus:ring-1 focus:ring-blue-400"
-        />
-      </div>
-      <!-- Chọn rạp -->
-      <div>
-        <label class="block mb-1 font-medium">Chọn rạp</label>
-        <input
-          [(ngModel)]="lichChieuForm.rapChieu"
-          type="text"
-          class="w-full border border-gray-300 rounded px-3 py-2
-                 focus:outline-none focus:ring-1 focus:ring-blue-400"
-        />
-      </div>
-      <!-- Chọn phòng -->
-      <div>
-        <label class="block mb-1 font-medium">Chọn phòng</label>
-        <input
-          [(ngModel)]="lichChieuForm.phongChieu"
           type="text"
           class="w-full border border-gray-300 rounded px-3 py-2
                  focus:outline-none focus:ring-1 focus:ring-blue-400"

@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 
 interface LichChieu {
   phim: string;
-  rapChieu: string;
-  phongChieu: string;
   batDau: string;
   ketThuc: string;
   trangThai: string;
@@ -13,7 +11,7 @@ interface LichChieu {
   selector: 'app-lich-chieu',
   standalone: false,
   templateUrl: './lich-chieu.component.html',
-  styleUrls: ['./lich-chieu.component.css'] // Lưu ý: dạng mảng styleUrls
+  styleUrls: ['./lich-chieu.component.css']
 })
 export class LichChieuComponent implements OnInit {
   searchTerm: string = '';
@@ -21,33 +19,23 @@ export class LichChieuComponent implements OnInit {
   dsLichChieu: LichChieu[] = [
     {
       phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
       batDau: '2025/03/12 - 08:20',
       ketThuc: '2025/03/12 - 10:20',
       trangThai: 'Sắp chiếu'
     },
     {
       phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
       batDau: '2025/03/12 - 08:20',
       ketThuc: '2025/03/12 - 10:20',
       trangThai: 'Sắp chiếu'
     },
     {
       phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
       batDau: '2025/03/12 - 08:20',
       ketThuc: '2025/03/12 - 10:20',
       trangThai: 'Đang chiếu'
     }
   ];
-
-  // Giả lập phân trang
-  currentPage: number = 1;
-  totalPages: number = 3; // Ví dụ tạm
 
   // Quản lý dialog thêm/sửa
   isMainModalOpen: boolean = false;
@@ -56,8 +44,6 @@ export class LichChieuComponent implements OnInit {
   // Lưu dữ liệu của form thêm/sửa
   lichChieuForm: LichChieu = {
     phim: '',
-    rapChieu: '',
-    phongChieu: '',
     batDau: '',
     ketThuc: '',
     trangThai: ''
@@ -84,8 +70,6 @@ export class LichChieuComponent implements OnInit {
     // Reset form
     this.lichChieuForm = {
       phim: '',
-      rapChieu: '',
-      phongChieu: '',
       batDau: '',
       ketThuc: '',
       trangThai: ''
@@ -109,11 +93,9 @@ export class LichChieuComponent implements OnInit {
   saveSchedule(): void {
     if (this.isEditing) {
       // Trường hợp Sửa
-      // Tìm index của lichChieuForm trong dsLichChieu để cập nhật
+      // Tìm index của lichChieuForm trong dsLichChieu để cập nhật (dựa trên tên phim)
       const idx = this.dsLichChieu.findIndex(
-        (item) => item.phim === this.lichChieuForm.phim &&
-                  item.rapChieu === this.lichChieuForm.rapChieu &&
-                  item.phongChieu === this.lichChieuForm.phongChieu
+        (item) => item.phim === this.lichChieuForm.phim
       );
       if (idx !== -1) {
         this.dsLichChieu[idx] = { ...this.lichChieuForm };
@@ -163,13 +145,5 @@ export class LichChieuComponent implements OnInit {
   // Hành động Xoá (icon)
   deleteSchedule(lich: LichChieu): void {
     this.openDeleteModal(lich);
-  }
-
-  // Chuyển trang
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      // Gọi API hoặc logic lấy dữ liệu trang `page`
-    }
   }
 }
