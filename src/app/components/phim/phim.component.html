@@ -1,5 +1,6 @@
 <div class="p-5">
   <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
+    <!-- Header: Tiêu đề, ô tìm kiếm và nút Thêm -->
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-gray-800">PHIM</h2>
       <div class="flex items-center">
@@ -39,27 +40,16 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Thể loại phim
-            </th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Hình ảnh
-            </th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Tên phim
-            </th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Thời lượng
-            </th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Trạng thái
-            </th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ngày phát hành
-            </th>
-            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Hành động
-            </th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thể loại phim</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên phim</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đạo diễn</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giới hạn tuổi</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngôn ngữ</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời lượng</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày phát hành</th>
+            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -73,6 +63,9 @@
               />
             </td>
             <td class="px-4 py-2 whitespace-nowrap">{{ phim.title }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ phim.director }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ phim.age_limit }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ phim.language }}</td>
             <td class="px-4 py-2 whitespace-nowrap">{{ phim.duration }}</td>
             <td class="px-4 py-2 whitespace-nowrap">
               <span
@@ -123,8 +116,7 @@
                 >
                   <polyline points="3 6 5 6 21 6" />
                   <path
-                    d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m2 0V4
-                     a2 2 0 012-2h6a2 2 0 012 2v2"
+                    d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m2 0V4a2 2 0 012-2h6a2 2 0 012 2v2"
                   />
                 </svg>
               </button>
@@ -171,12 +163,37 @@
             class="border rounded w-full px-3 py-2"
           />
         </div>
-
+        <div>
+          <label class="block font-medium mb-1">Đạo diễn</label>
+          <input
+            type="text"
+            [(ngModel)]="currentPhim.director"
+            class="border rounded w-full px-3 py-2"
+          />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Giới hạn tuổi</label>
+          <input
+            type="number"
+            [(ngModel)]="currentPhim.age_limit"
+            class="border rounded w-full px-3 py-2"
+            placeholder="VD: 18"
+          />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Ngôn ngữ</label>
+          <input
+            type="text"
+            [(ngModel)]="currentPhim.language"
+            class="border rounded w-full px-3 py-2"
+            placeholder="VD: Tiếng Việt"
+          />
+        </div>
         <div>
           <label class="block font-medium mb-1">Thể loại phim</label>
-          <select 
-            multiple 
-            [(ngModel)]="currentPhim.genre_film" 
+          <select
+            multiple
+            [(ngModel)]="currentPhim.genre_film"
             class="border rounded w-full px-3 py-2"
           >
             <option *ngFor="let genre of danhSachTheLoai" [value]="genre.id">
@@ -185,18 +202,16 @@
           </select>
           <small class="text-gray-500">Giữ Ctrl để chọn nhiều thể loại</small>
         </div>
-
         <div>
           <label class="block font-medium mb-1">Trạng thái</label>
-          <select 
-            [(ngModel)]="currentPhim.status_film" 
+          <select
+            [(ngModel)]="currentPhim.status_film"
             class="border rounded w-full px-3 py-2"
           >
             <option [ngValue]="1">ONLINE</option>
             <option [ngValue]="0">OFFLINE</option>
           </select>
         </div>
-
         <div>
           <label class="block font-medium mb-1">Poster (URL)</label>
           <input
@@ -205,7 +220,6 @@
             class="border rounded w-full px-3 py-2"
           />
         </div>
-
         <div>
           <label class="block font-medium mb-1">Trailer (URL)</label>
           <input
@@ -214,7 +228,6 @@
             class="border rounded w-full px-3 py-2"
           />
         </div>
-
         <div>
           <label class="block font-medium mb-1">Thời lượng</label>
           <input
@@ -224,7 +237,6 @@
             placeholder="VD: 120 phút"
           />
         </div>
-
         <div>
           <label class="block font-medium mb-1">Ngày phát hành</label>
           <input
@@ -233,7 +245,6 @@
             class="border rounded w-full px-3 py-2"
           />
         </div>
-
         <div>
           <label class="block font-medium mb-1">Ngày kết thúc</label>
           <input
@@ -242,7 +253,6 @@
             class="border rounded w-full px-3 py-2"
           />
         </div>
-
         <div>
           <label class="block font-medium mb-1">Mô tả</label>
           <textarea
