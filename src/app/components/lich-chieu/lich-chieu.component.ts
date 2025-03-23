@@ -1,80 +1,79 @@
 import { Component, OnInit } from '@angular/core';
 
-interface LichChieu {
-  phim: string;
-  rapChieu: string;
-  phongChieu: string;
-  batDau: string;
-  ketThuc: string;
-  trangThai: string;
+interface ShowTime {
+  movieId: string;         // tương đương movie_id
+  showtimeStatus: number;  // tương đương showtime_status
+  startTime: string;       // tương đương start_time
+  endTime: string;         // tương đương end_time
+  price: number;           // tương đương price
+  // id?: string;          // Nếu server trả về _id, có thể thêm trường này
 }
 
 @Component({
   selector: 'app-lich-chieu',
-  standalone: false,
   templateUrl: './lich-chieu.component.html',
-  styleUrls: ['./lich-chieu.component.css'] // Lưu ý: dạng mảng styleUrls
+  styleUrls: ['./lich-chieu.component.css'],
+  standalone: false // <--- Quan trọng: Đảm bảo component không ở chế độ standalone
 })
 export class LichChieuComponent implements OnInit {
   searchTerm: string = '';
 
-  dsLichChieu: LichChieu[] = [
+  // Danh sách lịch chiếu (demo)
+  dsLichChieu: ShowTime[] = [
     {
-      phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
-      batDau: '2025/03/12 - 08:20',
-      ketThuc: '2025/03/12 - 10:20',
-      trangThai: 'Sắp chiếu'
+      movieId: '67cf93ab853699acbdff6fb3',
+      showtimeStatus: 1,
+      startTime: '2025-03-15T14:30:00Z',
+      endTime: '2025-03-15T16:30:00Z',
+      price: 100000
     },
     {
-      phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
-      batDau: '2025/03/12 - 08:20',
-      ketThuc: '2025/03/12 - 10:20',
-      trangThai: 'Sắp chiếu'
-    },
-    {
-      phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
-      batDau: '2025/03/12 - 08:20',
-      ketThuc: '2025/03/12 - 10:20',
-      trangThai: 'Đang chiếu'
+      movieId: '67cf93ab853699acbdff6fb3',
+      showtimeStatus: 2,
+      startTime: '2025-03-16T10:00:00Z',
+      endTime: '2025-03-16T12:00:00Z',
+      price: 120000
     }
   ];
 
-  // Giả lập phân trang
-  currentPage: number = 1;
-  totalPages: number = 3; // Ví dụ tạm
-
-  // Quản lý dialog thêm/sửa
+  // Trạng thái cho modal Thêm/Sửa
   isMainModalOpen: boolean = false;
-  isEditing: boolean = false; // true: sửa, false: thêm
+  isEditing: boolean = false;
 
-  // Lưu dữ liệu của form thêm/sửa
-  lichChieuForm: LichChieu = {
-    phim: '',
-    rapChieu: '',
-    phongChieu: '',
-    batDau: '',
-    ketThuc: '',
-    trangThai: ''
+  // Form cho modal Thêm/Sửa
+  lichChieuForm: ShowTime = {
+    movieId: '',
+    showtimeStatus: 1,
+    startTime: '',
+    endTime: '',
+    price: 0
   };
 
   // Quản lý dialog xóa
   isDeleteModalOpen: boolean = false;
-  lichChieuDangXoa: LichChieu | null = null;
+  lichChieuDangXoa: ShowTime | null = null;
   deletePassword: string = '';
 
   constructor() {}
 
   ngOnInit(): void {}
 
+  // Tìm kiếm
   onSearch(): void {
-    // Logic tìm kiếm
+    // Logic tìm kiếm (ví dụ: filter dsLichChieu theo movieId)
     console.log('Search term:', this.searchTerm);
+  }
+
+  // Chuyển số trạng thái => text hiển thị
+  getStatusText(status: number): string {
+    switch (status) {
+      case 1:
+        return 'Sắp chiếu';
+      case 2:
+        return 'Đang chiếu';
+      default:
+        return 'Không xác định';
+    }
   }
 
   // Mở dialog Thêm
@@ -83,20 +82,19 @@ export class LichChieuComponent implements OnInit {
     this.isMainModalOpen = true;
     // Reset form
     this.lichChieuForm = {
-      phim: '',
-      rapChieu: '',
-      phongChieu: '',
-      batDau: '',
-      ketThuc: '',
-      trangThai: ''
+      movieId: '',
+      showtimeStatus: 1,
+      startTime: '',
+      endTime: '',
+      price: 0
     };
   }
 
   // Mở dialog Sửa
-  openEditModal(lich: LichChieu): void {
+  openEditModal(lich: ShowTime): void {
     this.isEditing = true;
     this.isMainModalOpen = true;
-    // Copy dữ liệu lịch cần sửa vào form
+    // Copy dữ liệu vào form
     this.lichChieuForm = { ...lich };
   }
 
@@ -105,30 +103,28 @@ export class LichChieuComponent implements OnInit {
     this.isMainModalOpen = false;
   }
 
-  // Lưu dữ liệu khi bấm LƯU (cả Thêm & Sửa)
+  // Lưu dữ liệu khi bấm LƯU
   saveSchedule(): void {
     if (this.isEditing) {
-      // Trường hợp Sửa
-      // Tìm index của lichChieuForm trong dsLichChieu để cập nhật
+      // Trường hợp Sửa: tìm index theo movieId + startTime (chẳng hạn)
       const idx = this.dsLichChieu.findIndex(
-        (item) => item.phim === this.lichChieuForm.phim &&
-                  item.rapChieu === this.lichChieuForm.rapChieu &&
-                  item.phongChieu === this.lichChieuForm.phongChieu
+        (item) =>
+          item.movieId === this.lichChieuForm.movieId &&
+          item.startTime === this.lichChieuForm.startTime
       );
       if (idx !== -1) {
         this.dsLichChieu[idx] = { ...this.lichChieuForm };
       }
     } else {
-      // Trường hợp Thêm mới
+      // Thêm mới
       this.dsLichChieu.push({ ...this.lichChieuForm });
     }
-
     // Đóng dialog
     this.isMainModalOpen = false;
   }
 
   // Mở dialog Xoá
-  openDeleteModal(lich: LichChieu): void {
+  openDeleteModal(lich: ShowTime): void {
     this.lichChieuDangXoa = lich;
     this.deletePassword = '';
     this.isDeleteModalOpen = true;
@@ -141,10 +137,8 @@ export class LichChieuComponent implements OnInit {
 
   // Xác nhận xóa
   confirmDelete(): void {
-    // Kiểm tra mật khẩu. Giả sử yêu cầu nhập "hiendz"
     if (this.deletePassword === 'hiendz') {
       if (this.lichChieuDangXoa) {
-        // Xóa khỏi dsLichChieu
         this.dsLichChieu = this.dsLichChieu.filter(
           (item) => item !== this.lichChieuDangXoa
         );
@@ -156,20 +150,12 @@ export class LichChieuComponent implements OnInit {
   }
 
   // Hành động Sửa (icon)
-  editSchedule(lich: LichChieu): void {
+  editSchedule(lich: ShowTime): void {
     this.openEditModal(lich);
   }
 
   // Hành động Xoá (icon)
-  deleteSchedule(lich: LichChieu): void {
+  deleteSchedule(lich: ShowTime): void {
     this.openDeleteModal(lich);
-  }
-
-  // Chuyển trang
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      // Gọi API hoặc logic lấy dữ liệu trang `page`
-    }
   }
 }
