@@ -1,11 +1,10 @@
 export interface IShowtimesDto {
-  // Các trường cần có, tương ứng dữ liệu server trả về
-  id?: string;             // nếu server trả về _id, có thể map vào đây
-  movieId: string;         // ánh xạ từ "movie_id"
-  showtimeStatus: number;  // ánh xạ từ "showtime_status"
-  startTime: string;       // ánh xạ từ "start_time"
-  endTime: string;         // ánh xạ từ "end_time"
-  price: number;           // ánh xạ từ "price"
+  id?: string;             // map từ _id trong MongoDB
+  movieId: string;         // map từ "movie_id"
+  showtimeStatus: number;  // map từ "showtime_status"
+  startTime: string;       // map từ "start_time"
+  endTime: string;         // map từ "end_time"
+  price: number;           // map từ "price"
 }
 
 export class ShowtimesDto implements IShowtimesDto {
@@ -27,11 +26,11 @@ export class ShowtimesDto implements IShowtimesDto {
   }
 
   /**
-   * Khởi tạo dữ liệu từ đối tượng JSON trả về từ server
+   * Gán dữ liệu từ object JSON (thường trả về từ server)
    */
   init(_data?: any) {
     if (_data) {
-      // Nếu server có trả về _id (hoặc id), bạn có thể gán vào this.id
+      // Nếu server trả về _id
       this.id = _data["_id"] || _data["id"];
       this.movieId = _data["movie_id"];
       this.showtimeStatus = _data["showtime_status"];
@@ -42,7 +41,7 @@ export class ShowtimesDto implements IShowtimesDto {
   }
 
   /**
-   * Tạo đối tượng ShowtimesDto từ một object JS (thường là JSON)
+   * Tạo ShowtimesDto từ một object JS
    */
   static fromJS(data: any): ShowtimesDto {
     data = typeof data === 'object' ? data : {};
@@ -52,11 +51,10 @@ export class ShowtimesDto implements IShowtimesDto {
   }
 
   /**
-   * Chuyển đổi instance hiện tại thành object để gửi lên server
+   * Chuyển đối tượng hiện tại thành object để gửi lên server
    */
   toJSON(data?: any) {
     data = typeof data === 'object' ? data : {};
-    // Nếu cần gửi kèm _id (hoặc id) cho server, bạn có thể gán:
     data["_id"] = this.id;
     data["movie_id"] = this.movieId;
     data["showtime_status"] = this.showtimeStatus;
@@ -67,7 +65,7 @@ export class ShowtimesDto implements IShowtimesDto {
   }
 
   /**
-   * Tạo bản sao của đối tượng hiện tại
+   * Tạo bản sao đối tượng hiện tại
    */
   clone(): ShowtimesDto {
     return ShowtimesDto.fromJS(this.toJSON());
