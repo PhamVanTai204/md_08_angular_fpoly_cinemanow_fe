@@ -1,134 +1,133 @@
 import { Component, OnInit } from '@angular/core';
-
-interface LichChieu {
-  phim: string;
-  rapChieu: string;
-  phongChieu: string;
-  batDau: string;
-  ketThuc: string;
-  trangThai: string;
-}
+import { ShowtimesService } from '../../../shared/services/showtimes.service';
+import { ShowtimesDto } from '../../../shared/dtos/showtimesDto.dto';
 
 @Component({
   selector: 'app-lich-chieu',
-  standalone: false,
   templateUrl: './lich-chieu.component.html',
-  styleUrls: ['./lich-chieu.component.css'] // Lưu ý: dạng mảng styleUrls
+  styleUrls: ['./lich-chieu.component.css'],
+  standalone: false // <--- Quan trọng: không phải standalone
 })
 export class LichChieuComponent implements OnInit {
   searchTerm: string = '';
 
-  dsLichChieu: LichChieu[] = [
-    {
-      phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
-      batDau: '2025/03/12 - 08:20',
-      ketThuc: '2025/03/12 - 10:20',
-      trangThai: 'Sắp chiếu'
-    },
-    {
-      phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
-      batDau: '2025/03/12 - 08:20',
-      ketThuc: '2025/03/12 - 10:20',
-      trangThai: 'Sắp chiếu'
-    },
-    {
-      phim: 'Trạng Quỳnh',
-      rapChieu: 'Cinema HN',
-      phongChieu: 'P6',
-      batDau: '2025/03/12 - 08:20',
-      ketThuc: '2025/03/12 - 10:20',
-      trangThai: 'Đang chiếu'
-    }
-  ];
+  // Danh sách lịch chiếu
+  dsLichChieu: ShowtimesDto[] = [];
 
-  // Giả lập phân trang
-  currentPage: number = 1;
-  totalPages: number = 3; // Ví dụ tạm
-
-  // Quản lý dialog thêm/sửa
+  // Trạng thái cho modal Thêm/Sửa
   isMainModalOpen: boolean = false;
-  isEditing: boolean = false; // true: sửa, false: thêm
+  isEditing: boolean = false;
 
-  // Lưu dữ liệu của form thêm/sửa
-  lichChieuForm: LichChieu = {
-    phim: '',
-    rapChieu: '',
-    phongChieu: '',
-    batDau: '',
-    ketThuc: '',
-    trangThai: ''
-  };
+  // Form cho modal Thêm/Sửa
+  lichChieuForm: ShowtimesDto = new ShowtimesDto();
 
   // Quản lý dialog xóa
   isDeleteModalOpen: boolean = false;
-  lichChieuDangXoa: LichChieu | null = null;
+  lichChieuDangXoa: ShowtimesDto | null = null;
   deletePassword: string = '';
 
-  constructor() {}
+  constructor(private showtimesService: ShowtimesService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadShowtimes();
+  }
 
+  /**
+   * Lấy danh sách showtimes từ server
+   */
+  loadShowtimes(): void {
+    this.showtimesService.getAllShowtimes().subscribe({
+      next: (data) => {
+        this.dsLichChieu = data;
+      },
+      error: (err) => {
+        console.error('Lỗi khi lấy showtimes:', err);
+      }
+    });
+  }
+
+  // Tìm kiếm
   onSearch(): void {
-    // Logic tìm kiếm
     console.log('Search term:', this.searchTerm);
+    // Tuỳ bạn xử lý filter client-side hoặc gọi API search
+  }
+
+  // Chuyển số trạng thái => text hiển thị
+  getStatusText(status: number): string {
+    switch (status) {
+      case 1:
+        return 'Sắp chiếu';
+      case 2:
+        return 'Đang chiếu';
+      default:
+        return 'Không xác định';
+    }
   }
 
   // Mở dialog Thêm
   openAddModal(): void {
     this.isEditing = false;
     this.isMainModalOpen = true;
-    // Reset form
-    this.lichChieuForm = {
-      phim: '',
-      rapChieu: '',
-      phongChieu: '',
-      batDau: '',
-      ketThuc: '',
-      trangThai: ''
-    };
+    this.lichChieuForm = new ShowtimesDto({
+      movieId: '',
+      showtimeStatus: 1,
+      startTime: '',
+      endTime: '',
+      price: 0
+    });
   }
 
   // Mở dialog Sửa
-  openEditModal(lich: LichChieu): void {
+  openEditModal(lich: ShowtimesDto): void {
     this.isEditing = true;
     this.isMainModalOpen = true;
-    // Copy dữ liệu lịch cần sửa vào form
-    this.lichChieuForm = { ...lich };
+    this.lichChieuForm = lich.clone();
   }
 
-  // Đóng dialog Thêm/Sửa
+  // Đóng dialog
   closeMainModal(): void {
     this.isMainModalOpen = false;
   }
 
-  // Lưu dữ liệu khi bấm LƯU (cả Thêm & Sửa)
+  // Lưu khi bấm "LƯU"
   saveSchedule(): void {
     if (this.isEditing) {
-      // Trường hợp Sửa
-      // Tìm index của lichChieuForm trong dsLichChieu để cập nhật
-      const idx = this.dsLichChieu.findIndex(
-        (item) => item.phim === this.lichChieuForm.phim &&
-                  item.rapChieu === this.lichChieuForm.rapChieu &&
-                  item.phongChieu === this.lichChieuForm.phongChieu
-      );
-      if (idx !== -1) {
-        this.dsLichChieu[idx] = { ...this.lichChieuForm };
+      // Update
+      if (!this.lichChieuForm.id) {
+        alert('Không tìm thấy ID!');
+        return;
       }
+      this.showtimesService
+        .updateShowtime(this.lichChieuForm.id, this.lichChieuForm)
+        .subscribe({
+          next: () => {
+            alert('Cập nhật thành công!');
+            this.isMainModalOpen = false;
+            this.loadShowtimes();
+          },
+          error: (err) => {
+            console.error('Lỗi update:', err);
+            alert('Lỗi cập nhật!');
+          }
+        });
     } else {
-      // Trường hợp Thêm mới
-      this.dsLichChieu.push({ ...this.lichChieuForm });
+      // Thêm
+      this.showtimesService.addShowtime(this.lichChieuForm).subscribe({
+        next: () => {
+          alert('Thêm thành công!');
+          this.isMainModalOpen = false;
+          this.loadShowtimes();
+        },
+        error: (err) => {
+          console.error('Lỗi thêm:', err);
+          alert('Lỗi thêm!');
+        }
+      });
     }
-
-    // Đóng dialog
-    this.isMainModalOpen = false;
   }
 
   // Mở dialog Xoá
-  openDeleteModal(lich: LichChieu): void {
+  openDeleteModal(lich: ShowtimesDto): void {
     this.lichChieuDangXoa = lich;
     this.deletePassword = '';
     this.isDeleteModalOpen = true;
@@ -139,37 +138,36 @@ export class LichChieuComponent implements OnInit {
     this.isDeleteModalOpen = false;
   }
 
-  // Xác nhận xóa
+  // Xác nhận xoá
   confirmDelete(): void {
-    // Kiểm tra mật khẩu. Giả sử yêu cầu nhập "hiendz"
     if (this.deletePassword === 'hiendz') {
-      if (this.lichChieuDangXoa) {
-        // Xóa khỏi dsLichChieu
-        this.dsLichChieu = this.dsLichChieu.filter(
-          (item) => item !== this.lichChieuDangXoa
-        );
+      if (!this.lichChieuDangXoa?.id) {
+        alert('Không tìm thấy ID để xoá!');
+        return;
       }
-      this.isDeleteModalOpen = false;
+      this.showtimesService.deleteShowtime(this.lichChieuDangXoa.id).subscribe({
+        next: () => {
+          alert('Xoá thành công!');
+          this.isDeleteModalOpen = false;
+          this.loadShowtimes();
+        },
+        error: (err) => {
+          console.error('Lỗi xoá:', err);
+          alert('Lỗi xoá!');
+        }
+      });
     } else {
       alert('Mật khẩu không đúng!');
     }
   }
 
   // Hành động Sửa (icon)
-  editSchedule(lich: LichChieu): void {
+  editSchedule(lich: ShowtimesDto): void {
     this.openEditModal(lich);
   }
 
   // Hành động Xoá (icon)
-  deleteSchedule(lich: LichChieu): void {
+  deleteSchedule(lich: ShowtimesDto): void {
     this.openDeleteModal(lich);
-  }
-
-  // Chuyển trang
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      // Gọi API hoặc logic lấy dữ liệu trang `page`
-    }
   }
 }
