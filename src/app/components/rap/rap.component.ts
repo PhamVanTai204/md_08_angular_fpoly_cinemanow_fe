@@ -1,17 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-
-interface IRoom {
-  name: string;      // Tên phòng
-  type: string;      // Loại phòng (2D, 3D, IMAX, ...)
-  status: string;    // ONLINE / OFFLINE
-}
-
-interface IRap {
-  name: string;      // Tên rạp
-  address: string;   // Địa chỉ
-  city: string;      // Thành phố
-  rooms: IRoom[];    // Danh sách phòng
-}
+import { CinemasService } from '../../../shared/services/cinemas.service';
+import { CinemaDto } from '../../../shared/dtos/cinemasDto.dto';
 
 @Component({
   selector: 'app-rap',
@@ -20,118 +9,97 @@ interface IRap {
   styleUrls: ['./rap.component.css']
 })
 export class RapComponent implements OnInit {
-  // ======= DỮ LIỆU MẪU =======
-  rapList: IRap[] = [
-    {
-      name: 'Cinema HÀ NỘI',
-      address: 'Số 8 đường Phạm Hùng, Nam Từ Liêm',
-      city: 'HÀ NỘI',
-      rooms: [
-        { name: 'Phòng 1', type: '2D', status: 'ONLINE' },
-        { name: 'Phòng 2', type: '3D', status: 'OFFLINE' }
-      ]
-    },
-    {
-      name: 'Cinema HỒ CHÍ MINH',
-      address: 'Số 20 đường Cách Mạng Tháng 8, Quận 1',
-      city: 'HỒ CHÍ MINH',
-      rooms: [
-        { name: 'Phòng 1', type: '2D', status: 'ONLINE' }
-      ]
-    },
-    {
-      name: 'Cinema ĐÀ NẴNG',
-      address: 'Số 6 đường Trần Hưng Đạo, Phường 5',
-      city: 'ĐÀ NẴNG',
-      rooms: [
-        { name: 'Phòng 1', type: '3D', status: 'ONLINE' }
-      ]
-    }
-  ];
+  rapList: CinemaDto[] = [];
 
-  // ======= BIẾN CHO DIALOG THÊM RẠP =======
+  // Modal thêm
   isAddModalOpen = false;
-  newRap: IRap = {
-    name: '',
-    address: '',
-    city: '',
-    rooms: []
-  };
+  newRap: CinemaDto = new CinemaDto();
 
-  // ======= BIẾN CHO DIALOG CHỈNH SỬA RẠP =======
+  // Modal sửa
   isEditModalOpen = false;
-  editRapIndex = -1;              // Lưu vị trí rạp đang sửa trong rapList
-  editRapData: IRap = {
-    name: '',
-    address: '',
-    city: '',
-    rooms: []
-  };
+  editRapIndex: number = -1;
+  editRapData: CinemaDto = new CinemaDto();
 
-  constructor() {}
+  constructor(private cinemasService: CinemasService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.getAllRaps();
+  }
 
-  // =========================
-  //        THÊM RẠP
-  // =========================
+  // ====== Lấy danh sách rạp ======
+  getAllRaps(): void {
+    this.cinemasService.getCinemas().subscribe({
+      next: (data) => {
+        this.rapList = data;
+      },
+      error: (err) => {
+        console.error('Error fetching cinemas:', err);
+      }
+    });
+  }
+
+  // ====== Thêm rạp ======
   openAddModal(): void {
     this.isAddModalOpen = true;
+    this.newRap = new CinemaDto();
   }
 
   closeAddModal(): void {
     this.isAddModalOpen = false;
-    this.newRap = { name: '', address: '', city: '', rooms: [] };
   }
 
   saveNewRap(): void {
-    // Thêm rạp mới vào danh sách
-    this.rapList.push({ ...this.newRap });
-    this.closeAddModal();
+    this.cinemasService.addCinema(this.newRap).subscribe({
+      next: (addedCinema: CinemaDto) => {
+        // Thêm vào danh sách hiện có
+        this.rapList = [...this.rapList, addedCinema];
+        // Đóng modal, reset form
+        this.isAddModalOpen = false;
+        this.newRap = new CinemaDto();
+      },
+      error: (err) => console.error('Error adding cinema:', err)
+    });
   }
 
-  // =========================
-  //      CHỈNH SỬA RẠP
-  // =========================
-  openEditModal(rap: IRap, index: number): void {
+  // ====== Sửa rạp ======
+  openEditModal(rap: CinemaDto, index: number): void {
     this.editRapIndex = index;
-    // Deep copy dữ liệu để chỉnh sửa, tránh thay đổi trực tiếp
-    this.editRapData = JSON.parse(JSON.stringify(rap));
+    this.editRapData = rap.clone(); // Tạo bản sao để tránh sửa trực tiếp
     this.isEditModalOpen = true;
   }
 
   closeEditModal(): void {
     this.isEditModalOpen = false;
     this.editRapIndex = -1;
-    this.editRapData = { name: '', address: '', city: '', rooms: [] };
   }
 
   saveEditRap(): void {
-    // Ghi đè rạp đã chỉnh sửa vào rapList
-    this.rapList[this.editRapIndex] = JSON.parse(JSON.stringify(this.editRapData));
-    this.closeEditModal();
-  }
-
-  addRoom(): void {
-    // Thêm 1 phòng trống khi bấm "+ THÊM PHÒNG"
-    this.editRapData.rooms.push({
-      name: '',
-      type: '',
-      status: 'ONLINE'
+    this.cinemasService.editCinema(this.editRapData.id, this.editRapData).subscribe({
+      next: (updatedCinema: CinemaDto) => {
+        if (this.editRapIndex > -1) {
+          // Thay thế phần tử trong mảng
+          this.rapList = this.rapList.map((rap, i) =>
+            i === this.editRapIndex ? updatedCinema : rap
+          );
+        }
+        this.isEditModalOpen = false;
+        this.editRapIndex = -1;
+      },
+      error: (err) => console.error('Error updating cinema:', err)
     });
   }
 
-  // =========================
-  //          XÓA RẠP
-  // =========================
-  deleteRap(rap: IRap): void {
-    const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa rạp "${rap.name}"?`);
-    if (confirmDelete) {
-      // Tìm vị trí rạp và xóa khỏi rapList
-      const index = this.rapList.indexOf(rap);
-      if (index !== -1) {
-        this.rapList.splice(index, 1);
-      }
-    }
+  // ====== Xóa rạp ======
+  deleteRap(rap: CinemaDto): void {
+    const confirmDelete = confirm(`Bạn có chắc muốn xóa rạp: ${rap.cinemaName}?`);
+    if (!confirmDelete) return;
+
+    this.cinemasService.deleteCinema(rap.id).subscribe({
+      next: () => {
+        // Loại bỏ rạp khỏi danh sách
+        this.rapList = this.rapList.filter(item => item.id !== rap.id);
+      },
+      error: (err) => console.error('Error deleting cinema:', err)
+    });
   }
 }
