@@ -21,6 +21,8 @@ import { NguoiDungComponent } from './components/nguoi-dung/nguoi-dung.component
 import { HttpClientModule } from '@angular/common/http';
 import { BannerComponent } from './components/banner/banner.component';
 import { GiaodichComponent } from './components/giaodich/giaodich.component';
+import { ComboComponent } from './components/combo/combo.component';
+import { VoucherComponent } from './components/voucher/voucher.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +41,8 @@ import { GiaodichComponent } from './components/giaodich/giaodich.component';
     NguoiDungComponent,
     BannerComponent,
     GiaodichComponent,
+    ComboComponent,
+    VoucherComponent,
 
   ],
   imports: [
