@@ -14,6 +14,9 @@ const routes: Routes = [
 
   { path: 'lichchieu', loadChildren: () => import('./components/lich-chieu/lich-chieu.module').then(m => m.LichChieuModule) },
   { path: 'nguoidung', loadChildren: () => import('./components/nguoi-dung/nguoi-dung.module').then(m => m.NguoiDungModule) },
+  { path: 'giaodich', loadChildren: () => import('./components/giaodich/giaodich.module').then(m => m.GiaodichModule) },
+  { path: 'banner', loadChildren: () => import('./components/banner/banner.module').then(m => m.BannerModule) },
+
   { path: '', redirectTo: 'login', pathMatch: 'full' }, // Mặc định vào trang "Thể loại phim"
 ];
 @NgModule({

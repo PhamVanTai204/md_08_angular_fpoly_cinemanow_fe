@@ -19,6 +19,8 @@ import { ThongKeComponent } from './components/thong-ke/thong-ke.component';
 import { NhanVienComponent } from './components/nhan-vien/nhan-vien.component';
 import { NguoiDungComponent } from './components/nguoi-dung/nguoi-dung.component';
 import { HttpClientModule } from '@angular/common/http';
+import { BannerComponent } from './components/banner/banner.component';
+import { GiaodichComponent } from './components/giaodich/giaodich.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +37,8 @@ import { HttpClientModule } from '@angular/common/http';
     ThongKeComponent,
     NhanVienComponent,
     NguoiDungComponent,
+    BannerComponent,
+    GiaodichComponent,
 
   ],
   imports: [
