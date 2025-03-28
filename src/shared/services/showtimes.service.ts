@@ -8,11 +8,12 @@ import { catchError, throwError, Observable, map } from 'rxjs';
 })
 export class ShowtimesService {
   // Các endpoint (thay đổi nếu cần cho đúng backend)
-  private getAllUrl         = 'http://127.0.0.1:3000/showtimes/getAll';
-  private getByIdUrl        = 'http://127.0.0.1:3000/showtimes/getById';
-  private addShowTimeUrl    = 'http://127.0.0.1:3000/showtimes/addShowTime';
-  private updateShowTimeUrl = 'http://127.0.0.1:3000/showtimes/updateShowTime';
-  private deleteShowTimeUrl = 'http://127.0.0.1:3000/showtimes/deleteShowTime';
+  private getAllUrl         = 'http://127.0.0.1:3000/showtimes/get-all';
+  private getByIdUrl        = 'http://127.0.0.1:3000/showtimes/get-by-id';
+  private addShowTimeUrl    = 'http://127.0.0.1:3000/showtimes/create';
+  private updateShowTimeUrl = 'http://127.0.0.1:3000/showtimes/update';
+  private deleteShowTimeUrl = 'http://127.0.0.1:3000/showtimes/delete';
+  private searchShowtimesUrl = 'http://127.0.0.1:3000/showtimes/search'; // New endpoint for search
 
   constructor(private http: HttpClient) {}
 
@@ -29,8 +30,36 @@ export class ShowtimesService {
         }
         // Nếu server trả về mảng thẳng, chỉ cần:
         // return response.map((item: any) => ShowtimesDto.fromJS(item));
-
+        
         throw new Error('Failed to fetch showtimes');
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Tìm kiếm showtimes theo movie_id
+   */
+  searchShowtimes(movieId: string): Observable<ShowtimesDto[]> {
+    return this.http.get<any>(`${this.searchShowtimesUrl}?movie_id=${movieId}`).pipe(
+      map(response => {
+        // Handle response based on your API structure
+        if (response && response.code === 200 && Array.isArray(response.data)) {
+          return response.data.map((item: any) => ShowtimesDto.fromJS(item));
+        }
+        
+        // Alternative response format handling
+        if (Array.isArray(response)) {
+          return response.map((item: any) => ShowtimesDto.fromJS(item));
+        }
+        
+        // If response contains films array property
+        if (response && Array.isArray(response.showtimes)) {
+          return response.showtimes.map((item: any) => ShowtimesDto.fromJS(item));
+        }
+        
+        console.error('Unexpected response format:', response);
+        return [];
       }),
       catchError(this.handleError)
     );
@@ -44,7 +73,7 @@ export class ShowtimesService {
       map(response => {
         // Giả sử server trả về object gốc
         return ShowtimesDto.fromJS(response);
-
+        
         // Hoặc nếu server trả về { code: 200, data: {...} }:
         // return ShowtimesDto.fromJS(response.data);
       }),

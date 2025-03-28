@@ -6,7 +6,7 @@ import { ShowtimesDto } from '../../../shared/dtos/showtimesDto.dto';
   selector: 'app-lich-chieu',
   templateUrl: './lich-chieu.component.html',
   styleUrls: ['./lich-chieu.component.css'],
-  standalone: false // <--- Quan trọng: không phải standalone
+  standalone: false
 })
 export class LichChieuComponent implements OnInit {
   searchTerm: string = '';
@@ -49,18 +49,18 @@ export class LichChieuComponent implements OnInit {
   // Tìm kiếm
   onSearch(): void {
     console.log('Search term:', this.searchTerm);
-    // Tuỳ bạn xử lý filter client-side hoặc gọi API search
-  }
-
-  // Chuyển số trạng thái => text hiển thị
-  getStatusText(status: number): string {
-    switch (status) {
-      case 1:
-        return 'Sắp chiếu';
-      case 2:
-        return 'Đang chiếu';
-      default:
-        return 'Không xác định';
+    // Implement search by movie_id
+    if (this.searchTerm) {
+      this.showtimesService.searchShowtimes(this.searchTerm).subscribe({
+        next: (data) => {
+          this.dsLichChieu = data;
+        },
+        error: (err) => {
+          console.error('Lỗi khi tìm kiếm:', err);
+        }
+      });
+    } else {
+      this.loadShowtimes();
     }
   }
 
@@ -69,11 +69,12 @@ export class LichChieuComponent implements OnInit {
     this.isEditing = false;
     this.isMainModalOpen = true;
     this.lichChieuForm = new ShowtimesDto({
-      movieId: '',
-      showtimeStatus: 1,
-      startTime: '',
-      endTime: '',
-      price: 0
+      showtime_id: '',
+      movie_id: '',
+      room_id: '',
+      show_date: new Date().toISOString().split('T')[0],
+      start_time: '',
+      end_time: ''
     });
   }
 
@@ -91,6 +92,14 @@ export class LichChieuComponent implements OnInit {
 
   // Lưu khi bấm "LƯU"
   saveSchedule(): void {
+    // Validate form
+    if (!this.lichChieuForm.movie_id || !this.lichChieuForm.room_id ||
+        !this.lichChieuForm.show_date || !this.lichChieuForm.start_time || 
+        !this.lichChieuForm.end_time) {
+      alert('Vui lòng điền đầy đủ thông tin!');
+      return;
+    }
+
     if (this.isEditing) {
       // Update
       if (!this.lichChieuForm.id) {

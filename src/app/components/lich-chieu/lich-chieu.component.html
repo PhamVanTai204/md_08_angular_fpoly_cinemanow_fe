@@ -23,35 +23,28 @@
     <table class="min-w-full border-collapse border border-gray-200 text-sm">
       <thead class="bg-gray-100">
         <tr>
+          <th class="border border-gray-200 px-4 py-2 text-left">Mã Lịch Chiếu</th>
           <th class="border border-gray-200 px-4 py-2 text-left">Mã Phim</th>
-          <th class="border border-gray-200 px-4 py-2 text-left">Bắt Đầu</th>
-          <th class="border border-gray-200 px-4 py-2 text-left">Kết Thúc</th>
-          <th class="border border-gray-200 px-4 py-2 text-left">Trạng Thái</th>
-          <th class="border border-gray-200 px-4 py-2 text-left">Giá</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Mã Phòng</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Ngày Chiếu</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Giờ Bắt Đầu</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Giờ Kết Thúc</th>
           <th class="border border-gray-200 px-4 py-2 text-center">Hành Động</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let lich of dsLichChieu">
-          <td class="border border-gray-200 px-4 py-2">{{ lich.movieId }}</td>
+          <td class="border border-gray-200 px-4 py-2">{{ lich.showtime_id }}</td>
+          <td class="border border-gray-200 px-4 py-2">{{ lich.movie_id }}</td>
+          <td class="border border-gray-200 px-4 py-2">{{ lich.room_id }}</td>
           <td class="border border-gray-200 px-4 py-2">
-            {{ lich.startTime | date: 'yyyy-MM-dd HH:mm' }}
+            {{ lich.show_date | date: 'yyyy-MM-dd' }}
           </td>
           <td class="border border-gray-200 px-4 py-2">
-            {{ lich.endTime | date: 'yyyy-MM-dd HH:mm' }}
+            {{ lich.start_time | date: 'HH:mm' }}
           </td>
           <td class="border border-gray-200 px-4 py-2">
-            <span
-              [ngClass]="{
-                'text-green-500': lich.showtimeStatus === 1,
-                'text-red-500': lich.showtimeStatus === 2
-              }"
-            >
-              {{ getStatusText(lich.showtimeStatus) }}
-            </span>
-          </td>
-          <td class="border border-gray-200 px-4 py-2">
-            {{ lich.price | currency:'VND':'symbol':'1.0-0' }}
+            {{ lich.end_time | date: 'HH:mm' }}
           </td>
           <td class="border border-gray-200 px-4 py-2 text-center">
             <!-- Nút Sửa -->
@@ -166,50 +159,63 @@
 
     <!-- Body: Form -->
     <div class="p-4 space-y-4">
-      <!-- movieId -->
+      <!-- showtime_id (auto-generated, disabled for new entries) -->
+      <div *ngIf="isEditing">
+        <label class="block mb-1 font-medium">Mã lịch chiếu</label>
+        <input
+          [(ngModel)]="lichChieuForm.showtime_id"
+          type="text"
+          disabled
+          class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2"
+        />
+      </div>
+      
+      <!-- movie_id -->
       <div>
         <label class="block mb-1 font-medium">Mã phim</label>
         <input
-          [(ngModel)]="lichChieuForm.movieId"
+          [(ngModel)]="lichChieuForm.movie_id"
           type="text"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
         />
       </div>
-      <!-- startTime -->
+      
+      <!-- room_id -->
       <div>
-        <label class="block mb-1 font-medium">Thời gian bắt đầu</label>
+        <label class="block mb-1 font-medium">Mã phòng</label>
         <input
-          [(ngModel)]="lichChieuForm.startTime"
+          [(ngModel)]="lichChieuForm.room_id"
           type="text"
-          placeholder="yyyy-MM-dd HH:mm"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
         />
       </div>
-      <!-- endTime -->
+      
+      <!-- show_date -->
       <div>
-        <label class="block mb-1 font-medium">Thời gian kết thúc</label>
+        <label class="block mb-1 font-medium">Ngày chiếu</label>
         <input
-          [(ngModel)]="lichChieuForm.endTime"
-          type="text"
-          placeholder="yyyy-MM-dd HH:mm"
+          [(ngModel)]="lichChieuForm.show_date"
+          type="date"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
         />
       </div>
-      <!-- showtimeStatus -->
+      
+      <!-- start_time -->
       <div>
-        <label class="block mb-1 font-medium">Trạng thái (1=Sắp,2=Đang...)</label>
+        <label class="block mb-1 font-medium">Giờ bắt đầu</label>
         <input
-          [(ngModel)]="lichChieuForm.showtimeStatus"
-          type="number"
+          [(ngModel)]="lichChieuForm.start_time"
+          type="time"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
         />
       </div>
-      <!-- price -->
+      
+      <!-- end_time -->
       <div>
-        <label class="block mb-1 font-medium">Giá</label>
+        <label class="block mb-1 font-medium">Giờ kết thúc</label>
         <input
-          [(ngModel)]="lichChieuForm.price"
-          type="number"
+          [(ngModel)]="lichChieuForm.end_time"
+          type="time"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
         />
       </div>
@@ -272,8 +278,8 @@
     <!-- Body -->
     <div class="p-4 space-y-4">
       <p>
-        Bạn có chắc muốn xóa lịch chiếu có mã phim
-        <strong>"{{ lichChieuDangXoa?.movieId }}"</strong>?
+        Bạn có chắc muốn xóa lịch chiếu có mã
+        <strong>"{{ lichChieuDangXoa?.showtime_id }}"</strong>?
       </p>
       <p class="text-sm text-gray-600">
         Nhập mật khẩu <strong>hiendz</strong> để xác nhận:
