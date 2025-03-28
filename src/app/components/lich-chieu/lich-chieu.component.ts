@@ -6,24 +6,20 @@ import { ShowtimesDto } from '../../../shared/dtos/showtimesDto.dto';
   selector: 'app-lich-chieu',
   templateUrl: './lich-chieu.component.html',
   styleUrls: ['./lich-chieu.component.css'],
-  standalone: false // <--- Quan trọng: không phải standalone
+  standalone: false
 })
 export class LichChieuComponent implements OnInit {
   searchTerm: string = '';
+  dsShowtimes: ShowtimesDto[] = [];
 
-  // Danh sách lịch chiếu
-  dsLichChieu: ShowtimesDto[] = [];
-
-  // Trạng thái cho modal Thêm/Sửa
+  // Quản lý modal Thêm/Sửa
   isMainModalOpen: boolean = false;
   isEditing: boolean = false;
+  showtimeForm: ShowtimesDto = new ShowtimesDto();
 
-  // Form cho modal Thêm/Sửa
-  lichChieuForm: ShowtimesDto = new ShowtimesDto();
-
-  // Quản lý dialog xóa
+  // Quản lý modal Xoá
   isDeleteModalOpen: boolean = false;
-  lichChieuDangXoa: ShowtimesDto | null = null;
+  showtimeDangXoa: ShowtimesDto | null = null;
   deletePassword: string = '';
 
   constructor(private showtimesService: ShowtimesService) {}
@@ -32,59 +28,45 @@ export class LichChieuComponent implements OnInit {
     this.loadShowtimes();
   }
 
-  /**
-   * Lấy danh sách showtimes từ server
-   */
   loadShowtimes(): void {
     this.showtimesService.getAllShowtimes().subscribe({
       next: (data) => {
-        this.dsLichChieu = data;
+        this.dsShowtimes = data;
       },
       error: (err) => {
-        console.error('Lỗi khi lấy showtimes:', err);
+        console.error('Error fetching showtimes:', err);
       }
     });
   }
 
-  // Tìm kiếm
   onSearch(): void {
     console.log('Search term:', this.searchTerm);
-    // Tuỳ bạn xử lý filter client-side hoặc gọi API search
+    // Tuỳ bạn muốn filter client-side hay gọi API search
   }
 
-  // Chuyển số trạng thái => text hiển thị
-  getStatusText(status: number): string {
-    switch (status) {
-      case 1:
-        return 'Sắp chiếu';
-      case 2:
-        return 'Đang chiếu';
-      default:
-        return 'Không xác định';
-    }
-  }
-
-  // Mở dialog Thêm
+  // Mở modal Thêm
   openAddModal(): void {
     this.isEditing = false;
     this.isMainModalOpen = true;
-    this.lichChieuForm = new ShowtimesDto({
+    // Reset form
+    this.showtimeForm = new ShowtimesDto({
+      showtimeId: '',
       movieId: '',
-      showtimeStatus: 1,
+      roomId: '',
       startTime: '',
       endTime: '',
-      price: 0
+      showDate: ''
     });
   }
 
-  // Mở dialog Sửa
-  openEditModal(lich: ShowtimesDto): void {
+  // Mở modal Sửa
+  openEditModal(showtime: ShowtimesDto): void {
     this.isEditing = true;
     this.isMainModalOpen = true;
-    this.lichChieuForm = lich.clone();
+    this.showtimeForm = showtime.clone();
   }
 
-  // Đóng dialog
+  // Đóng modal
   closeMainModal(): void {
     this.isMainModalOpen = false;
   }
@@ -92,67 +74,66 @@ export class LichChieuComponent implements OnInit {
   // Lưu khi bấm "LƯU"
   saveSchedule(): void {
     if (this.isEditing) {
-      // Update
-      if (!this.lichChieuForm.id) {
+      // Cập nhật
+      if (!this.showtimeForm.id) {
         alert('Không tìm thấy ID!');
         return;
       }
-      this.showtimesService
-        .updateShowtime(this.lichChieuForm.id, this.lichChieuForm)
-        .subscribe({
-          next: () => {
-            alert('Cập nhật thành công!');
-            this.isMainModalOpen = false;
-            this.loadShowtimes();
-          },
-          error: (err) => {
-            console.error('Lỗi update:', err);
-            alert('Lỗi cập nhật!');
-          }
-        });
+      this.showtimesService.updateShowtime(this.showtimeForm.id, this.showtimeForm).subscribe({
+        next: () => {
+          alert('Cập nhật thành công!');
+          this.isMainModalOpen = false;
+          this.loadShowtimes();
+        },
+        error: (err) => {
+          console.error('Update error:', err);
+          alert('Lỗi cập nhật!');
+        }
+      });
     } else {
       // Thêm
-      this.showtimesService.addShowtime(this.lichChieuForm).subscribe({
+      this.showtimesService.createShowtime(this.showtimeForm).subscribe({
         next: () => {
           alert('Thêm thành công!');
           this.isMainModalOpen = false;
           this.loadShowtimes();
         },
         error: (err) => {
-          console.error('Lỗi thêm:', err);
+          console.error('Creation error:', err);
           alert('Lỗi thêm!');
         }
       });
     }
   }
 
-  // Mở dialog Xoá
-  openDeleteModal(lich: ShowtimesDto): void {
-    this.lichChieuDangXoa = lich;
+  // Mở modal Xoá
+  openDeleteModal(showtime: ShowtimesDto): void {
+    this.showtimeDangXoa = showtime;
     this.deletePassword = '';
     this.isDeleteModalOpen = true;
   }
 
-  // Đóng dialog Xoá
+  // Đóng modal Xoá
   closeDeleteModal(): void {
     this.isDeleteModalOpen = false;
   }
 
   // Xác nhận xoá
   confirmDelete(): void {
+    // Yêu cầu mật khẩu "hiendz"
     if (this.deletePassword === 'hiendz') {
-      if (!this.lichChieuDangXoa?.id) {
+      if (!this.showtimeDangXoa?.id) {
         alert('Không tìm thấy ID để xoá!');
         return;
       }
-      this.showtimesService.deleteShowtime(this.lichChieuDangXoa.id).subscribe({
+      this.showtimesService.deleteShowtime(this.showtimeDangXoa.id).subscribe({
         next: () => {
           alert('Xoá thành công!');
           this.isDeleteModalOpen = false;
           this.loadShowtimes();
         },
         error: (err) => {
-          console.error('Lỗi xoá:', err);
+          console.error('Deletion error:', err);
           alert('Lỗi xoá!');
         }
       });
@@ -161,13 +142,13 @@ export class LichChieuComponent implements OnInit {
     }
   }
 
-  // Hành động Sửa (icon)
-  editSchedule(lich: ShowtimesDto): void {
-    this.openEditModal(lich);
+  // Nút Sửa (trong bảng)
+  editSchedule(showtime: ShowtimesDto): void {
+    this.openEditModal(showtime);
   }
 
-  // Hành động Xoá (icon)
-  deleteSchedule(lich: ShowtimesDto): void {
-    this.openDeleteModal(lich);
+  // Nút Xoá (trong bảng)
+  deleteSchedule(showtime: ShowtimesDto): void {
+    this.openDeleteModal(showtime);
   }
 }
