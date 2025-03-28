@@ -19,6 +19,8 @@ export class GenresDto implements IGenresDto {
 
   init(_data?: any) {
     if (_data) {
+      // Check if _id exists in the response
+      console.log('Genre data raw:', _data);
       this.id = _data["_id"];
       this.genreName = _data["name"];
     }

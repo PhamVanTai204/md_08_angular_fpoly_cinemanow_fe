@@ -5,26 +5,17 @@
       <h2 class="text-2xl font-bold text-gray-800">PHIM</h2>
       <div class="flex items-center">
         <div class="relative mr-4">
-          <input
-            type="text"
+          <input type="text"
             class="border rounded-full pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Nhập tên phim"
-            [(ngModel)]="searchTerm"
-            (keyup.enter)="searchPhims()"
-          />
-          <svg
-            class="w-5 h-5 text-gray-500 absolute left-3 top-2.5"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
+            placeholder="Nhập tên phim" [(ngModel)]="searchTerm" (keyup.enter)="searchPhims()" />
+          <svg class="w-5 h-5 text-gray-500 absolute left-3 top-2.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
               d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.386a1 1 0 01-1.414 1.415l-4.387-4.386zM8 14a6 6 0 100-12 6 6 0 000 12z"
-              clip-rule="evenodd"
-            />
+              clip-rule="evenodd" />
           </svg>
         </div>
-        <button (click)="themPhim()" class="bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2 rounded-lg">
+        <button (click)="themPhim()"
+          class="bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2 rounded-lg">
           THÊM
         </button>
       </div>
@@ -40,15 +31,18 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thể loại phim</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thể loại phim
+            </th>
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên phim</th>
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đạo diễn</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giới hạn tuổi</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giới hạn tuổi
+            </th>
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngôn ngữ</th>
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời lượng</th>
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày phát hành</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày phát hành
+            </th>
             <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
           </tr>
         </thead>
@@ -56,11 +50,7 @@
           <tr *ngFor="let phim of danhSachPhimDaLoc; let i = index">
             <td class="px-4 py-2 whitespace-nowrap">{{ getGenreNames(phim.genre_film) }}</td>
             <td class="px-4 py-2 whitespace-nowrap">
-              <img
-                [src]="phim.image_film"
-                alt="{{ phim.title }}"
-                class="w-16 h-24 object-cover rounded-md"
-              />
+              <img [src]="phim.image_film" alt="{{ phim.title }}" class="w-16 h-24 object-cover rounded-md" />
             </td>
             <td class="px-4 py-2 whitespace-nowrap">{{ phim.title }}</td>
             <td class="px-4 py-2 whitespace-nowrap">{{ phim.director }}</td>
@@ -68,13 +58,10 @@
             <td class="px-4 py-2 whitespace-nowrap">{{ phim.language }}</td>
             <td class="px-4 py-2 whitespace-nowrap">{{ phim.duration }}</td>
             <td class="px-4 py-2 whitespace-nowrap">
-              <span
-                class="inline-block px-2 py-1 text-xs font-semibold rounded-full"
-                [ngClass]="{
+              <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full" [ngClass]="{
                   'bg-green-100 text-green-600': phim.status_film === 1,
                   'bg-gray-100 text-gray-600': phim.status_film !== 1
-                }"
-              >
+                }">
                 {{ getTrangThaiText(phim.status_film) }}
               </span>
             </td>
@@ -82,42 +69,18 @@
               {{ formatDate(phim.release_date) }}
             </td>
             <td class="px-4 py-2 whitespace-nowrap flex items-center justify-center space-x-2">
-              <button
-                class="text-blue-500 hover:text-blue-700 focus:outline-none"
-                (click)="suaPhim(phim, i)"
-              >
-                <svg
-                  class="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
+              <button class="text-blue-500 hover:text-blue-700 focus:outline-none" (click)="suaPhim(phim, i)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M11 4H4a2 2 0 00-2 2v14c0 1.1.9 2 2 2h14a2 2 0 002-2v-7" />
-                  <path
-                    d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
-                  />
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                 </svg>
               </button>
-              <button
-                class="text-red-500 hover:text-red-700 focus:outline-none"
-                (click)="xoaPhim(phim, i)"
-              >
-                <svg
-                  class="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
+              <button class="text-red-500 hover:text-red-700 focus:outline-none" (click)="xoaPhim(phim, i)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="3 6 5 6 21 6" />
-                  <path
-                    d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m2 0V4a2 2 0 012-2h6a2 2 0 012 2v2"
-                  />
+                  <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m2 0V4a2 2 0 012-2h6a2 2 0 012 2v2" />
                 </svg>
               </button>
             </td>
@@ -128,24 +91,11 @@
   </div>
 
   <!-- Modal Thêm/Sửa -->
-  <div
-    class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50"
-    *ngIf="showModal"
-  >
+  <div class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50" *ngIf="showModal">
     <div class="bg-white p-6 w-full max-w-lg rounded shadow-lg relative max-h-screen overflow-y-auto">
-      <button
-        class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-        (click)="closeModal()"
-      >
-        <svg
-          class="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
+      <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" (click)="closeModal()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
@@ -157,45 +107,25 @@
       <div class="space-y-4">
         <div>
           <label class="block font-medium mb-1">Tên phim</label>
-          <input
-            type="text"
-            [(ngModel)]="currentPhim.title"
-            class="border rounded w-full px-3 py-2"
-          />
+          <input type="text" [(ngModel)]="currentPhim.title" class="border rounded w-full px-3 py-2" />
         </div>
         <div>
           <label class="block font-medium mb-1">Đạo diễn</label>
-          <input
-            type="text"
-            [(ngModel)]="currentPhim.director"
-            class="border rounded w-full px-3 py-2"
-          />
+          <input type="text" [(ngModel)]="currentPhim.director" class="border rounded w-full px-3 py-2" />
         </div>
         <div>
           <label class="block font-medium mb-1">Giới hạn tuổi</label>
-          <input
-            type="number"
-            [(ngModel)]="currentPhim.age_limit"
-            class="border rounded w-full px-3 py-2"
-            placeholder="VD: 18"
-          />
+          <input type="number" [(ngModel)]="currentPhim.age_limit" class="border rounded w-full px-3 py-2"
+            placeholder="VD: 18" />
         </div>
         <div>
           <label class="block font-medium mb-1">Ngôn ngữ</label>
-          <input
-            type="text"
-            [(ngModel)]="currentPhim.language"
-            class="border rounded w-full px-3 py-2"
-            placeholder="VD: Tiếng Việt"
-          />
+          <input type="text" [(ngModel)]="currentPhim.language" class="border rounded w-full px-3 py-2"
+            placeholder="VD: Tiếng Việt" />
         </div>
         <div>
           <label class="block font-medium mb-1">Thể loại phim</label>
-          <select
-            multiple
-            [(ngModel)]="currentPhim.genre_film"
-            class="border rounded w-full px-3 py-2"
-          >
+          <select multiple [(ngModel)]="currentPhim.genre_film" class="border rounded w-full px-3 py-2">
             <option *ngFor="let genre of danhSachTheLoai" [value]="genre.id">
               {{ genre.genreName }}
             </option>
@@ -204,76 +134,59 @@
         </div>
         <div>
           <label class="block font-medium mb-1">Trạng thái</label>
-          <select
-            [(ngModel)]="currentPhim.status_film"
-            class="border rounded w-full px-3 py-2"
-          >
+          <select [(ngModel)]="currentPhim.status_film" class="border rounded w-full px-3 py-2">
             <option [ngValue]="1">ONLINE</option>
             <option [ngValue]="0">OFFLINE</option>
           </select>
         </div>
         <div>
           <label class="block font-medium mb-1">Poster (URL)</label>
-          <input
-            type="text"
-            [(ngModel)]="currentPhim.image_film"
-            class="border rounded w-full px-3 py-2"
-          />
+          <input type="text" [(ngModel)]="currentPhim.image_film" class="border rounded w-full px-3 py-2" />
         </div>
         <div>
           <label class="block font-medium mb-1">Trailer (URL)</label>
-          <input
-            type="text"
-            [(ngModel)]="currentPhim.trailer_film"
-            class="border rounded w-full px-3 py-2"
-          />
+          <input type="text" [(ngModel)]="currentPhim.trailer_film" class="border rounded w-full px-3 py-2" />
         </div>
         <div>
           <label class="block font-medium mb-1">Thời lượng</label>
-          <input
-            type="text"
-            [(ngModel)]="currentPhim.duration"
-            class="border rounded w-full px-3 py-2"
-            placeholder="VD: 120 phút"
-          />
+          <input type="text" [(ngModel)]="currentPhim.duration" class="border rounded w-full px-3 py-2"
+            placeholder="VD: 120 phút" />
         </div>
         <div>
           <label class="block font-medium mb-1">Ngày phát hành</label>
-          <input
-            type="date"
-            [(ngModel)]="currentPhim.release_date"
-            class="border rounded w-full px-3 py-2"
-          />
+          <input type="date" [(ngModel)]="currentPhim.release_date" class="border rounded w-full px-3 py-2" />
         </div>
         <div>
           <label class="block font-medium mb-1">Ngày kết thúc</label>
-          <input
-            type="date"
-            [(ngModel)]="currentPhim.end_date"
-            class="border rounded w-full px-3 py-2"
-          />
+          <input type="date" [(ngModel)]="currentPhim.end_date" class="border rounded w-full px-3 py-2" />
         </div>
         <div>
           <label class="block font-medium mb-1">Mô tả</label>
-          <textarea
-            [(ngModel)]="currentPhim.describe"
-            rows="4"
-            class="border rounded w-full px-3 py-2"
-          ></textarea>
+          <textarea [(ngModel)]="currentPhim.describe" rows="4" class="border rounded w-full px-3 py-2"></textarea>
+        </div>
+        <!-- Thêm các trường mới vào form trước div mô tả -->
+        <div>
+          <label class="block font-medium mb-1">Diễn viên</label>
+          <input type="text" [(ngModel)]="currentPhim.cast" class="border rounded w-full px-3 py-2"
+            placeholder="VD: Diễn viên A, Diễn viên B" />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Đánh giá</label>
+          <input type="number" [(ngModel)]="currentPhim.ratings" class="border rounded w-full px-3 py-2"
+            placeholder="VD: 9.5" step="0.1" min="0" max="10" />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Doanh thu</label>
+          <input type="number" [(ngModel)]="currentPhim.box_office" class="border rounded w-full px-3 py-2"
+            placeholder="VD: 500000000" />
         </div>
       </div>
 
       <div class="flex justify-end mt-4">
-        <button
-          class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded"
-          (click)="closeModal()"
-        >
+        <button class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded" (click)="closeModal()">
           Hủy
         </button>
-        <button
-          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-          (click)="savePhim()"
-        >
+        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" (click)="savePhim()">
           Lưu
         </button>
       </div>
@@ -281,24 +194,11 @@
   </div>
 
   <!-- Modal Xóa -->
-  <div
-    class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50"
-    *ngIf="showDeleteModal"
-  >
+  <div class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50" *ngIf="showDeleteModal">
     <div class="bg-white p-6 w-full max-w-sm rounded shadow-lg relative">
-      <button
-        class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-        (click)="closeDeleteModal()"
-      >
-        <svg
-          class="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
+      <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" (click)="closeDeleteModal()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
@@ -313,24 +213,14 @@
       <label class="block font-medium mb-1">
         Nhập mật khẩu <strong>hiendz</strong> để xác nhận:
       </label>
-      <input
-        type="password"
-        [(ngModel)]="deletePassword"
-        class="border rounded w-full px-3 py-2 mb-4"
-        placeholder="Nhập mật khẩu"
-      />
+      <input type="password" [(ngModel)]="deletePassword" class="border rounded w-full px-3 py-2 mb-4"
+        placeholder="Nhập mật khẩu" />
 
       <div class="flex justify-end">
-        <button
-          class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded"
-          (click)="closeDeleteModal()"
-        >
+        <button class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded" (click)="closeDeleteModal()">
           Hủy
         </button>
-        <button
-          class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-          (click)="confirmXoaPhim()"
-        >
+        <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded" (click)="confirmXoaPhim()">
           Xóa
         </button>
       </div>

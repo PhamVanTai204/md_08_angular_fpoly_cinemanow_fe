@@ -7,19 +7,24 @@ import { catchError, Observable, throwError, map } from "rxjs";
   providedIn: 'root'
 })
 export class GenresService {
-  private getAllUrl   = 'http://127.0.0.1:3000/genres/getAll';
-  private getByIdUrl  = 'http://127.0.0.1:3000/genres/getById';
-  private createUrl   = 'http://127.0.0.1:3000/genres/create';
-  private updateUrl   = 'http://127.0.0.1:3000/genres/update';
-  private deleteUrl   = 'http://127.0.0.1:3000/genres/delete';
+  private getAllUrl = 'http://127.0.0.1:3000/genres/getAll';
+  private getByIdUrl = 'http://127.0.0.1:3000/genres/getById';
+  private createUrl = 'http://127.0.0.1:3000/genres/create';
+  private updateUrl = 'http://127.0.0.1:3000/genres/update';
+  private deleteUrl = 'http://127.0.0.1:3000/genres/delete';
 
   constructor(private http: HttpClient) { }
 
   getGenres(): Observable<GenresDto[]> {
     return this.http.get<any>(this.getAllUrl).pipe(
       map(response => {
+        console.log('Original genres response:', response);
         if (response && response.code === 200 && response.data) {
-          return response.data.map((item: any) => GenresDto.fromJS(item));
+          return response.data.map((item: any) => {
+            const genre = GenresDto.fromJS(item);
+            console.log('Mapped genre:', genre);
+            return genre;
+          });
         }
         throw new Error('Failed to fetch genres');
       }),

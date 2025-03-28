@@ -1,67 +1,88 @@
 export interface IShowtimesDto {
-  id?: string;             // map từ _id trong MongoDB
-  movieId: string;         // map từ "movie_id"
-  showtimeStatus: number;  // map từ "showtime_status"
-  startTime: string;       // map từ "start_time"
-  endTime: string;         // map từ "end_time"
-  price: number;           // map từ "price"
+  id?: string;
+  showtimeId: string;   // map từ showtime_id
+  movieId: string;      // map từ movie_id
+  movieName?: string;   // nếu server populate => lấy tên phim
+  roomId: string;       // map từ room_id
+  roomName?: string;    // nếu server populate => lấy tên phòng
+  startTime: string;    // map từ start_time
+  endTime: string;      // map từ end_time
+  showDate: string;     // map từ show_date (kiểu Date, nhưng hiển thị chuỗi)
 }
 
 export class ShowtimesDto implements IShowtimesDto {
   id?: string;
+  showtimeId!: string;
   movieId!: string;
-  showtimeStatus!: number;
+  movieName?: string;
+  roomId!: string;
+  roomName?: string;
   startTime!: string;
   endTime!: string;
-  price!: number;
+  showDate!: string;
 
   constructor(data?: IShowtimesDto) {
     if (data) {
-      for (const property in data) {
-        if (data.hasOwnProperty(property)) {
-          (this as any)[property] = (data as any)[property];
-        }
-      }
+      Object.assign(this, data);
     }
   }
 
   /**
-   * Gán dữ liệu từ object JSON (thường trả về từ server)
+   * Gán dữ liệu từ object JSON (thường là kết quả trả về từ server)
    */
   init(_data?: any) {
     if (_data) {
-      // Nếu server trả về _id
       this.id = _data["_id"] || _data["id"];
-      this.movieId = _data["movie_id"];
-      this.showtimeStatus = _data["showtime_status"];
+      this.showtimeId = _data["showtime_id"];
+
+      // Nếu movie_id được populate (object) => trích xuất ._id và .name
+      if (typeof _data["movie_id"] === 'object' && _data["movie_id"] !== null) {
+        this.movieId = _data["movie_id"]._id;
+        this.movieName = _data["movie_id"].name;
+      } else {
+        this.movieId = _data["movie_id"];
+      }
+
+      // Nếu room_id được populate (object) => trích xuất ._id và .name
+      if (typeof _data["room_id"] === 'object' && _data["room_id"] !== null) {
+        this.roomId = _data["room_id"]._id;
+        this.roomName = _data["room_id"].name;
+      } else {
+        this.roomId = _data["room_id"];
+      }
+
       this.startTime = _data["start_time"];
       this.endTime = _data["end_time"];
-      this.price = _data["price"];
+
+      // show_date là kiểu Date => chuyển sang chuỗi ISO
+      this.showDate = _data["show_date"]
+        ? new Date(_data["show_date"]).toISOString()
+        : "";
     }
   }
 
   /**
-   * Tạo ShowtimesDto từ một object JS
+   * Tạo instance từ object JS
    */
   static fromJS(data: any): ShowtimesDto {
-    data = typeof data === 'object' ? data : {};
-    let result = new ShowtimesDto();
+    const result = new ShowtimesDto();
     result.init(data);
     return result;
   }
 
   /**
-   * Chuyển đối tượng hiện tại thành object để gửi lên server
+   * Chuyển đối tượng hiện tại thành JSON để gửi lên server
    */
-  toJSON(data?: any) {
-    data = typeof data === 'object' ? data : {};
-    data["_id"] = this.id;
-    data["movie_id"] = this.movieId;
-    data["showtime_status"] = this.showtimeStatus;
-    data["start_time"] = this.startTime;
-    data["end_time"] = this.endTime;
-    data["price"] = this.price;
-    return data;
+  toJSON() {
+    return {
+      _id: this.id,
+      showtime_id: this.showtimeId,
+      movie_id: this.movieId,
+      room_id: this.roomId,
+      start_time: this.startTime,
+      end_time: this.endTime,
+      show_date: this.showDate
+    };
   }
 
   /**

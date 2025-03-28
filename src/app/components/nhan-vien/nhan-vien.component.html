@@ -30,11 +30,7 @@
       <tbody class="divide-y divide-gray-200">
         <tr *ngFor="let nv of nhanViens">
           <td class="px-6 py-4 whitespace-nowrap">
-            <img
-              [src]="nv.avatar"
-              alt="Avatar"
-              class="h-10 w-10 rounded-full object-cover"
-            />
+            <img [src]="nv.avatar" alt="Avatar" class="h-10 w-10 rounded-full object-cover" />
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             {{ nv.fullName }}
@@ -50,11 +46,9 @@
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             <!-- Nút khóa/mở khóa tài khoản -->
-            <button
-              (click)="toggleNhanVienStatus(nv)"
+            <button (click)="toggleNhanVienStatus(nv)"
               [ngClass]="nv.isActive ? 'bg-red-500 hover:bg-red-700' : 'bg-green-500 hover:bg-green-700'"
-              class="text-white font-bold py-2 px-4 rounded transition-colors duration-200"
-            >
+              class="text-white font-bold py-2 px-4 rounded transition-colors duration-200">
               {{ nv.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản' }}
             </button>
           </td>
