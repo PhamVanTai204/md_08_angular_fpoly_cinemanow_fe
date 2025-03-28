@@ -12,6 +12,9 @@ export interface IPhimDto {
   director: string;
   age_limit: number;
   language: string;
+  cast: string;         // Thêm trường này
+  ratings: number;      // Thêm trường này
+  box_office: number;   // Thêm trường này
 }
 
 export class PhimDto implements IPhimDto {
@@ -28,6 +31,9 @@ export class PhimDto implements IPhimDto {
   director: string = '';
   age_limit: number = 0;
   language: string = '';
+  cast: string = '';         // Thêm trường này
+  ratings: number = 0;       // Thêm trường này
+  box_office: number = 0;    // Thêm trường này
 
   constructor(data?: IPhimDto) {
     if (data) {
@@ -54,6 +60,9 @@ export class PhimDto implements IPhimDto {
       this.director = _data["director"];
       this.age_limit = _data["age_limit"];
       this.language = _data["language"];
+      this.cast = _data["cast"];           // Thêm trường này
+      this.ratings = _data["ratings"];     // Thêm trường này
+      this.box_office = _data["box_office"]; // Thêm trường này
     }
   }
 
@@ -81,6 +90,9 @@ export class PhimDto implements IPhimDto {
     data["director"] = this.director;
     data["age_limit"] = this.age_limit;
     data["language"] = this.language;
+    data["cast"] = this.cast;               // Thêm trường này
+    data["ratings"] = this.ratings;         // Thêm trường này
+    data["box_office"] = this.box_office;   // Thêm trường này
     return data;
   }
 

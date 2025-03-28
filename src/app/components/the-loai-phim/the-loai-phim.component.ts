@@ -21,7 +21,7 @@ export class TheLoaiPhimComponent implements OnInit {
     // Tải thể loại trước, sau đó tải phim
     this.loadGenres();
   }
-  
+
   loadGenres(): void {
     this.genresService.getGenres().subscribe({
       next: (data: GenresDto[]) => {

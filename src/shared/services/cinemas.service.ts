@@ -8,14 +8,14 @@ import { catchError, map } from "rxjs/operators";
   providedIn: 'root'
 })
 export class CinemasService {
-  private getAllUrl   = 'http://127.0.0.1:3000/cinema/getcinema';
-  private getByIdUrl  = 'http://127.0.0.1:3000/cinema/getcinemaById';
-  private addUrl      = 'http://127.0.0.1:3000/cinema/addcinema';
-  private editUrl     = 'http://127.0.0.1:3000/cinema/editcinema';
-  private deleteUrl   = 'http://127.0.0.1:3000/cinema/deletecinema';
-  private searchUrl   = 'http://127.0.0.1:3000/cinema/search';
+  private getAllUrl = 'http://127.0.0.1:3000/cinema/getcinema';
+  private getByIdUrl = 'http://127.0.0.1:3000/cinema/getcinemaById';
+  private addUrl = 'http://127.0.0.1:3000/cinema/addcinema';
+  private editUrl = 'http://127.0.0.1:3000/cinema/editcinema';
+  private deleteUrl = 'http://127.0.0.1:3000/cinema/deletecinema';
+  private searchUrl = 'http://127.0.0.1:3000/cinema/search';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /**
    * Lấy danh sách rạp

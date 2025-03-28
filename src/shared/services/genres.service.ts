@@ -7,11 +7,11 @@ import { catchError, Observable, throwError, map } from "rxjs";
   providedIn: 'root'
 })
 export class GenresService {
-  private getAllUrl   = 'http://127.0.0.1:3000/genres/getAll';
-  private getByIdUrl  = 'http://127.0.0.1:3000/genres/getById';
-  private createUrl   = 'http://127.0.0.1:3000/genres/create';
-  private updateUrl   = 'http://127.0.0.1:3000/genres/update';
-  private deleteUrl   = 'http://127.0.0.1:3000/genres/delete';
+  private getAllUrl = 'http://127.0.0.1:3000/genres/getAll';
+  private getByIdUrl = 'http://127.0.0.1:3000/genres/getById';
+  private createUrl = 'http://127.0.0.1:3000/genres/create';
+  private updateUrl = 'http://127.0.0.1:3000/genres/update';
+  private deleteUrl = 'http://127.0.0.1:3000/genres/delete';
 
   constructor(private http: HttpClient) { }
 

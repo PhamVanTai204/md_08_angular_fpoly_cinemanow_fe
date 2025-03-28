@@ -7,12 +7,12 @@ import { catchError, Observable, throwError, map, tap } from "rxjs";
   providedIn: 'root'
 })
 export class PhimService {
-  private getAllUrl   = 'http://127.0.0.1:3000/films/getfilm';
-  private getByIdUrl  = 'http://127.0.0.1:3000/films/getfilmById';
-  private createUrl   = 'http://127.0.0.1:3000/films/addfilm';
-  private updateUrl   = 'http://127.0.0.1:3000/films/editfilm';
-  private deleteUrl   = 'http://127.0.0.1:3000/films/deletefilm';
-  private searchUrl   = 'http://127.0.0.1:3000/films/search';
+  private getAllUrl = 'http://127.0.0.1:3000/films/getfilm';
+  private getByIdUrl = 'http://127.0.0.1:3000/films/getfilmById';
+  private createUrl = 'http://127.0.0.1:3000/films/addfilm';
+  private updateUrl = 'http://127.0.0.1:3000/films/editfilm';
+  private deleteUrl = 'http://127.0.0.1:3000/films/deletefilm';
+  private searchUrl = 'http://127.0.0.1:3000/films/search';
   private getByGenreUrl = 'http://127.0.0.1:3000/films/genre';
 
   constructor(private http: HttpClient) { }
@@ -26,7 +26,7 @@ export class PhimService {
           // Map the films array, not the data object
           return response.data.films.map((item: any) => PhimDto.fromJS(item));
         }
-        
+
         // Handle unexpected response format
         console.error('Unexpected response format:', response);
         return [];
@@ -79,7 +79,7 @@ export class PhimService {
   createPhim(phim: PhimDto): Observable<PhimDto> {
     const requestData = phim.toJSON();
     console.log('Create Film Request Payload:', requestData);
-    
+
     return this.http.post<any>(this.createUrl, requestData).pipe(
       tap(response => console.log('Create Film Response:', response)),
       map(response => {
@@ -95,7 +95,7 @@ export class PhimService {
   updatePhim(id: string, phim: PhimDto): Observable<PhimDto> {
     const requestData = phim.toJSON();
     console.log(`Update Film ${id} Request Payload:`, requestData);
-    
+
     return this.http.put<any>(`${this.updateUrl}/${id}`, requestData).pipe(
       tap(response => console.log('Update Film Response:', response)),
       map(response => {

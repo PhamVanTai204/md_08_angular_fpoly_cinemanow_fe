@@ -12,13 +12,13 @@ export class ShowtimesService {
   private baseUrl = 'http://127.0.0.1:3000/showtimes';
 
   // Các endpoint cụ thể
-  private getAllUrl  = `${this.baseUrl}/get-all`;
+  private getAllUrl = `${this.baseUrl}/get-all`;
   private getByIdUrl = `${this.baseUrl}/get-by-id`;
-  private createUrl  = `${this.baseUrl}/create`;
-  private updateUrl  = `${this.baseUrl}/update`;
-  private deleteUrl  = `${this.baseUrl}/delete`;
+  private createUrl = `${this.baseUrl}/create`;
+  private updateUrl = `${this.baseUrl}/update`;
+  private deleteUrl = `${this.baseUrl}/delete`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAllShowtimes(): Observable<ShowtimesDto[]> {
     return this.http.get<any>(this.getAllUrl).pipe(

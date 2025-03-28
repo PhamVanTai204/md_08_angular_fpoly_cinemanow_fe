@@ -23,10 +23,10 @@ export class CinemaDto implements ICinemaDto {
 
   init(_data?: any) {
     if (_data) {
-      this.id         = _data["_id"];
+      this.id = _data["_id"];
       this.cinemaName = _data["cinema_name"];
-      this.location   = _data["location"];
-      this.totalRoom  = _data["total_room"];
+      this.location = _data["location"];
+      this.totalRoom = _data["total_room"];
     }
   }
 
@@ -39,10 +39,10 @@ export class CinemaDto implements ICinemaDto {
 
   toJSON(data?: any) {
     data = typeof data === 'object' ? data : {};
-    data["_id"]         = this.id;
+    data["_id"] = this.id;
     data["cinema_name"] = this.cinemaName;
-    data["location"]    = this.location;
-    data["total_room"]  = this.totalRoom;
+    data["location"] = this.location;
+    data["total_room"] = this.totalRoom;
     return data;
   }
 

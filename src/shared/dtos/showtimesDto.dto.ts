@@ -75,13 +75,13 @@ export class ShowtimesDto implements IShowtimesDto {
    */
   toJSON() {
     return {
-      _id:         this.id,
+      _id: this.id,
       showtime_id: this.showtimeId,
-      movie_id:    this.movieId,
-      room_id:     this.roomId,
-      start_time:  this.startTime,
-      end_time:    this.endTime,
-      show_date:   this.showDate
+      movie_id: this.movieId,
+      room_id: this.roomId,
+      start_time: this.startTime,
+      end_time: this.endTime,
+      show_date: this.showDate
     };
   }
 

@@ -2,12 +2,8 @@
   <!-- Dòng tiêu đề + ô tìm kiếm bên phải -->
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-xl font-bold">Danh sách giao dịch</h2>
-    <input
-      type="text"
-      [(ngModel)]="searchTerm"
-      placeholder="Nhập tên phim"
-      class="border border-gray-300 rounded px-2 py-1"
-    />
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Nhập tên phim"
+      class="border border-gray-300 rounded px-2 py-1" />
   </div>
 
   <!-- Bảng danh sách -->
@@ -52,13 +48,10 @@
           <td class="px-6 py-4 whitespace-nowrap">
             {{ item.phongChieu }}
           </td>
-          <td
-            class="px-6 py-4 whitespace-nowrap"
-            [ngClass]="{
+          <td class="px-6 py-4 whitespace-nowrap" [ngClass]="{
               'text-green-600 font-semibold': item.trangThai === 'Đã thanh toán',
               'text-red-600 font-semibold': item.trangThai === 'Đã hủy'
-            }"
-          >
+            }">
             {{ item.trangThai }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
@@ -74,16 +67,10 @@
 
   <!-- Hai nút bên dưới -->
   <div class="mt-6 flex gap-4">
-    <button
-      (click)="traCuuGD()"
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-    >
+    <button (click)="traCuuGD()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
       Tra cứu GD
     </button>
-    <button
-      (click)="taoGiaoDich()"
-      class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-    >
+    <button (click)="taoGiaoDich()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
       Tạo giao dịch
     </button>
   </div>

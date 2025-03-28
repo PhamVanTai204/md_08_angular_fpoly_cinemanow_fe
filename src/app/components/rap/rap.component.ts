@@ -20,7 +20,7 @@ export class RapComponent implements OnInit {
   editRapIndex: number = -1;
   editRapData: CinemaDto = new CinemaDto();
 
-  constructor(private cinemasService: CinemasService) {}
+  constructor(private cinemasService: CinemasService) { }
 
   ngOnInit(): void {
     this.getAllRaps();
