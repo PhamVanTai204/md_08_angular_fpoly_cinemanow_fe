@@ -18,17 +18,20 @@ export class TheLoaiPhimComponent implements OnInit {
   constructor(private genresService: GenresService) { }
 
   ngOnInit(): void {
+    // Tải thể loại trước, sau đó tải phim
     this.loadGenres();
   }
-
-  // Lấy danh sách thể loại
+  
   loadGenres(): void {
     this.genresService.getGenres().subscribe({
       next: (data: GenresDto[]) => {
-        this.genres = data;
+        console.log('Đã tải thể loại:', data);
+        this.genres = data; // Thay danhSachTheLoai bằng genres
+        // Xóa dòng gọi loadPhims() vì nó không tồn tại trong component này
       },
       error: (error) => {
-        console.error('Lỗi khi tải dữ liệu thể loại:', error);
+        console.error('Lỗi khi tải danh sách thể loại:', error);
+        // Xóa dòng gọi loadPhims() vì nó không tồn tại trong component này
       }
     });
   }

@@ -18,8 +18,13 @@ export class GenresService {
   getGenres(): Observable<GenresDto[]> {
     return this.http.get<any>(this.getAllUrl).pipe(
       map(response => {
+        console.log('Original genres response:', response);
         if (response && response.code === 200 && response.data) {
-          return response.data.map((item: any) => GenresDto.fromJS(item));
+          return response.data.map((item: any) => {
+            const genre = GenresDto.fromJS(item);
+            console.log('Mapped genre:', genre);
+            return genre;
+          });
         }
         throw new Error('Failed to fetch genres');
       }),
