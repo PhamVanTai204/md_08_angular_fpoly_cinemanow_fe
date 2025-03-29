@@ -1,6 +1,7 @@
 // nguoi-dung.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 
 // Định nghĩa interface cho User
 interface User {
@@ -26,7 +27,7 @@ interface ApiResponse {
   templateUrl: './nguoi-dung.component.html',
   styleUrls: ['./nguoi-dung.component.css']
 })
-export class NguoiDungComponent implements OnInit {
+export class NguoiDungComponent implements OnInit, OnDestroy {
   // Danh sách người dùng
   users: User[] = [];
   isLoading = false;
@@ -37,27 +38,37 @@ export class NguoiDungComponent implements OnInit {
   selectedUser: User | null = null;
   
   private baseUrl = 'http://127.0.0.1:3000/users';
+  
+  // Theo dõi các subscription để hủy chúng khi component bị hủy
+  private subscriptions: Subscription[] = [];
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
+  
+  ngOnDestroy(): void {
+    // Hủy tất cả subscription khi component bị hủy để tránh memory leak
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
 
-  // Lấy danh sách người dùng từ API
+  // Lấy danh sách người dùng từ API - CHỈ lấy role=1 (người dùng thường)
   loadUsers(): void {
+    if (this.isLoading) return; // Tránh gọi API nhiều lần
+    
     this.isLoading = true;
-    this.http.get<ApiResponse>(`${this.baseUrl}/getAll`).subscribe({
+    const sub = this.http.get<ApiResponse>(`${this.baseUrl}/getAll`).subscribe({
       next: (response) => {
-        console.log('API Response:', response);
         if (response.code === 200 && Array.isArray(response.data)) {
-          this.users = response.data;
-          this.isLoading = false;
+          // Lọc chỉ giữ lại người dùng có role=1 (người dùng thường)
+          this.users = response.data.filter(user => user.role === 1);
+          console.log('Danh sách người dùng:', this.users);
         } else {
           console.error('Định dạng dữ liệu không đúng:', response);
           this.errorMessage = 'Không thể tải dữ liệu người dùng. Định dạng không hợp lệ.';
-          this.isLoading = false;
         }
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading users:', error);
@@ -65,12 +76,16 @@ export class NguoiDungComponent implements OnInit {
         this.isLoading = false;
       }
     });
+    
+    this.subscriptions.push(sub);
   }
 
   // Lấy thông tin chi tiết người dùng
   viewUserDetails(userId: string): void {
+    if (this.isLoading) return; // Tránh gọi API nhiều lần
+    
     this.isLoading = true;
-    this.http.get<ApiResponse>(`${this.baseUrl}/getById/${userId}`).subscribe({
+    const sub = this.http.get<ApiResponse>(`${this.baseUrl}/getById/${userId}`).subscribe({
       next: (response) => {
         if (response.code === 200 && !Array.isArray(response.data)) {
           this.selectedUser = response.data as User;
@@ -86,6 +101,8 @@ export class NguoiDungComponent implements OnInit {
         this.isLoading = false;
       }
     });
+    
+    this.subscriptions.push(sub);
   }
 
   // Đóng dialog
