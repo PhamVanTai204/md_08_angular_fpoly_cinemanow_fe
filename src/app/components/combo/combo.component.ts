@@ -15,6 +15,9 @@ export class ComboComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
+  // Dialog control
+  showDialog = false;
+
   // Form fields for create/update
   newCombo: Partial<Combo> = {
     combo_id: '',
@@ -32,17 +35,31 @@ export class ComboComponent implements OnInit {
     this.loadCombos();
   }
 
+  // Kiểm tra xem combos có phải là mảng hợp lệ không
+  isValidCombos(): boolean {
+    return Array.isArray(this.combos) && this.combos.length > 0;
+  }
+
   loadCombos(): void {
     this.isLoading = true;
     this.comboService.getAllCombos().subscribe({
-      next: (data) => {
-        this.combos = data;
+      next: (response) => {
+        console.log('API Response:', response);
+        
+        // Đảm bảo response là một mảng
+        if (Array.isArray(response)) {
+          this.combos = response;
+        } else {
+          console.error('Dữ liệu trả về không phải mảng:', response);
+          this.combos = [];
+        }
         this.isLoading = false;
       },
       error: (error) => {
         this.errorMessage = 'Không thể tải dữ liệu combo. Vui lòng thử lại sau.';
         this.isLoading = false;
         console.error('Error loading combos:', error);
+        this.combos = []; // Đảm bảo combos luôn là mảng khi có lỗi
       }
     });
   }
@@ -62,12 +79,40 @@ export class ComboComponent implements OnInit {
     });
   }
 
+  // Dialog methods
+  openDialog(combo?: Combo): void {
+    if (combo) {
+      // Edit mode
+      this.isEditing = true;
+      this.editId = combo._id;
+      this.newCombo = { ...combo };
+    } else {
+      // Add mode
+      this.resetForm();
+      this.isEditing = false;
+    }
+    this.showDialog = true;
+  }
+
+  closeDialog(): void {
+    this.showDialog = false;
+  }
+
+  submitForm(): void {
+    if (this.isEditing) {
+      this.updateCombo();
+    } else {
+      this.createCombo();
+    }
+  }
+
   createCombo(): void {
     this.isLoading = true;
     this.comboService.createCombo(this.newCombo as Omit<Combo, '_id'>).subscribe({
       next: () => {
         this.loadCombos();
         this.resetForm();
+        this.closeDialog();
         this.isLoading = false;
       },
       error: (error) => {
@@ -78,12 +123,6 @@ export class ComboComponent implements OnInit {
     });
   }
 
-  startEditing(combo: Combo): void {
-    this.isEditing = true;
-    this.editId = combo._id;
-    this.newCombo = { ...combo };
-  }
-
   updateCombo(): void {
     if (!this.editId) return;
     
@@ -92,6 +131,7 @@ export class ComboComponent implements OnInit {
       next: () => {
         this.loadCombos();
         this.resetForm();
+        this.closeDialog();
         this.isLoading = false;
       },
       error: (error) => {
