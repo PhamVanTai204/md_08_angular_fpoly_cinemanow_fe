@@ -13,18 +13,18 @@
   
     <!-- Add Button -->
     <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">{{ isCustomerView ? 'Combo của bạn' : 'Quản lý Combo' }}</h1>
+      <h1 class="text-2xl font-bold">{{ isAdminView ? 'Quản lý Combo' : 'Combo của bạn' }}</h1>
       <button 
         (click)="openDialog()" 
         class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
       >
-        {{ isCustomerView ? 'Thêm combo mới' : 'Thêm combo mới' }}
+        Thêm combo mới
       </button>
     </div>
   
     <!-- Combo Table -->
     <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-      <h2 class="text-xl font-bold mb-4">{{ isCustomerView ? 'Danh sách Combo của bạn' : 'Danh sách Combo' }}</h2>
+      <h2 class="text-xl font-bold mb-4">{{ isAdminView ? 'Danh sách Combo' : 'Danh sách Combo của bạn' }}</h2>
       
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white">
@@ -34,6 +34,8 @@
               <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Tên combo</th>
               <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Giá</th>
               <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Mô tả</th>
+              <!-- Hiển thị cột người dùng chỉ khi ở chế độ admin -->
+              <th *ngIf="isAdminView" class="text-left py-3 px-4 uppercase font-semibold text-sm">Người tạo</th>
               <th class="text-center py-3 px-4 uppercase font-semibold text-sm">Thao tác</th>
             </tr>
           </thead>
@@ -44,6 +46,18 @@
                 <td class="py-3 px-4">{{ combo.name_combo }}</td>
                 <td class="py-3 px-4">{{ combo.price_combo | currency:'VND':'':'1.0-0' }}đ</td>
                 <td class="py-3 px-4">{{ combo.description_combo }}</td>
+                <!-- Hiển thị thông tin người dùng nếu ở chế độ admin -->
+                <td *ngIf="isAdminView" class="py-3 px-4">
+                  <ng-container *ngIf="combo.user_id && combo.user_id.user_name">
+                    {{ combo.user_id.user_name }}
+                  </ng-container>
+                  <ng-container *ngIf="combo.user_id && !combo.user_id.user_name">
+                    {{ combo.user_id }}
+                  </ng-container>
+                  <ng-container *ngIf="!combo.user_id">
+                    Không xác định
+                  </ng-container>
+                </td>
                 <td class="py-3 px-4">
                   <div class="flex justify-center space-x-2">
                     <button 
@@ -71,8 +85,8 @@
             
             <!-- Empty state -->
             <tr *ngIf="!isValidCombos() && !isLoading">
-              <td colspan="5" class="py-8 text-center text-gray-500">
-                {{ isCustomerView ? 'Bạn chưa có combo nào. Hãy thêm combo mới.' : 'Không có combo nào. Hãy thêm combo mới.' }}
+              <td [attr.colspan]="isAdminView ? 6 : 5" class="py-8 text-center text-gray-500">
+                {{ isAdminView ? 'Không có combo nào. Hãy thêm combo mới.' : 'Bạn chưa có combo nào. Hãy thêm combo mới.' }}
               </td>
             </tr>
           </tbody>
@@ -98,6 +112,16 @@
           </div>
           <h1 class="mt-2 text-2xl font-bold text-gray-900">{{ selectedCombo.name_combo }}</h1>
           <p class="mt-2 text-gray-600">{{ selectedCombo.description_combo }}</p>
+          
+          <!-- Hiển thị thông tin người tạo nếu ở chế độ admin -->
+          <div *ngIf="isAdminView && selectedCombo.user_id" class="mt-2">
+            <p class="text-sm text-gray-500">
+              <strong>Người tạo:</strong> 
+              <span *ngIf="selectedCombo.user_id.user_name">{{ selectedCombo.user_id.user_name }}</span>
+              <span *ngIf="!selectedCombo.user_id.user_name">{{ selectedCombo.user_id }}</span>
+            </p>
+          </div>
+          
           <div class="mt-4 flex justify-between items-center">
             <p class="text-lg font-bold text-indigo-600">{{ selectedCombo.price_combo | currency:'VND':'symbol':'1.0-0' }}đ</p>
             <button 
@@ -184,15 +208,31 @@
           >
         </div>
   
-        <!-- Hidden field for user_id - will be set programmatically -->
+        <!-- User ID Field - Hiển thị trong chế độ admin nếu muốn chỉ định người dùng -->
+        <div *ngIf="isAdminView" class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="user_id">
+            ID Người dùng <span class="text-gray-500 text-xs">(Để trống sẽ sử dụng ID của bạn)</span>
+          </label>
+          <input 
+            type="text" 
+            id="user_id" 
+            name="user_id" 
+            [(ngModel)]="newCombo.user_id" 
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="ID người dùng"
+          >
+        </div>
+        
+        <!-- Hidden field cho user_id trong chế độ khách hàng -->
         <input 
+          *ngIf="!isAdminView"
           type="hidden" 
           id="user_id" 
           name="user_id" 
           [(ngModel)]="newCombo.user_id"
         >
         
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mt-6">
           <button 
             type="submit" 
             class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
