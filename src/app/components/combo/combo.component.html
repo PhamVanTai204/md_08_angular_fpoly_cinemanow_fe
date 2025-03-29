@@ -13,18 +13,18 @@
   
     <!-- Add Button -->
     <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">Quản lý Combo</h1>
+      <h1 class="text-2xl font-bold">{{ isCustomerView ? 'Combo của bạn' : 'Quản lý Combo' }}</h1>
       <button 
         (click)="openDialog()" 
         class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
       >
-        Thêm combo mới
+        {{ isCustomerView ? 'Thêm combo mới' : 'Thêm combo mới' }}
       </button>
     </div>
   
     <!-- Combo Table -->
     <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-      <h2 class="text-xl font-bold mb-4">Danh sách Combo</h2>
+      <h2 class="text-xl font-bold mb-4">{{ isCustomerView ? 'Danh sách Combo của bạn' : 'Danh sách Combo' }}</h2>
       
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white">
@@ -72,7 +72,7 @@
             <!-- Empty state -->
             <tr *ngIf="!isValidCombos() && !isLoading">
               <td colspan="5" class="py-8 text-center text-gray-500">
-                Không có combo nào. Hãy thêm combo mới.
+                {{ isCustomerView ? 'Bạn chưa có combo nào. Hãy thêm combo mới.' : 'Không có combo nào. Hãy thêm combo mới.' }}
               </td>
             </tr>
           </tbody>
@@ -183,6 +183,14 @@
             placeholder="Ví dụ: https://example.com/images/combo1.jpg"
           >
         </div>
+  
+        <!-- Hidden field for user_id - will be set programmatically -->
+        <input 
+          type="hidden" 
+          id="user_id" 
+          name="user_id" 
+          [(ngModel)]="newCombo.user_id"
+        >
         
         <div class="flex items-center justify-between">
           <button 

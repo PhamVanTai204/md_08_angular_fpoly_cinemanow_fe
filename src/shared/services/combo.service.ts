@@ -10,6 +10,7 @@ export interface Combo {
   price_combo: number;
   description_combo: string;
   image_combo: string;
+  user_id?: any; // Can be string or object with user details
 }
 
 // Định nghĩa kiểu dữ liệu cho response
@@ -35,6 +36,7 @@ export class ComboService {
 
   constructor(private http: HttpClient) { }
 
+  // Get all combos (original method)
   getAllCombos(): Observable<Combo[]> {
     return this.http.get<ApiResponse>(`${this.baseUrl}/get-all`)
       .pipe(
@@ -59,6 +61,30 @@ export class ComboService {
         }),
         catchError(error => {
           console.error('Error in getAllCombos:', error);
+          throw error;
+        })
+      );
+  }
+
+  // NEW METHOD: Get combos by user ID
+  getCombosByUserId(userId: string): Observable<Combo[]> {
+    return this.http.get<ApiResponse>(`${this.baseUrl}/get-by-user/${userId}`)
+      .pipe(
+        map((response: any) => {
+          if (Array.isArray(response)) {
+            return response;
+          } else if (response && typeof response === 'object') {
+            if (response.data && Array.isArray(response.data)) {
+              return response.data;
+            } else if (response.combos && Array.isArray(response.combos)) {
+              return response.combos;
+            }
+          }
+          console.warn('API không trả về dữ liệu mong đợi:', response);
+          return [];
+        }),
+        catchError(error => {
+          console.error('Error in getCombosByUserId:', error);
           throw error;
         })
       );
@@ -92,7 +118,8 @@ export class ComboService {
       name_combo: combo.name_combo,
       price_combo: Number(combo.price_combo),
       description_combo: combo.description_combo || '',
-      image_combo: combo.image_combo || ''
+      image_combo: combo.image_combo || '',
+      user_id: combo.user_id || null // Include user_id if provided
     };
 
     return this.http.post<Combo | ApiResponse>(`${this.baseUrl}/create`, comboToCreate)
@@ -122,7 +149,8 @@ export class ComboService {
       name_combo: combo.name_combo,
       price_combo: Number(combo.price_combo),
       description_combo: combo.description_combo,
-      image_combo: combo.image_combo
+      image_combo: combo.image_combo,
+      user_id: combo.user_id // Include user_id if provided
     };
 
     return this.http.put<Combo | ApiResponse>(`${this.baseUrl}/update/${id}`, comboToUpdate)

@@ -1,5 +1,5 @@
 // combo.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { ComboService, Combo } from '../../../shared/services/combo.service';
 
 @Component({
@@ -10,10 +10,13 @@ import { ComboService, Combo } from '../../../shared/services/combo.service';
 })
 export class ComboComponent implements OnInit {
   
+  @Input() userId: string = ''; // Allow passing userId from parent component
+  
   combos: Combo[] = [];
   selectedCombo: Combo | null = null;
   isLoading = false;
   errorMessage = '';
+  isCustomerView = false; // Để xác định chế độ hiển thị cho khách hàng
 
   // Dialog control
   showDialog = false;
@@ -24,7 +27,8 @@ export class ComboComponent implements OnInit {
     name_combo: '',
     price_combo: 0,
     description_combo: '',
-    image_combo: ''
+    image_combo: '',
+    user_id: ''
   };
   isEditing = false;
   editId = '';
@@ -32,7 +36,14 @@ export class ComboComponent implements OnInit {
   constructor(private comboService: ComboService) { }
 
   ngOnInit(): void {
-    this.loadCombos();
+    // If userId is provided, load combos for that user
+    // Otherwise, load all combos (admin view)
+    if (this.userId) {
+      this.isCustomerView = true;
+      this.loadUserCombos(this.userId);
+    } else {
+      this.loadCombos();
+    }
   }
 
   // Kiểm tra xem combos có phải là mảng hợp lệ không
@@ -40,6 +51,7 @@ export class ComboComponent implements OnInit {
     return Array.isArray(this.combos) && this.combos.length > 0;
   }
 
+  // Tải toàn bộ combos (admin view)
   loadCombos(): void {
     this.isLoading = true;
     this.comboService.getAllCombos().subscribe({
@@ -60,6 +72,30 @@ export class ComboComponent implements OnInit {
         this.isLoading = false;
         console.error('Error loading combos:', error);
         this.combos = []; // Đảm bảo combos luôn là mảng khi có lỗi
+      }
+    });
+  }
+
+  // NEW METHOD: Tải combos của người dùng cụ thể (customer view)
+  loadUserCombos(userId: string): void {
+    this.isLoading = true;
+    this.comboService.getCombosByUserId(userId).subscribe({
+      next: (response) => {
+        console.log('User Combos Response:', response);
+        
+        if (Array.isArray(response)) {
+          this.combos = response;
+        } else {
+          console.error('Dữ liệu trả về không phải mảng:', response);
+          this.combos = [];
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.errorMessage = 'Không thể tải dữ liệu combo của người dùng. Vui lòng thử lại sau.';
+        this.isLoading = false;
+        console.error('Error loading user combos:', error);
+        this.combos = [];
       }
     });
   }
@@ -90,6 +126,11 @@ export class ComboComponent implements OnInit {
       // Add mode
       this.resetForm();
       this.isEditing = false;
+      
+      // If in customer view, pre-populate the user ID
+      if (this.userId) {
+        this.newCombo.user_id = this.userId;
+      }
     }
     this.showDialog = true;
   }
@@ -129,12 +170,18 @@ export class ComboComponent implements OnInit {
       name_combo: this.newCombo.name_combo || '',
       price_combo: Number(this.newCombo.price_combo) || 0,
       description_combo: this.newCombo.description_combo || '',
-      image_combo: this.newCombo.image_combo || ''
+      image_combo: this.newCombo.image_combo || '',
+      user_id: this.newCombo.user_id || this.userId || null // Include user_id from form or component
     };
 
     this.comboService.createCombo(comboToCreate).subscribe({
       next: () => {
-        this.loadCombos();
+        // Reload appropriate combos list
+        if (this.userId) {
+          this.loadUserCombos(this.userId);
+        } else {
+          this.loadCombos();
+        }
         this.resetForm();
         this.closeDialog();
         this.isLoading = false;
@@ -158,12 +205,18 @@ export class ComboComponent implements OnInit {
       name_combo: this.newCombo.name_combo,
       price_combo: Number(this.newCombo.price_combo),
       description_combo: this.newCombo.description_combo,
-      image_combo: this.newCombo.image_combo
+      image_combo: this.newCombo.image_combo,
+      user_id: this.newCombo.user_id || this.userId || null // Preserve user_id
     };
     
     this.comboService.updateCombo(this.editId, comboToUpdate).subscribe({
       next: () => {
-        this.loadCombos();
+        // Reload appropriate combos list
+        if (this.userId) {
+          this.loadUserCombos(this.userId);
+        } else {
+          this.loadCombos();
+        }
         this.resetForm();
         this.closeDialog();
         this.isLoading = false;
@@ -181,7 +234,12 @@ export class ComboComponent implements OnInit {
       this.isLoading = true;
       this.comboService.deleteCombo(id).subscribe({
         next: () => {
-          this.loadCombos();
+          // Reload appropriate combos list
+          if (this.userId) {
+            this.loadUserCombos(this.userId);
+          } else {
+            this.loadCombos();
+          }
           if (this.selectedCombo && this.selectedCombo._id === id) {
             this.selectedCombo = null;
           }
@@ -202,7 +260,8 @@ export class ComboComponent implements OnInit {
       name_combo: '',
       price_combo: 0,
       description_combo: '',
-      image_combo: ''
+      image_combo: '',
+      user_id: this.userId || '' // Pre-populate user_id if in customer view
     };
     this.isEditing = false;
     this.editId = '';
