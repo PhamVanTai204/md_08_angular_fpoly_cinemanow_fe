@@ -1,8 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ShowtimesDto } from '../dtos/showtimesDto.dto';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, throwError, forkJoin } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +10,8 @@ import { catchError, map } from 'rxjs/operators';
 export class ShowtimesService {
   // Chú ý baseUrl phải trùng với app.use('/showtimes', showTimeRoutes);
   private baseUrl = 'http://127.0.0.1:3000/showtimes';
+  private moviesUrl = 'http://127.0.0.1:3000/films/getfilm'; // URL cho API phim
+  private roomsUrl = 'http://127.0.0.1:3000/room/getroom';  // URL cho API phòng
 
   // Các endpoint cụ thể
   private getAllUrl = `${this.baseUrl}/get-all`;
@@ -22,14 +24,87 @@ export class ShowtimesService {
 
   getAllShowtimes(): Observable<ShowtimesDto[]> {
     return this.http.get<any>(this.getAllUrl).pipe(
-      map(response => {
+      switchMap(response => {
         // Giả sử server trả về { code: 200, data: [...] }
         if (response && response.code === 200 && Array.isArray(response.data)) {
-          return response.data.map((item: any) => ShowtimesDto.fromJS(item));
+          const showtimes = response.data.map((item: any) => ShowtimesDto.fromJS(item));
+          
+          // Lấy tất cả ID phim và phòng cần lookup
+          // Sử dụng kiểu ép buộc để đảm bảo kết quả là string[]
+          const movieIds = Array.from(new Set(showtimes.map((s: ShowtimesDto) => s.movieId))) as string[];
+          const roomIds = Array.from(new Set(showtimes.map((s: ShowtimesDto) => s.roomId))) as string[];
+          
+          // Tạo tác vụ cho việc lấy danh sách phim và phòng
+          return forkJoin({
+            movies: this.getMoviesInfo(movieIds),
+            rooms: this.getRoomsInfo(roomIds)
+          }).pipe(
+            map(({ movies, rooms }) => {
+              // Gán tên phim và phòng cho mỗi suất chiếu
+              return showtimes.map((showtime: ShowtimesDto) => {
+                const movie = movies.find((m: any) => m._id === showtime.movieId);
+                const room = rooms.find((r: any) => r._id === showtime.roomId);
+                
+                if (movie) {
+                  showtime.movieName = movie.title || 'Không có tên';
+                  console.log(`Lấy được tên phim: ${showtime.movieName} cho ID: ${showtime.movieId}`);
+                }
+                
+                if (room) {
+                  showtime.roomName = room.room_name || 'Không có tên';
+                  console.log(`Lấy được tên phòng: ${showtime.roomName} cho ID: ${showtime.roomId}`);
+                }
+                
+                return showtime;
+              });
+            })
+          );
         }
         throw new Error('Failed to fetch showtimes');
       }),
       catchError(this.handleError)
+    );
+  }
+
+  // Phương thức lấy thông tin phim
+  private getMoviesInfo(movieIds: string[]): Observable<any[]> {
+    if (movieIds.length === 0) return new Observable(observer => observer.next([]));
+    
+    // Sử dụng endpoint API phim
+    return this.http.get<any>(this.moviesUrl).pipe(
+      map(response => {
+        if (response && response.code === 200 && response.data && response.data.films) {
+          return response.data.films.filter((movie: any) => 
+            movieIds.includes(movie._id)
+          );
+        }
+        return [];
+      }),
+      catchError(error => {
+        console.error('Error fetching movie info:', error);
+        return [];
+      })
+    );
+  }
+
+  // Phương thức lấy thông tin phòng
+  private getRoomsInfo(roomIds: string[]): Observable<any[]> {
+    if (roomIds.length === 0) return new Observable(observer => observer.next([]));
+    
+    // Sử dụng endpoint API phòng
+    return this.http.get<any>(this.roomsUrl).pipe(
+      map(response => {
+        if (response && response.code === 200 && response.data && response.data.rooms) {
+          return response.data.rooms.filter((room: any) => 
+            roomIds.includes(room._id)
+          );
+        }
+        return [];
+      }),
+      catchError(error => {
+        console.error('Error fetching room info:', error);
+        return [];
+      })
     );
   }
 
