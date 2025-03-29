@@ -96,9 +96,15 @@ export class ComboComponent implements OnInit {
 
   closeDialog(): void {
     this.showDialog = false;
+    this.resetForm();
   }
 
   submitForm(): void {
+    // Kiểm tra dữ liệu hợp lệ
+    if (!this.validateForm()) {
+      return;
+    }
+    
     if (this.isEditing) {
       this.updateCombo();
     } else {
@@ -106,9 +112,27 @@ export class ComboComponent implements OnInit {
     }
   }
 
+  validateForm(): boolean {
+    if (!this.newCombo.combo_id || !this.newCombo.name_combo || !this.newCombo.price_combo) {
+      this.errorMessage = 'Vui lòng điền đầy đủ thông tin bắt buộc: Mã combo, Tên combo và Giá';
+      return false;
+    }
+    return true;
+  }
+
   createCombo(): void {
     this.isLoading = true;
-    this.comboService.createCombo(this.newCombo as Omit<Combo, '_id'>).subscribe({
+    
+    // Chuẩn bị dữ liệu gửi đi
+    const comboToCreate: Omit<Combo, '_id'> = {
+      combo_id: this.newCombo.combo_id || '',
+      name_combo: this.newCombo.name_combo || '',
+      price_combo: Number(this.newCombo.price_combo) || 0,
+      description_combo: this.newCombo.description_combo || '',
+      image_combo: this.newCombo.image_combo || ''
+    };
+
+    this.comboService.createCombo(comboToCreate).subscribe({
       next: () => {
         this.loadCombos();
         this.resetForm();
@@ -127,7 +151,17 @@ export class ComboComponent implements OnInit {
     if (!this.editId) return;
     
     this.isLoading = true;
-    this.comboService.updateCombo(this.editId, this.newCombo).subscribe({
+    
+    // Chuẩn bị dữ liệu cập nhật
+    const comboToUpdate: Partial<Combo> = {
+      combo_id: this.newCombo.combo_id,
+      name_combo: this.newCombo.name_combo,
+      price_combo: Number(this.newCombo.price_combo),
+      description_combo: this.newCombo.description_combo,
+      image_combo: this.newCombo.image_combo
+    };
+    
+    this.comboService.updateCombo(this.editId, comboToUpdate).subscribe({
       next: () => {
         this.loadCombos();
         this.resetForm();
@@ -172,6 +206,7 @@ export class ComboComponent implements OnInit {
     };
     this.isEditing = false;
     this.editId = '';
+    this.errorMessage = '';
   }
 
   addToCart(combo: Combo): void {

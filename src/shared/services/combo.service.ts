@@ -1,7 +1,7 @@
 // shared/services/combo.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, catchError } from 'rxjs';
 
 export interface Combo {
   _id: string;
@@ -56,6 +56,10 @@ export class ComboService {
           // Trường hợp không tìm thấy mảng, trả về mảng rỗng
           console.warn('API không trả về dữ liệu mong đợi:', response);
           return [];
+        }),
+        catchError(error => {
+          console.error('Error in getAllCombos:', error);
+          throw error;
         })
       );
   }
@@ -73,12 +77,25 @@ export class ComboService {
             }
           }
           throw new Error('API không trả về dữ liệu combo hợp lệ');
+        }),
+        catchError(error => {
+          console.error('Error in getComboById:', error);
+          throw error;
         })
       );
   }
 
   createCombo(combo: Omit<Combo, '_id'>): Observable<Combo> {
-    return this.http.post<Combo | ApiResponse>(`${this.baseUrl}/create`, combo)
+    // Đảm bảo rằng combo đủ các trường cần thiết
+    const comboToCreate = {
+      combo_id: combo.combo_id,
+      name_combo: combo.name_combo,
+      price_combo: Number(combo.price_combo),
+      description_combo: combo.description_combo || '',
+      image_combo: combo.image_combo || ''
+    };
+
+    return this.http.post<Combo | ApiResponse>(`${this.baseUrl}/create`, comboToCreate)
       .pipe(
         map((response: any) => {
           // Xử lý các trường hợp response khác nhau
@@ -90,12 +107,25 @@ export class ComboService {
             }
           }
           throw new Error('API không trả về dữ liệu combo sau khi tạo');
+        }),
+        catchError(error => {
+          console.error('Error in createCombo:', error);
+          throw error;
         })
       );
   }
 
   updateCombo(id: string, combo: Partial<Combo>): Observable<Combo> {
-    return this.http.put<Combo | ApiResponse>(`${this.baseUrl}/update/${id}`, combo)
+    // Đảm bảo rằng combo đủ các trường cần thiết để cập nhật
+    const comboToUpdate = {
+      combo_id: combo.combo_id,
+      name_combo: combo.name_combo,
+      price_combo: Number(combo.price_combo),
+      description_combo: combo.description_combo,
+      image_combo: combo.image_combo
+    };
+
+    return this.http.put<Combo | ApiResponse>(`${this.baseUrl}/update/${id}`, comboToUpdate)
       .pipe(
         map((response: any) => {
           // Xử lý các trường hợp response khác nhau
@@ -107,11 +137,21 @@ export class ComboService {
             }
           }
           throw new Error('API không trả về dữ liệu combo sau khi cập nhật');
+        }),
+        catchError(error => {
+          console.error('Error in updateCombo:', error);
+          throw error;
         })
       );
   }
 
   deleteCombo(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/delete/${id}`);
+    return this.http.delete(`${this.baseUrl}/delete/${id}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error in deleteCombo:', error);
+          throw error;
+        })
+      );
   }
 }
