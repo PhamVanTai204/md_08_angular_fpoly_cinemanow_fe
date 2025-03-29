@@ -12,7 +12,6 @@ interface User {
   createdAt: string;
   updatedAt: string;
   __v: number;
-  isActive?: boolean;  // Thêm trường này để theo dõi trạng thái
 }
 
 interface ApiResponse {
@@ -32,6 +31,11 @@ export class NguoiDungComponent implements OnInit {
   users: User[] = [];
   isLoading = false;
   errorMessage = '';
+  
+  // Dialog properties
+  showDialog = false;
+  selectedUser: User | null = null;
+  
   private baseUrl = 'http://127.0.0.1:3000/users';
 
   constructor(private http: HttpClient) {}
@@ -47,11 +51,7 @@ export class NguoiDungComponent implements OnInit {
       next: (response) => {
         console.log('API Response:', response);
         if (response.code === 200 && Array.isArray(response.data)) {
-          // Thêm trường isActive cho mỗi người dùng (giả định tất cả đều active)
-          this.users = response.data.map(user => ({
-            ...user,
-            isActive: true
-          }));
+          this.users = response.data;
           this.isLoading = false;
         } else {
           console.error('Định dạng dữ liệu không đúng:', response);
@@ -67,26 +67,31 @@ export class NguoiDungComponent implements OnInit {
     });
   }
 
-  // Hàm khoá/mở khoá tài khoản
-  toggleStatus(user: User): void {
-    user.isActive = !user.isActive;
-    
-    // Trong thực tế, bạn sẽ gọi API để cập nhật trạng thái
-    // Ví dụ:
-    /*
-    this.http.patch(`${this.baseUrl}/toggleStatus/${user._id}`, { isActive: user.isActive })
-      .subscribe({
-        next: (response) => {
-          console.log('User status updated:', response);
-        },
-        error: (error) => {
-          console.error('Error updating user status:', error);
-          // Khôi phục trạng thái cũ nếu có lỗi
-          user.isActive = !user.isActive;
-          this.errorMessage = 'Không thể cập nhật trạng thái người dùng. Vui lòng thử lại sau.';
+  // Lấy thông tin chi tiết người dùng
+  viewUserDetails(userId: string): void {
+    this.isLoading = true;
+    this.http.get<ApiResponse>(`${this.baseUrl}/getById/${userId}`).subscribe({
+      next: (response) => {
+        if (response.code === 200 && !Array.isArray(response.data)) {
+          this.selectedUser = response.data as User;
+          this.showDialog = true;
+        } else {
+          this.errorMessage = 'Không thể tải thông tin chi tiết người dùng.';
         }
-      });
-    */
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading user details:', error);
+        this.errorMessage = 'Không thể tải thông tin chi tiết người dùng. Vui lòng thử lại sau.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Đóng dialog
+  closeDialog(): void {
+    this.showDialog = false;
+    this.selectedUser = null;
   }
 
   // Lấy tên hiển thị của vai trò
@@ -103,6 +108,7 @@ export class NguoiDungComponent implements OnInit {
 
   // Format ngày tạo
   formatDate(dateString: string): string {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN');
   }
