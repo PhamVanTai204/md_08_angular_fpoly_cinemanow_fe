@@ -5,7 +5,8 @@ import { VoucherRoutingModule } from './voucher-routing.module';
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+  ],
   imports: [
     CommonModule,
     VoucherRoutingModule
