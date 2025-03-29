@@ -8,7 +8,7 @@ import { BannerComponent } from './banner.component';
 
 @NgModule({
   declarations: [
-    BannerComponent
+    
   ],
   imports: [
     CommonModule,
