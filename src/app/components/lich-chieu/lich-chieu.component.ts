@@ -23,7 +23,7 @@ export class LichChieuComponent implements OnInit {
   showtimeDangXoa: ShowtimesDto | null = null;
   deletePassword: string = '';
 
-  constructor(private showtimesService: ShowtimesService) {}
+  constructor(private showtimesService: ShowtimesService) { }
 
   ngOnInit(): void {
     this.loadShowtimes();
@@ -48,9 +48,9 @@ export class LichChieuComponent implements OnInit {
       this.filteredShowtimes = [...this.dsShowtimes];
       return;
     }
-    
+
     const term = this.searchTerm.toLowerCase();
-    this.filteredShowtimes = this.dsShowtimes.filter(showtime => 
+    this.filteredShowtimes = this.dsShowtimes.filter(showtime =>
       showtime.showtimeId.toLowerCase().includes(term) ||
       (showtime.movieName && showtime.movieName.toLowerCase().includes(term)) ||
       (showtime.roomName && showtime.roomName.toLowerCase().includes(term))

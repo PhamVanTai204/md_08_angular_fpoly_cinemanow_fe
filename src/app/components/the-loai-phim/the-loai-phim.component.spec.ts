@@ -10,7 +10,7 @@ describe('TheLoaiPhimComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [TheLoaiPhimComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(TheLoaiPhimComponent);
     component = fixture.componentInstance;

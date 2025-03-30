@@ -10,7 +10,7 @@ describe('PhimComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [PhimComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(PhimComponent);
     component = fixture.componentInstance;
