@@ -1,11 +1,13 @@
 /* layout.component.css */
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* Material Icons styling */
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
-  font-size: 24px; /* Preferred icon size */
+  font-size: 24px;
   display: inline-block;
   line-height: 1;
   text-transform: none;
@@ -14,7 +16,7 @@
   white-space: nowrap;
   direction: ltr;
   vertical-align: middle;
-
+  
   /* Support for all WebKit browsers. */
   -webkit-font-smoothing: antialiased;
   /* Support for Safari and Chrome. */
@@ -25,18 +27,125 @@
   font-feature-settings: 'liga';
 }
 
-.material-icons.text-sm {
-  font-size: 18px;
+/* Base layout styles */
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Custom styles for sidebar */
+/* Header adjustments for desktop */
+header {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar styling for desktop */
+nav {
+  min-width: 260px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  border-right: 1px solid #e5e7eb;
+}
+
+/* Custom styles for sidebar links */
+nav a {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
 nav a.active {
   background-color: rgba(59, 130, 246, 0.1);
-  color: rgb(37, 99, 235);
-  font-weight: 500;
+  color: #2563eb;
+  font-weight: 600;
 }
 
-/* Smooth transitions */
-nav a, button {
-  transition: all 0.2s ease-in-out;
+nav .material-icons {
+  font-size: 20px; /* Slightly smaller icons for better proportions */
+}
+
+/* Category headers in sidebar */
+nav .font-medium {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+/* Content container styling */
+.content-container {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Customize scrollbars for better desktop experience */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.6);
+}
+
+::-webkit-scrollbar-track {
+  background-color: rgba(243, 244, 246, 0.6);
+  border-radius: 4px;
+}
+
+/* Ensure content area expands properly */
+.flex-1 {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Better focus styles for interactive elements */
+a:focus, button:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+/* Space for content to breathe */
+.p-6 {
+  padding: 1.5rem;
+}
+
+/* Logo and header styling */
+header img {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+header .font-extrabold {
+  letter-spacing: 0.01em;
+}
+
+/* Make sure tables in router-outlet content expand properly */
+router-outlet + * {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+table {
+  width: 100% !important;
+}
+
+/* Make logout button more noticeable */
+button[type="button"] {
+  transition: all 0.2s ease;
+}
+
+button[type="button"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Improve spacing and readability */
+.space-y-1 > * + * {
+  margin-top: 0.375rem;
 }
