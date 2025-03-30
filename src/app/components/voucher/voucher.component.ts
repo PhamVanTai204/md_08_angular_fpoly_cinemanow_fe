@@ -30,7 +30,11 @@ export class VoucherComponent implements OnInit {
 
   loadVouchers(): void {
     this.vouchersService.getVouchers().subscribe({
-      next: (data) => this.vouchers = data,
+      next: (data) => {
+        this.vouchers = data,
+          console.log(this.vouchers, "danh sách vocher");
+
+      },
       error: (error) => console.error('Lỗi tải voucher:', error)
     });
   }

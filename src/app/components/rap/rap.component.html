@@ -92,49 +92,128 @@
   </div>
 </div>
 
-<!-- ========== DIALOG CHỈNH SỬA RẠP ========== -->
-<div *ngIf="isEditModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-  <div class="bg-white rounded p-6 w-full max-w-md">
-    <h2 class="text-xl font-bold mb-4">Chỉnh sửa rạp</h2>
+<div *ngIf="isEditModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg transform transition-all">
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Chỉnh sửa rạp</h2>
 
-    <form #editRapForm="ngForm" (ngSubmit)="saveEditRap()">
+    <form #editRapForm="ngForm" (ngSubmit)="saveEditRap()" class="space-y-4">
       <!-- Tên rạp -->
-      <div class="mb-4">
-        <label class="block font-medium mb-1">Tên rạp <span class="text-red-500">*</span></label>
+      <div>
+        <label class="block text-gray-700 font-medium">Tên rạp <span class="text-red-500">*</span></label>
         <input type="text" name="cinemaName" [(ngModel)]="editRapData.cinemaName" required #editCinemaName="ngModel"
-          class="border rounded w-full px-3 py-2" placeholder="Tên rạp" />
-        <div *ngIf="editCinemaName.invalid && editCinemaName.touched" class="text-red-500 text-sm">
-          Vui lòng nhập tên rạp
-        </div>
-      </div>
-      <!-- Địa chỉ -->
-      <div class="mb-4">
-        <label class="block font-medium mb-1">Địa chỉ <span class="text-red-500">*</span></label>
-        <input type="text" name="location" [(ngModel)]="editRapData.location" required #editLocation="ngModel"
-          class="border rounded w-full px-3 py-2" placeholder="Địa chỉ" />
-        <div *ngIf="editLocation.invalid && editLocation.touched" class="text-red-500 text-sm">
-          Vui lòng nhập địa chỉ
-        </div>
-      </div>
-      <!-- Số phòng -->
-      <div class="mb-4">
-        <label class="block font-medium mb-1">Số phòng <span class="text-red-500">*</span></label>
-        <input type="number" name="totalRoom" [(ngModel)]="editRapData.totalRoom" required #editTotalRoom="ngModel"
-          class="border rounded w-full px-3 py-2" placeholder="Số phòng" />
-        <div *ngIf="editTotalRoom.invalid && editTotalRoom.touched" class="text-red-500 text-sm">
-          Vui lòng nhập số phòng
+          class="border rounded-lg w-full px-3 py-2 focus:ring focus:ring-blue-300" placeholder="Nhập tên rạp" />
+        <div *ngIf="editCinemaName.invalid && editCinemaName.touched" class="text-red-500 text-sm">Vui lòng nhập tên rạp
         </div>
       </div>
 
-      <div class="flex justify-end space-x-2">
+      <!-- Địa chỉ -->
+      <div>
+        <label class="block text-gray-700 font-medium">Địa chỉ <span class="text-red-500">*</span></label>
+        <input type="text" name="location" [(ngModel)]="editRapData.location" required #editLocation="ngModel"
+          class="border rounded-lg w-full px-3 py-2 focus:ring focus:ring-blue-300" placeholder="Nhập địa chỉ" />
+        <div *ngIf="editLocation.invalid && editLocation.touched" class="text-red-500 text-sm">Vui lòng nhập địa chỉ
+        </div>
+      </div>
+
+      <!-- Số phòng -->
+      <div>
+        <label class="block text-gray-700 font-medium">Số phòng <span class="text-red-500">*</span></label>
+        <input type="number" name="totalRoom" [(ngModel)]="editRapData.totalRoom" required #editTotalRoom="ngModel"
+          class="border rounded-lg w-full px-3 py-2 focus:ring focus:ring-blue-300" placeholder="Nhập số phòng" />
+        <div *ngIf="editTotalRoom.invalid && editTotalRoom.touched" class="text-red-500 text-sm">Vui lòng nhập số phòng
+        </div>
+      </div>
+      <button (click)="openAddRoomModal()" type="button"
+        class="flex items-center bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
+        <span class="material-icons mr-1">add_circle_outline</span> Thêm phòng
+      </button>
+      <!-- Bảng danh sách phòng -->
+      <div class="mt-4 max-h-[300px] overflow-auto">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Danh sách phòng</h3>
+        <table class="w-full border border-gray-200 rounded-lg text-sm shadow-sm">
+          <thead>
+            <tr class="bg-gray-100 text-gray-700">
+              <th class="px-4 py-2 text-left">Tên phòng</th>
+              <th class="px-4 py-2 text-left">Loại</th>
+              <th class="px-4 py-2 text-left">Số ghế</th>
+              <th class="px-4 py-2 text-left">Trạng thái</th>
+              <th class="px-4 py-2 text-center">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let room of roomLisst; let i = index" class="hover:bg-gray-50 transition-all">
+              <td class="px-4 py-2">{{ room.room_name }}</td>
+              <td class="px-4 py-2">{{ room.room_style }}</td>
+              <td class="px-4 py-2">{{ room.total_seat }}</td>
+              <td class="px-4 py-2">
+                <span
+                  [ngClass]="{'text-green-600': room.status === 'active', 'text-red-600': room.status === 'inactive'}">
+                  {{ room.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
+                </span>
+              </td>
+              <td class="px-4 py-2 flex space-x-2 justify-center">
+                <button (click)="editRoom(i)" class="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm">
+                  ✏️
+                </button>
+                <button (click)="deleteRoom(i)" class="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-sm">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end space-x-2 mt-4">
         <button type="button" (click)="closeEditModal()"
-          class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">
+          class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg shadow-sm">
           Đóng
         </button>
-        <button type="submit" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white"
+        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm"
           [disabled]="editRapForm.invalid">
           Lưu
         </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Dialog thêm phòng -->
+<div *ngIf="isAddRoomModalOpen" class="modal-overlay">
+  <div class="modal">
+    <h2>Thêm Phòng Mới</h2>
+
+    <!-- Form nhập thông tin phòng -->
+    <form (ngSubmit)="saveNewRoom()">
+      <!-- Chọn rạp 
+      <label for="cinema">Chọn Rạp:</label>
+      <select id="cinema" [(ngModel)]="cinema_id" name="cinema_id" required>
+        <option *ngFor="let rap of rapList" [value]="rap.id">{{ rap.cinemaName }}</option>
+      </select>
+-->
+      <!-- Tên phòng -->
+      <label for="room_name">Tên Phòng:</label>
+      <input type="text" id="room_name" [(ngModel)]="room_name" name="room_name" required
+        placeholder="Nhập tên phòng" />
+
+      <!-- Loại phòng -->
+      <label for="room_style">Loại Phòng:</label>
+      <select id="room_style" [(ngModel)]="room_style" name="room_style" required>
+        <option value="2D">2D</option>
+        <option value="3D">3D</option>
+        <option value="IMAX">IMAX</option>
+      </select>
+
+      <!-- Tổng số ghế -->
+      <label for="total_seat">Tổng Số Ghế:</label>
+      <input type="number" id="total_seat" [(ngModel)]="total_seat" name="total_seat" required min="1"
+        placeholder="Nhập tổng số ghế" />
+
+      <!-- Nút Lưu và Đóng -->
+      <div class="modal-buttons">
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <button type="button" class="btn btn-secondary" (click)="closeAddRoomModal()">Hủy</button>
       </div>
     </form>
   </div>
