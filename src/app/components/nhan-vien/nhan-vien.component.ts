@@ -3,13 +3,14 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 interface User {
-  _id: string;
+  _id?: string;
+  userId?: string;
   user_name: string;
   email: string;
   url_image: string;
   role: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   isActive?: boolean;
   phone?: string;
 }
@@ -38,6 +39,7 @@ export class NhanVienComponent implements OnInit {
   // Thông tin người dùng đăng nhập
   currentUser: User | null = null;
   isAdmin: boolean = false; // Người dùng hiện tại có phải là admin không
+  currentUserId: string = ''; // ID của người dùng hiện tại
   
   // Form properties
   showForm: boolean = false;
@@ -74,6 +76,11 @@ export class NhanVienComponent implements OnInit {
     });
   }
 
+  // Lấy ID từ user - xử lý cả trường hợp _id và userId
+  private getUserId(user: User): string {
+    return user._id || user.userId || '';
+  }
+
   // Kiểm tra thông tin người dùng đăng nhập hiện tại
   checkCurrentUser(): void {
     this.isLoading = true;
@@ -100,8 +107,13 @@ export class NhanVienComponent implements OnInit {
         if (userFromStorage && userFromStorage.role !== undefined) {
           this.currentUser = userFromStorage;
           this.isAdmin = Number(userFromStorage.role) === 2;
+          
+          // Lấy userId từ bất kỳ trường nào có sẵn
+          this.currentUserId = this.getUserId(userFromStorage);
+          
           console.log('Người dùng hiện tại từ localStorage:', this.currentUser);
           console.log('Role:', userFromStorage.role, 'isAdmin:', this.isAdmin);
+          console.log('User ID (từ _id hoặc userId):', this.currentUserId);
           
           if (this.isAdmin) {
             this.loadUsers();
@@ -134,8 +146,12 @@ export class NhanVienComponent implements OnInit {
           const userRole = Number(userData.role);
           this.isAdmin = userRole === 2;
           
+          // Lấy userId từ bất kỳ trường nào có sẵn
+          this.currentUserId = this.getUserId(userData);
+          
           console.log('Người dùng hiện tại từ API:', this.currentUser);
           console.log('Role:', userRole, 'isAdmin:', this.isAdmin);
+          console.log('User ID (từ _id hoặc userId):', this.currentUserId);
           
           if (this.isAdmin) {
             // Nếu là admin, tải danh sách người dùng
@@ -177,11 +193,21 @@ export class NhanVienComponent implements OnInit {
           this.nhanViens = response.data;
           
           // Phân loại theo vai trò
-          this.adminUsers = this.nhanViens.filter(user => Number(user.role) === 2);
+          if (this.currentUserId) {
+            // Lọc admin, loại bỏ admin hiện tại dựa vào userId
+            this.adminUsers = this.nhanViens.filter(user => {
+              const userId = this.getUserId(user);
+              return Number(user.role) === 2 && userId !== this.currentUserId;
+            });
+          } else {
+            this.adminUsers = this.nhanViens.filter(user => Number(user.role) === 2);
+          }
+          
+          // Lọc nhân viên
           this.staffUsers = this.nhanViens.filter(user => Number(user.role) === 3);
           
           console.log('Tổng số người dùng:', this.nhanViens.length);
-          console.log('Số lượng admin:', this.adminUsers.length);
+          console.log('Số lượng admin (trừ admin hiện tại):', this.adminUsers.length);
           console.log('Số lượng nhân viên:', this.staffUsers.length);
         } else {
           this.errorMessage = response.error || 'Có lỗi xảy ra khi tải dữ liệu';
@@ -206,8 +232,9 @@ export class NhanVienComponent implements OnInit {
     
     this.isLoading = true;
     const headers = this.getHeaders();
+    const userId = this.getUserId(user);
     
-    this.http.put<ApiResponse>(`${this.baseUrl}/users/updateStatus/${user._id}`, {
+    this.http.put<ApiResponse>(`${this.baseUrl}/users/updateStatus/${userId}`, {
       isActive: !user.isActive
     }, { headers }).subscribe({
       next: (response) => {
@@ -328,7 +355,9 @@ export class NhanVienComponent implements OnInit {
         updateData.password = this.newUser.password;
       }
       
-      this.http.put<ApiResponse>(`${this.baseUrl}/users/update/${this.selectedUser._id}`, updateData, 
+      const userId = this.getUserId(this.selectedUser);
+      
+      this.http.put<ApiResponse>(`${this.baseUrl}/users/update/${userId}`, updateData, 
         { headers }).subscribe({
         next: (response) => {
           if (response.code === 200) {
@@ -386,8 +415,9 @@ export class NhanVienComponent implements OnInit {
     if(confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.user_name}?`)) {
       this.isLoading = true;
       const headers = this.getHeaders();
+      const userId = this.getUserId(user);
       
-      this.http.delete<ApiResponse>(`${this.baseUrl}/users/delete/${user._id}`, { headers }).subscribe({
+      this.http.delete<ApiResponse>(`${this.baseUrl}/users/delete/${userId}`, { headers }).subscribe({
         next: (response) => {
           if (response.code === 200) {
             this.successMessage = `Đã xóa người dùng ${user.user_name}`;
