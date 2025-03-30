@@ -1,14 +1,22 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';  // Quan trọng để sử dụng ngModel
+import { RouterModule, Routes } from '@angular/router';
+import { ThongKeComponent } from './thong-ke.component';
 
-import { ThongKeRoutingModule } from './thong-ke-routing.module';
-
+const routes: Routes = [
+  {
+    path: '',
+    component: ThongKeComponent
+  }
+];
 
 @NgModule({
-  declarations: [],
+  declarations: [ThongKeComponent],
   imports: [
     CommonModule,
-    ThongKeRoutingModule
+    FormsModule,  // Cần thiết cho [(ngModel)]
+    RouterModule.forChild(routes)
   ]
 })
 export class ThongKeModule { }

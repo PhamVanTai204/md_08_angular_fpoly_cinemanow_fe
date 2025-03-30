@@ -1,16 +1,20 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { GiaodichRoutingModule } from './giaodich-routing.module';
 import { FormsModule } from '@angular/forms';
-
+import { RouterModule, Routes } from '@angular/router';
+import { GiaodichComponent } from './giaodich.component';
+import { GiaodichRoutingModule } from './giaodich-routing.module';
+import { CurrencyPipe } from '@angular/common';
 
 @NgModule({
-  declarations: [],
+  declarations: [GiaodichComponent],
   imports: [
     CommonModule,
-    GiaodichRoutingModule,
-    FormsModule
+    FormsModule,
+    GiaodichRoutingModule
+  ],
+  providers: [
+    CurrencyPipe
   ]
 })
 export class GiaodichModule { }
