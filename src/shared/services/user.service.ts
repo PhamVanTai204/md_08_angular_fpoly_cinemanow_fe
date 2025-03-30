@@ -1,4 +1,3 @@
-// shared/services/user.service.ts
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { UserLoginDto } from "../dtos/userDto.dto";
@@ -11,7 +10,7 @@ export interface User {
   password?: string;
   url_image?: string;
   role: number;
-  isActive?: boolean; // Trường bổ sung để kiểm soát trạng thái tài khoản
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
@@ -22,9 +21,9 @@ export interface User {
 })
 export class UserService {
   private baseUrl = 'http://127.0.0.1:3000/users';
-
+  
   constructor(private http: HttpClient) { }
-
+  
   // Lấy headers với token xác thực
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -33,7 +32,7 @@ export class UserService {
       'Authorization': token ? `Bearer ${token}` : ''
     });
   }
-
+  
   // Đăng nhập
   login(user: UserLoginDto): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/login`, user.toJSON()).pipe(
@@ -52,7 +51,7 @@ export class UserService {
       })
     );
   }
-
+  
   // Lấy danh sách người dùng
   getAllUsers(): Observable<User[]> {
     const headers = this.getHeaders();
@@ -63,14 +62,14 @@ export class UserService {
       })
     );
   }
-
+  
   // Khoá/mở khoá người dùng (giả lập vì API chưa có endpoint này)
   toggleUserStatus(userId: string, isActive: boolean): Observable<any> {
     const headers = this.getHeaders();
     // Giả sử API endpoint có dạng /users/toggleStatus/{id}
-    return this.http.patch<any>(`${this.baseUrl}/toggleStatus/${userId}`, 
-      { isActive }, 
-      { headers }
+    return this.http.patch<any>(`${this.baseUrl}/toggleStatus/${userId}`,
+       { isActive },
+       { headers }
     ).pipe(
       catchError(error => {
         console.error('Error toggling user status:', error);
@@ -78,7 +77,7 @@ export class UserService {
       })
     );
   }
-
+  
   // Lấy người dùng hiện tại từ localStorage
   getCurrentUser(): any {
     const userStr = localStorage.getItem('currentUser');
@@ -87,21 +86,39 @@ export class UserService {
     }
     return null;
   }
-
+  
   // Lấy ID người dùng hiện tại
   getCurrentUserId(): string | null {
     const user = this.getCurrentUser();
     return user ? user._id || user.userId : null;
   }
-
+  
   // Kiểm tra người dùng đã đăng nhập
   isLoggedIn(): boolean {
     return !!this.getCurrentUser();
   }
-
+  
+  // Kiểm tra vai trò standard user (role 1)
+  isStandardUser(): boolean {
+    const user = this.getCurrentUser();
+    return user ? user.role === 1 : false;
+  }
+  
   // Kiểm tra vai trò admin (role 2)
   isAdmin(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 2 : false;
+  }
+  
+  // Kiểm tra vai trò super admin hoặc manager (role 3)
+  isSuperAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user ? user.role === 3 : false;
+  }
+  
+  // Kiểm tra role theo số
+  hasRole(roleNumber: number): boolean {
+    const user = this.getCurrentUser();
+    return user ? user.role === roleNumber : false;
   }
 }
