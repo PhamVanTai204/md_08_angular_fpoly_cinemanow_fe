@@ -1,7 +1,18 @@
 <div class="p-4 bg-white min-h-screen">
   <!-- Tiêu đề trang -->
   <h1 class="text-xl font-bold mb-4">Quản Lý Thành Viên</h1>
-
+  
+  <!-- Thông báo lỗi -->
+  <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{ errorMessage }}
+    <button class="float-right" (click)="errorMessage = ''">×</button>
+  </div>
+  
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading" class="flex justify-center my-8">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+  </div>
+  
   <!-- Bảng danh sách thành viên -->
   <div class="overflow-x-auto">
     <table class="min-w-full border border-gray-200 text-sm">
@@ -10,59 +21,72 @@
           <th class="border border-gray-200 px-4 py-2 text-left">Avatar</th>
           <th class="border border-gray-200 px-4 py-2 text-left">Họ tên</th>
           <th class="border border-gray-200 px-4 py-2 text-left">Email</th>
-          <th class="border border-gray-200 px-4 py-2 text-left">Số ĐT</th>
+          <th class="border border-gray-200 px-4 py-2 text-left">Ngày tạo</th>
           <th class="border border-gray-200 px-4 py-2 text-left">Quyền</th>
           <th class="border border-gray-200 px-4 py-2 text-center">Hành động</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users">
+        <tr *ngFor="let user of users" class="hover:bg-gray-50">
           <!-- Avatar -->
           <td class="border border-gray-200 px-4 py-2">
             <div class="flex items-center">
-              <!-- Nếu có avatarUrl, hiển thị ảnh; nếu không, hiển thị vòng tròn tên viết tắt -->
-              <ng-container *ngIf="user.avatarUrl; else noAvatar">
-                <img [src]="user.avatarUrl" alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
+              <!-- Nếu có url_image, hiển thị ảnh; nếu không, hiển thị vòng tròn tên viết tắt -->
+              <ng-container *ngIf="user.url_image; else noAvatar">
+                <img [src]="user.url_image" alt="Avatar" class="w-10 h-10 rounded-full object-cover" onerror="this.src='https://via.placeholder.com/40?text=?'" />
               </ng-container>
               <ng-template #noAvatar>
                 <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white">
-                  {{ user.name | slice:0:1 }}
+                  {{ user.user_name.charAt(0).toUpperCase() }}
                 </div>
               </ng-template>
             </div>
           </td>
-
+          
           <!-- Họ tên -->
           <td class="border border-gray-200 px-4 py-2">
-            <span class="font-semibold">{{ user.name }}</span>
+            <span class="font-semibold">{{ user.user_name }}</span>
           </td>
-
+          
           <!-- Email -->
           <td class="border border-gray-200 px-4 py-2">
             {{ user.email }}
           </td>
-
-          <!-- Số điện thoại (đổi màu theo trạng thái) -->
-          <td class="border border-gray-200 px-4 py-2" [ngClass]="{
-              'text-green-500': user.isActive,
-              'text-red-500': !user.isActive
-            }">
-            {{ user.phone }}
+          
+          <!-- Ngày tạo -->
+          <td class="border border-gray-200 px-4 py-2">
+            {{ user.createdAt | date:'dd/MM/yyyy' }}
           </td>
-
+          
           <!-- Quyền -->
           <td class="border border-gray-200 px-4 py-2">
-            {{ user.role }}
+            <span [ngClass]="{
+              'px-2 py-1 rounded-full text-xs font-semibold text-white bg-blue-500': user.role === 2,
+              'px-2 py-1 rounded-full text-xs font-semibold text-white bg-green-500': user.role === 1
+            }">
+              {{ getRoleName(user.role) }}
+            </span>
           </td>
-
+          
           <!-- Hành động (nút Khoá/Mở khoá) -->
           <td class="border border-gray-200 px-4 py-2 text-center">
-            <button (click)="toggleStatus(user)" class="px-3 py-1 rounded text-white" [ngClass]="{
+            <button 
+              (click)="toggleStatus(user)" 
+              class="px-3 py-1 rounded text-white"
+              [ngClass]="{
                 'bg-red-500 hover:bg-red-600': user.isActive,
                 'bg-green-500 hover:bg-green-600': !user.isActive
-              }">
+              }"
+            >
               {{ user.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản' }}
             </button>
+          </td>
+        </tr>
+
+        <!-- Empty state -->
+        <tr *ngIf="users.length === 0 && !isLoading">
+          <td colspan="6" class="border border-gray-200 px-4 py-8 text-center text-gray-500">
+            Không có dữ liệu người dùng nào.
           </td>
         </tr>
       </tbody>

@@ -1,8 +1,21 @@
 // shared/services/user.service.ts
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { UserLoginDto } from "../dtos/userDto.dto";
 import { catchError, Observable, tap, throwError } from "rxjs";
+
+export interface User {
+  _id: string;
+  user_name: string;
+  email: string;
+  password?: string;
+  url_image?: string;
+  role: number;
+  isActive?: boolean; // Trường bổ sung để kiểm soát trạng thái tài khoản
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +25,16 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  // Đăng nhập đơn giản
+  // Lấy headers với token xác thực
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
+  }
+
+  // Đăng nhập
   login(user: UserLoginDto): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/login`, user.toJSON()).pipe(
       tap(response => {
@@ -32,8 +54,29 @@ export class UserService {
   }
 
   // Lấy danh sách người dùng
-  getAllUsers(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/getAll`);
+  getAllUsers(): Observable<User[]> {
+    const headers = this.getHeaders();
+    return this.http.get<User[]>(`${this.baseUrl}/getAll`, { headers }).pipe(
+      catchError(error => {
+        console.error('Error fetching users:', error);
+        return throwError(() => new Error(error.message || 'Server error'));
+      })
+    );
+  }
+
+  // Khoá/mở khoá người dùng (giả lập vì API chưa có endpoint này)
+  toggleUserStatus(userId: string, isActive: boolean): Observable<any> {
+    const headers = this.getHeaders();
+    // Giả sử API endpoint có dạng /users/toggleStatus/{id}
+    return this.http.patch<any>(`${this.baseUrl}/toggleStatus/${userId}`, 
+      { isActive }, 
+      { headers }
+    ).pipe(
+      catchError(error => {
+        console.error('Error toggling user status:', error);
+        return throwError(() => new Error(error.message || 'Server error'));
+      })
+    );
   }
 
   // Lấy người dùng hiện tại từ localStorage
@@ -54,5 +97,11 @@ export class UserService {
   // Kiểm tra người dùng đã đăng nhập
   isLoggedIn(): boolean {
     return !!this.getCurrentUser();
+  }
+
+  // Kiểm tra vai trò admin (role 2)
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user ? user.role === 2 : false;
   }
 }

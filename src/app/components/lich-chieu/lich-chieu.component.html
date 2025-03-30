@@ -3,7 +3,7 @@
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-xl font-bold">Danh sách suất chiếu</h1>
     <div class="relative">
-      <input [(ngModel)]="searchTerm" type="text" placeholder="Nhập mã suất chiếu"
+      <input [(ngModel)]="searchTerm" type="text" placeholder="Tìm kiếm suất chiếu"
         class="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-400" />
       <button (click)="onSearch()"
         class="absolute right-1 top-1 bottom-1 text-sm px-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
@@ -27,15 +27,18 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of dsShowtimes">
+        <tr *ngFor="let item of filteredShowtimes">
           <td class="border border-gray-200 px-4 py-2">{{ item.showtimeId }}</td>
-          <!-- Nếu có movieName thì hiển thị, nếu không thì hiển thị movieId -->
-          <td class="border border-gray-200 px-4 py-2">{{ item.movieName || item.movieId }}</td>
-          <!-- Tương tự với roomName -->
-          <td class="border border-gray-200 px-4 py-2">{{ item.roomName || item.roomId }}</td>
+          <td class="border border-gray-200 px-4 py-2">
+            <span class="font-medium">{{ item.movieName || 'Không rõ tên phim' }}</span>
+            <span *ngIf="!item.movieName" class="text-xs text-gray-500 block">(ID: {{ item.movieId }})</span>
+          </td>
+          <td class="border border-gray-200 px-4 py-2">
+            <span class="font-medium">{{ item.roomName || 'Không rõ phòng' }}</span>
+            <span *ngIf="!item.roomName" class="text-xs text-gray-500 block">(ID: {{ item.roomId }})</span>
+          </td>
           <td class="border border-gray-200 px-4 py-2">{{ item.startTime }}</td>
           <td class="border border-gray-200 px-4 py-2">{{ item.endTime }}</td>
-          <!-- Format showDate (ISO string) thành yyyy-MM-dd -->
           <td class="border border-gray-200 px-4 py-2">{{ item.showDate | date: 'yyyy-MM-dd HH:mm' }}</td>
           <td class="border border-gray-200 px-4 py-2 text-center">
             <button class="mr-2 text-blue-600 hover:text-blue-800" (click)="editSchedule(item)" title="Chỉnh sửa">
@@ -44,6 +47,11 @@
             <button class="text-red-600 hover:text-red-800" (click)="deleteSchedule(item)" title="Xoá">
               Xoá
             </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredShowtimes.length === 0">
+          <td colspan="7" class="border border-gray-200 px-4 py-4 text-center text-gray-500">
+            Không tìm thấy suất chiếu nào
           </td>
         </tr>
       </tbody>
@@ -77,27 +85,35 @@
       </div>
       <div>
         <label class="block mb-1 font-medium">Mã phim</label>
-        <input [(ngModel)]="showtimeForm.movieId" type="text"
-          class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400" />
+        <div class="flex">
+          <input [(ngModel)]="showtimeForm.movieId" type="text"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400" />
+        </div>
+        <div *ngIf="showtimeForm.movieName" class="mt-1 text-sm text-gray-600">
+          Phim: {{ showtimeForm.movieName }}
+        </div>
       </div>
       <div>
         <label class="block mb-1 font-medium">Mã phòng</label>
         <input [(ngModel)]="showtimeForm.roomId" type="text"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400" />
+        <div *ngIf="showtimeForm.roomName" class="mt-1 text-sm text-gray-600">
+          Phòng: {{ showtimeForm.roomName }}
+        </div>
       </div>
       <div>
         <label class="block mb-1 font-medium">Thời gian bắt đầu</label>
-        <input [(ngModel)]="showtimeForm.startTime" type="text" placeholder="yyyy-MM-dd HH:mm"
+        <input [(ngModel)]="showtimeForm.startTime" type="text" placeholder="HH:mm"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400" />
       </div>
       <div>
         <label class="block mb-1 font-medium">Thời gian kết thúc</label>
-        <input [(ngModel)]="showtimeForm.endTime" type="text" placeholder="yyyy-MM-dd HH:mm"
+        <input [(ngModel)]="showtimeForm.endTime" type="text" placeholder="HH:mm"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400" />
       </div>
       <div>
         <label class="block mb-1 font-medium">Ngày</label>
-        <input [(ngModel)]="showtimeForm.showDate" type="text" placeholder="yyyy-MM-dd"
+        <input [(ngModel)]="showtimeForm.showDate" type="datetime-local"
           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400" />
       </div>
     </div>
@@ -125,6 +141,12 @@
       <p>
         Bạn có chắc muốn xóa suất chiếu
         <strong>"{{ showtimeDangXoa?.showtimeId }}"</strong>?
+      </p>
+      <p *ngIf="showtimeDangXoa?.movieName" class="text-sm text-gray-600">
+        Phim: <strong>{{ showtimeDangXoa?.movieName }}</strong>
+      </p>
+      <p *ngIf="showtimeDangXoa?.roomName" class="text-sm text-gray-600">
+        Phòng: <strong>{{ showtimeDangXoa?.roomName }}</strong>
       </p>
       <p class="text-sm text-gray-600">
         Nhập mật khẩu <strong>hiendz</strong> để xác nhận:

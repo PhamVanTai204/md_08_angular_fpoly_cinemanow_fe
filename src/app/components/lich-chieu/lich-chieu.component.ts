@@ -11,6 +11,7 @@ import { ShowtimesDto } from '../../../shared/dtos/showtimesDto.dto';
 export class LichChieuComponent implements OnInit {
   searchTerm: string = '';
   dsShowtimes: ShowtimesDto[] = [];
+  filteredShowtimes: ShowtimesDto[] = [];
 
   // Quản lý modal Thêm/Sửa
   isMainModalOpen: boolean = false;
@@ -32,6 +33,8 @@ export class LichChieuComponent implements OnInit {
     this.showtimesService.getAllShowtimes().subscribe({
       next: (data) => {
         this.dsShowtimes = data;
+        this.filteredShowtimes = [...this.dsShowtimes];
+        console.log('Loaded showtimes with names:', this.dsShowtimes);
       },
       error: (err) => {
         console.error('Error fetching showtimes:', err);
@@ -41,7 +44,17 @@ export class LichChieuComponent implements OnInit {
 
   onSearch(): void {
     console.log('Search term:', this.searchTerm);
-    // Tuỳ bạn muốn filter client-side hay gọi API search
+    if (!this.searchTerm.trim()) {
+      this.filteredShowtimes = [...this.dsShowtimes];
+      return;
+    }
+    
+    const term = this.searchTerm.toLowerCase();
+    this.filteredShowtimes = this.dsShowtimes.filter(showtime => 
+      showtime.showtimeId.toLowerCase().includes(term) ||
+      (showtime.movieName && showtime.movieName.toLowerCase().includes(term)) ||
+      (showtime.roomName && showtime.roomName.toLowerCase().includes(term))
+    );
   }
 
   // Mở modal Thêm
@@ -60,10 +73,11 @@ export class LichChieuComponent implements OnInit {
   }
 
   // Mở modal Sửa
-  openEditModal(showtime: ShowtimesDto): void {
+  editSchedule(showtime: ShowtimesDto): void {
     this.isEditing = true;
     this.isMainModalOpen = true;
     this.showtimeForm = showtime.clone();
+    console.log('Editing showtime:', this.showtimeForm);
   }
 
   // Đóng modal
@@ -107,7 +121,7 @@ export class LichChieuComponent implements OnInit {
   }
 
   // Mở modal Xoá
-  openDeleteModal(showtime: ShowtimesDto): void {
+  deleteSchedule(showtime: ShowtimesDto): void {
     this.showtimeDangXoa = showtime;
     this.deletePassword = '';
     this.isDeleteModalOpen = true;
@@ -140,15 +154,5 @@ export class LichChieuComponent implements OnInit {
     } else {
       alert('Mật khẩu không đúng!');
     }
-  }
-
-  // Nút Sửa (trong bảng)
-  editSchedule(showtime: ShowtimesDto): void {
-    this.openEditModal(showtime);
-  }
-
-  // Nút Xoá (trong bảng)
-  deleteSchedule(showtime: ShowtimesDto): void {
-    this.openDeleteModal(showtime);
   }
 }
