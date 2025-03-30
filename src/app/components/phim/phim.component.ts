@@ -40,6 +40,15 @@ export class PhimComponent implements OnInit {
     this.loadGenres();
   }
 
+  // Cung cấp Math cho template
+  get Math() {
+    return Math;
+  }
+
+  // Tính tổng số trang
+  get totalPages(): number {
+    return Math.ceil(this.totalPhim / this.limit) || 1;
+  }
 
   // Hàm lấy ID string từ bất kỳ đối tượng nào (ObjectId, object với _id, hoặc string)
   private getIdAsString(idObject: any): string {
@@ -119,11 +128,25 @@ export class PhimComponent implements OnInit {
     console.log('Đang tải phim...');
 
     this.phimService.getPhims(this.page, this.limit).subscribe({
-      next: (data: PhimDto[]) => {
-        console.log('Tải phim thành công:', data);
-        this.danhSachPhim = data;
+      next: (response: any) => {
+        console.log('Tải phim thành công:', response);
+        
+        // Xử lý dữ liệu phản hồi tùy thuộc vào cấu trúc API
+        if (response && typeof response === 'object' && response.data) {
+          // Nếu API trả về cấu trúc { data: [...], totalCount: number }
+          this.danhSachPhim = response.data;
+          this.totalPhim = response.totalCount || 0;
+        } else if (Array.isArray(response)) {
+          // Nếu API trả về trực tiếp mảng phim
+          this.danhSachPhim = response;
+          this.totalPhim = response.length; // Có thể cần API riêng để lấy tổng số
+        } else if (response && typeof response === 'object') {
+          // Trường hợp API trả về { items: [...], total: number } hoặc cấu trúc tương tự
+          this.danhSachPhim = response.items || response.results || [];
+          this.totalPhim = response.total || response.totalItems || response.count || 0;
+        }
 
-        // Kiểm tra thể loại của phim đầu tiên
+        // Kiểm tra thể loại của phim đầu tiên nếu có
         if (this.danhSachPhim.length > 0) {
           this.kiemTraTheLoaiPhim(this.danhSachPhim[0]);
         }
@@ -158,6 +181,34 @@ export class PhimComponent implements OnInit {
         this.loadPhims();
       }
     });
+  }
+
+  // Xử lý chuyển trang
+  changePage(newPage: number): void {
+    if (newPage < 1 || newPage > this.totalPages) {
+      return;
+    }
+    
+    this.page = newPage;
+    this.loadPhims();
+    
+    // Cuộn lên đầu bảng khi chuyển trang
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Tạo mảng số trang cho phân trang
+  getPaginationRange(): number[] {
+    const maxPagesToShow = 5;
+    
+    let startPage = Math.max(1, this.page - Math.floor(maxPagesToShow / 2));
+    let endPage = startPage + maxPagesToShow - 1;
+    
+    if (endPage > this.totalPages) {
+      endPage = this.totalPages;
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+    
+    return Array.from({length: (endPage - startPage) + 1}, (_, i) => startPage + i);
   }
 
   getGenreNames(genreItems: any[] | null | undefined): string {
@@ -198,9 +249,23 @@ export class PhimComponent implements OnInit {
     }
 
     this.isLoading = true;
+    // Reset về trang 1 khi tìm kiếm
+    this.page = 1;
+    
     this.phimService.searchPhims(this.searchTerm).subscribe({
-      next: (data: PhimDto[]) => {
-        this.danhSachPhim = data;
+      next: (response: any) => {
+        // Xử lý dữ liệu phản hồi tùy thuộc vào cấu trúc API
+        if (response && typeof response === 'object' && response.data) {
+          this.danhSachPhim = response.data;
+          this.totalPhim = response.totalCount || 0;
+        } else if (Array.isArray(response)) {
+          this.danhSachPhim = response;
+          this.totalPhim = response.length;
+        } else if (response && typeof response === 'object') {
+          this.danhSachPhim = response.items || response.results || [];
+          this.totalPhim = response.total || response.totalItems || response.count || 0;
+        }
+        
         this.isLoading = false;
       },
       error: (error) => {
@@ -211,6 +276,7 @@ export class PhimComponent implements OnInit {
   }
 
   get danhSachPhimDaLoc(): PhimDto[] {
+    // Áp dụng bộ lọc client-side nếu không có phân trang server-side
     if (!this.searchTerm.trim()) {
       return this.danhSachPhim;
     }
