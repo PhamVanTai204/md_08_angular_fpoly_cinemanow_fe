@@ -4,7 +4,7 @@ import { LoginComponent } from './login.component';
 
 
 const routes: Routes = [
-  { path: '', component: LoginComponent } // Khi vào `/the-loai-phim` thì load component này
+  { path: '', component: LoginComponent } 
 ];
 @NgModule({
   imports: [RouterModule.forChild(routes)],
