@@ -1,22 +1,21 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Routes } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+
+import { NhanVienRoutingModule } from './nhan-vien-routing.module';
 import { NhanVienComponent } from './nhan-vien.component';
 
-const routes: Routes = [
-  {
-    path: '',
-    component: NhanVienComponent
-  }
-];
-
 @NgModule({
-  declarations: [NhanVienComponent],
+  declarations: [
+    NhanVienComponent
+  ],
   imports: [
     CommonModule,
-    FormsModule,
-    RouterModule.forChild(routes)
-  ]
+    FormsModule,        // Cần thiết cho [(ngModel)]
+    HttpClientModule,   // Cần thiết cho HttpClient
+    NhanVienRoutingModule
+  ],
+  providers: []
 })
 export class NhanVienModule { }
