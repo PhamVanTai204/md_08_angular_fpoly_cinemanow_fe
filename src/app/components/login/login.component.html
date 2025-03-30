@@ -2,37 +2,49 @@
 <div class="login-container">
   <!-- Background gradient là phần nền bên ngoài -->
   <div class="background-gradient"></div>
-
+  
   <!-- Login box chính là container trắng và xanh -->
   <div class="login-box">
     <!-- Left panel - white background -->
     <div class="left-panel">
       <h1 class="cinema-now">Cinema Now</h1>
-
+      
       <div class="login-title-area">
         <h2 class="login-title">Đăng nhập</h2>
         <p class="login-subtitle">Đăng nhập vào hệ thống bạn đã có và quản lý các chức năng của bạn</p>
       </div>
-
+      
       <form (ngSubmit)="handleSubmit($event)">
         <div class="form-group">
           <label for="email">Email</label>
-          <input type="text" id="email" placeholder="Email" [(ngModel)]="email" name="email"
-            (ngModelChange)="handleEmailChange()" [ngClass]="{'error': emailError}" />
+          <input
+            type="text"
+            id="email"
+            placeholder="Email"
+            [(ngModel)]="email"
+            name="email"
+            (ngModelChange)="handleEmailChange()"
+            [ngClass]="{'error': emailError}"
+          />
           <p *ngIf="emailError" class="error-message">{{emailError}}</p>
         </div>
-
+        
         <div class="form-group">
           <label for="password">Mật khẩu</label>
           <div class="password-field">
-            <input [type]="showPassword ? 'text' : 'password'" id="password" placeholder="Mật khẩu"
-              [(ngModel)]="password" name="password" (ngModelChange)="handlePasswordChange()"
-              [ngClass]="{'error': passwordError}" />
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              placeholder="Mật khẩu"
+              [(ngModel)]="password"
+              name="password"
+              (ngModelChange)="handlePasswordChange()"
+              [ngClass]="{'error': passwordError}"
+            />
           </div>
           <p *ngIf="passwordError" class="error-message">{{passwordError}}</p>
         </div>
-
-
+        
         <button type="submit" class="login-button">
           <i class="lock-icon"></i>
           Đăng nhập
@@ -40,13 +52,13 @@
         </button>
       </form>
     </div>
-
-    <!-- Right panel - dark blue background -->
+    
+    <!-- Right panel - với ảnh nền -->
     <div class="right-panel">
       <div class="welcome-content">
         <h2 class="welcome-title">Chào mừng bạn đã quay trở lại</h2>
         <p class="welcome-message">Đăng nhập với tài khoản quản lý và theo dõi hoạt động trên ứng dụng của bạn</p>
-
+        
         <div class="dots">
           <span class="dot"></span>
           <span class="dot active"></span>

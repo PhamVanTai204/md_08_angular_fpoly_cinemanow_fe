@@ -47,19 +47,39 @@
 
 .right-panel {
   flex: 1;
-  background-color: #1c1c1c;
-  background-image: linear-gradient(rgba(28, 28, 28, 0.9), rgba(28, 28, 28, 0.9)), 
-                    url('https://i.ibb.co/q9Vb9vB/cinema-pattern.png');
+  background-color: rgba(0, 0, 0, 0.7);
+  background-image: url('../../../app/components/assets/image.png');
   background-size: cover;
+  background-position: center;
+  background-blend-mode: darken;
   padding: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  position: relative;
+}
+
+.right-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.welcome-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 350px;
 }
 
 .cinema-now {
-  color: #ff0000;
+  color: #d32f2f;
   font-size: 28px;
   font-weight: bold;
   font-style: italic;
@@ -128,17 +148,6 @@ input.error {
   position: relative;
 }
 
-.forgot-password {
-  text-align: right;
-  margin-bottom: 20px;
-}
-
-.forgot-password a {
-  color: #d32f2f;
-  font-size: 13px;
-  text-decoration: none;
-}
-
 .login-button {
   width: 100%;
   background-color: #d32f2f;
@@ -175,11 +184,6 @@ input.error {
 .arrow-icon::before {
   content: "→";
   font-size: 18px;
-}
-
-.welcome-content {
-  text-align: center;
-  max-width: 350px;
 }
 
 .welcome-title {

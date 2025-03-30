@@ -1,6 +1,4 @@
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-
+<!-- layout.component.html -->
 <!-- Header cố định -->
 <div class="fixed top-0 left-0 right-0 z-10 h-16 bg-gradient-to-r from-blue-600 to-blue-400 shadow-lg">
   <div class="container mx-auto px-4 h-full flex items-center justify-between">
@@ -12,9 +10,9 @@
     <div class="flex items-center space-x-4">
       <div class="flex items-center text-white">
         <span class="material-icons mr-1">account_circle</span>
-        <span>Admin</span>
+        <span>{{ currentUser?.user_name || 'Admin' }}</span>
       </div>
-      <button class="px-4 py-1.5 bg-white text-blue-600 rounded-md hover:bg-gray-100 transition font-medium shadow-sm flex items-center">
+      <button (click)="logout()" class="px-4 py-1.5 bg-white text-blue-600 rounded-md hover:bg-gray-100 transition font-medium shadow-sm flex items-center">
         <span class="material-icons text-sm mr-1">logout</span>
         Đăng xuất
       </button>
