@@ -10,7 +10,7 @@ describe('DonDatVeComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [DonDatVeComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(DonDatVeComponent);
     component = fixture.componentInstance;

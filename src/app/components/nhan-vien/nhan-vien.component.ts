@@ -22,7 +22,7 @@ export class NhanVienComponent implements OnInit {
   // Load danh sách nhân viên
   loadNhanVien(): void {
     this.isLoading = true;
-    
+
     // Mô phỏng lấy dữ liệu từ API
     setTimeout(() => {
       this.nhanViens = [
@@ -54,7 +54,7 @@ export class NhanVienComponent implements OnInit {
           isActive: false
         }
       ];
-      
+
       this.isLoading = false;
     }, 500);
   }
@@ -63,14 +63,14 @@ export class NhanVienComponent implements OnInit {
   toggleNhanVienStatus(nhanVien: any): void {
     // Mô phỏng API cập nhật trạng thái
     this.isLoading = true;
-    
+
     setTimeout(() => {
       nhanVien.isActive = !nhanVien.isActive;
       const message = nhanVien.isActive ? 'Đã mở khóa tài khoản' : 'Đã khóa tài khoản';
       this.errorMessage = `${message} cho nhân viên ${nhanVien.fullName}`;
-      
+
       this.isLoading = false;
-      
+
       // Tự động ẩn thông báo sau 3 giây
       setTimeout(() => {
         this.errorMessage = '';

@@ -14,7 +14,7 @@ export class BannerComponent implements OnInit {
   showDeleteDialog: boolean = false;
   bannerToDelete: BannersDto | null = null;
 
-  constructor(private bannersService: BannersService) {}
+  constructor(private bannersService: BannersService) { }
 
   ngOnInit() {
     this.getBanners();

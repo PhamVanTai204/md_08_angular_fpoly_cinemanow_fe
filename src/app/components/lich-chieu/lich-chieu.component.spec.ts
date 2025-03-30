@@ -10,7 +10,7 @@ describe('LichChieuComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [LichChieuComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(LichChieuComponent);
     component = fixture.componentInstance;

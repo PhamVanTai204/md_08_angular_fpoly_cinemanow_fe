@@ -15,7 +15,7 @@ const routes: Routes = [
   declarations: [RapComponent],
   imports: [
     CommonModule,
-    FormsModule,  
+    FormsModule,
     RouterModule.forChild(routes)
   ]
 })

@@ -10,7 +10,7 @@ describe('RapComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [RapComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(RapComponent);
     component = fixture.componentInstance;

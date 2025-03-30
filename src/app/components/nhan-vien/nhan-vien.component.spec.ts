@@ -10,7 +10,7 @@ describe('NhanVienComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [NhanVienComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(NhanVienComponent);
     component = fixture.componentInstance;

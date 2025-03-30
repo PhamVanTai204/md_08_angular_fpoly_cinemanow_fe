@@ -32,22 +32,22 @@ export class NguoiDungComponent implements OnInit, OnDestroy {
   users: User[] = [];
   isLoading = false;
   errorMessage = '';
-  
+
   // Dialog properties
   showDialog = false;
   selectedUser: User | null = null;
-  
+
   private baseUrl = 'http://127.0.0.1:3000/users';
-  
+
   // Theo dõi các subscription để hủy chúng khi component bị hủy
   private subscriptions: Subscription[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   ngOnInit(): void {
     this.loadUsers();
   }
-  
+
   ngOnDestroy(): void {
     // Hủy tất cả subscription khi component bị hủy để tránh memory leak
     this.subscriptions.forEach(sub => sub.unsubscribe());
@@ -56,7 +56,7 @@ export class NguoiDungComponent implements OnInit, OnDestroy {
   // Lấy danh sách người dùng từ API - CHỈ lấy role=1 (người dùng thường)
   loadUsers(): void {
     if (this.isLoading) return; // Tránh gọi API nhiều lần
-    
+
     this.isLoading = true;
     const sub = this.http.get<ApiResponse>(`${this.baseUrl}/getAll`).subscribe({
       next: (response) => {
@@ -76,14 +76,14 @@ export class NguoiDungComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
-    
+
     this.subscriptions.push(sub);
   }
 
   // Lấy thông tin chi tiết người dùng
   viewUserDetails(userId: string): void {
     if (this.isLoading) return; // Tránh gọi API nhiều lần
-    
+
     this.isLoading = true;
     const sub = this.http.get<ApiResponse>(`${this.baseUrl}/getById/${userId}`).subscribe({
       next: (response) => {
@@ -101,7 +101,7 @@ export class NguoiDungComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
-    
+
     this.subscriptions.push(sub);
   }
 

@@ -1,12 +1,12 @@
 <div class="p-4">
   <h2 class="text-xl font-bold mb-4">Quản Lý Nhân Viên</h2>
-  
+
   <!-- Thông báo lỗi -->
   <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
     {{ errorMessage }}
     <button class="float-right" (click)="errorMessage = ''">×</button>
   </div>
-  
+
   <!-- Loading spinner -->
   <div *ngIf="isLoading" class="flex justify-center my-8">
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -37,12 +37,13 @@
           </th>
         </tr>
       </thead>
-      
+
       <!-- Danh sách nhân viên -->
       <tbody class="divide-y divide-gray-200">
         <tr *ngFor="let nv of nhanViens">
           <td class="px-6 py-4 whitespace-nowrap">
-            <img [src]="nv.avatar" alt="Avatar" class="h-10 w-10 rounded-full object-cover" onerror="this.src='https://via.placeholder.com/40?text=?'" />
+            <img [src]="nv.avatar" alt="Avatar" class="h-10 w-10 rounded-full object-cover"
+              onerror="this.src='https://via.placeholder.com/40?text=?'" />
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             {{ nv.fullName }}
@@ -67,7 +68,7 @@
             </button>
           </td>
         </tr>
-        
+
         <!-- Empty state -->
         <tr *ngIf="nhanViens.length === 0 && !isLoading">
           <td colspan="6" class="px-6 py-8 text-center text-gray-500">

@@ -10,7 +10,7 @@ describe('ComboComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ComboComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ComboComponent);
     component = fixture.componentInstance;

@@ -6,9 +6,9 @@
   <!-- Sử dụng lưới Bootstrap với 3 banner mỗi dòng -->
   <div class="row">
     <div class="col-md-4 mb-3" *ngFor="let banner of banners">
-      <img [src]="banner.imageUrl" alt="Banner" class="banner-image"
-           (mousedown)="startPress(banner)" (mouseup)="cancelPress()" (mouseleave)="cancelPress()"
-           (touchstart)="startPress(banner)" (touchend)="cancelPress()">
+      <img [src]="banner.imageUrl" alt="Banner" class="banner-image" (mousedown)="startPress(banner)"
+        (mouseup)="cancelPress()" (mouseleave)="cancelPress()" (touchstart)="startPress(banner)"
+        (touchend)="cancelPress()">
     </div>
   </div>
 

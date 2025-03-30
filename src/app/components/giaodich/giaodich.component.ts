@@ -10,7 +10,7 @@ export class GiaodichComponent implements OnInit {
   // Các thuộc tính
   searchTerm: string = '';
   filteredThanhToanList: any[] = [];
-  
+
   constructor() { }
 
   ngOnInit(): void {
@@ -42,7 +42,7 @@ export class GiaodichComponent implements OnInit {
     console.log('Tra cứu giao dịch');
     // Lọc danh sách giao dịch theo searchTerm
     if (this.searchTerm) {
-      this.filteredThanhToanList = this.filteredThanhToanList.filter(item => 
+      this.filteredThanhToanList = this.filteredThanhToanList.filter(item =>
         item.tenPhim.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }

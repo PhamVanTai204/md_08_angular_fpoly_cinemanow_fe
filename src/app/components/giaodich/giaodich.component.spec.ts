@@ -10,7 +10,7 @@ describe('GiaodichComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [GiaodichComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(GiaodichComponent);
     component = fixture.componentInstance;
