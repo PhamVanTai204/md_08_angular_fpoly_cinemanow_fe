@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { UserLoginDto } from "../dtos/userDto.dto";
 import { catchError, Observable, tap, throwError } from "rxjs";
+import { Router } from "@angular/router";
 
 export interface User {
   _id: string;
@@ -22,7 +23,10 @@ export interface User {
 export class UserService {
   private baseUrl = 'http://127.0.0.1:3000/users';
   
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) { }
   
   // Lấy headers với token xác thực
   private getHeaders(): HttpHeaders {
@@ -51,6 +55,20 @@ export class UserService {
       })
     );
   }
+
+  // Đăng xuất
+  logout(): void {
+    // Xóa thông tin người dùng và token khỏi localStorage
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
+    
+    // Có thể thêm API call để invalidate token phía server nếu cần
+    // const headers = this.getHeaders();
+    // this.http.post(`${this.baseUrl}/logout`, {}, { headers }).subscribe();
+    
+    // Điều hướng về trang đăng nhập
+    this.router.navigate(['/login']);
+  }
   
   // Lấy danh sách người dùng
   getAllUsers(): Observable<User[]> {
@@ -68,8 +86,8 @@ export class UserService {
     const headers = this.getHeaders();
     // Giả sử API endpoint có dạng /users/toggleStatus/{id}
     return this.http.patch<any>(`${this.baseUrl}/toggleStatus/${userId}`,
-       { isActive },
-       { headers }
+      { isActive },
+      { headers }
     ).pipe(
       catchError(error => {
         console.error('Error toggling user status:', error);
