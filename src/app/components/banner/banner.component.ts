@@ -4,15 +4,20 @@ import { BannersDto } from '../../../shared/dtos/bannersDto.dto';
 
 @Component({
   selector: 'app-banner',
-  standalone: false,
   templateUrl: './banner.component.html',
-  styleUrls: ['./banner.component.css']
+  styleUrls: ['./banner.component.css'],
+  standalone: false
 })
 export class BannerComponent implements OnInit {
   banners: BannersDto[] = [];
   private pressTimer: any;
   showDeleteDialog: boolean = false;
+  showAddDialog: boolean = false;
   bannerToDelete: BannersDto | null = null;
+  newBannerUrl: string = '';
+  previewError: string = '';
+  errorMessage: string = '';
+  isLoading: boolean = false;
 
   constructor(private bannersService: BannersService) { }
 
@@ -22,28 +27,51 @@ export class BannerComponent implements OnInit {
 
   // Lấy danh sách banner
   getBanners() {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
     this.bannersService.getBanners().subscribe(
       (data) => {
         this.banners = data;
+        this.isLoading = false;
       },
       (error) => {
         console.error('Lỗi khi tải banner:', error);
+        this.errorMessage = 'Không thể tải danh sách banner. Vui lòng thử lại sau.';
+        this.isLoading = false;
       }
     );
   }
 
-  // Thêm banner mới (sau khi thêm, dữ liệu sẽ được reset ngay lập tức)
+  // Mở dialog thêm banner mới
   addBanner() {
-    const imageUrl = prompt('Nhập URL ảnh cho banner mới:');
-    if (imageUrl && imageUrl.trim()) {
-      const newBanner = new BannersDto({ id: '', imageUrl: imageUrl.trim() });
+    this.showAddDialog = true;
+    this.newBannerUrl = '';
+    this.previewError = '';
+  }
+
+  // Đóng dialog thêm banner
+  closeAddDialog() {
+    this.showAddDialog = false;
+    this.newBannerUrl = '';
+    this.previewError = '';
+  }
+
+  // Xác nhận thêm banner mới
+  confirmAddBanner() {
+    if (this.newBannerUrl && this.newBannerUrl.trim() && !this.previewError) {
+      this.isLoading = true;
+      
+      const newBanner = new BannersDto({ id: '', imageUrl: this.newBannerUrl.trim() });
       this.bannersService.createBanner(newBanner).subscribe(
         () => {
-          // Reset dữ liệu ngay sau khi thêm
           this.getBanners();
+          this.closeAddDialog();
         },
         (error) => {
           console.error('Lỗi khi thêm banner:', error);
+          this.errorMessage = 'Không thể thêm banner mới. Vui lòng thử lại sau.';
+          this.isLoading = false;
         }
       );
     }
@@ -68,19 +96,24 @@ export class BannerComponent implements OnInit {
   openDeleteDialog(banner: BannersDto) {
     this.bannerToDelete = banner;
     this.showDeleteDialog = true;
+    this.cancelPress(); // Đảm bảo hủy timer nếu dialog được mở bằng nút xóa
   }
 
   // Xác nhận xóa banner từ dialog
   confirmDelete() {
     if (this.bannerToDelete) {
+      this.isLoading = true;
+      
       this.bannersService.deleteBanner(this.bannerToDelete.id).subscribe(
         () => {
-          // Reset dữ liệu sau khi xóa
           this.getBanners();
           this.closeDeleteDialog();
         },
         (error) => {
           console.error('Lỗi khi xóa banner:', error);
+          this.errorMessage = 'Không thể xóa banner. Vui lòng thử lại sau.';
+          this.isLoading = false;
+          this.closeDeleteDialog();
         }
       );
     }
@@ -90,5 +123,16 @@ export class BannerComponent implements OnInit {
   closeDeleteDialog() {
     this.showDeleteDialog = false;
     this.bannerToDelete = null;
+  }
+
+  // Xử lý lỗi khi tải hình ảnh
+  onImageError(event: any) {
+    event.target.src = 'assets/images/image-placeholder.png'; // Đặt hình ảnh mặc định
+  }
+
+  // Xử lý lỗi khi xem trước
+  onPreviewError(event: any) {
+    this.previewError = 'Không thể tải hình ảnh này. Vui lòng kiểm tra lại URL.';
+    event.target.src = 'assets/images/image-placeholder.png'; // Đặt hình ảnh mặc định
   }
 }
