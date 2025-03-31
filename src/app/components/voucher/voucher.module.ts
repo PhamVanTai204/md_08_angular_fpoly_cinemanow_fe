@@ -1,22 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';  // Quan trọng để sử dụng ngModel
-import { RouterModule, Routes } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { VoucherComponent } from './voucher.component';
-
-const routes: Routes = [
-  {
-    path: '',
-    component: VoucherComponent
-  }
-];
+import { VoucherRoutingModule } from './voucher-routing.module';
 
 @NgModule({
   declarations: [VoucherComponent],
   imports: [
     CommonModule,
-    FormsModule,  // Cần thiết cho [(ngModel)]
-    RouterModule.forChild(routes)
+    FormsModule,
+    VoucherRoutingModule
   ]
 })
 export class VoucherModule { }

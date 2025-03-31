@@ -1,186 +1,332 @@
-<div class="p-5">
-  <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-gray-800">DANH SÁCH VOUCHER</h2>
-      <button (click)="openDialog()"
-        class="bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2 rounded-lg">
-        THÊM
-      </button>
-    </div>
-    <!-- Bảng danh sách voucher -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-left">
-        <thead>
-          <tr class="border-b-2 border-gray-300">
-            <th class="p-3">Voucher ID</th>
-            <th class="p-3">Giá Voucher</th>
-            <th class="p-3">Ngày bắt đầu</th>
-            <th class="p-3">Ngày kết thúc</th>
-            <th class="p-3">Số lượng</th>
-            <th class="p-3">Mã Voucher</th>
-            <th class="p-3">Trạng thái</th>
-            <th class="p-3 text-right">Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let voucher of vouchers; let i = index"
-            class="border-b hover:bg-gray-50 transition-colors duration-200">
-            <td class="p-3 font-medium text-gray-700">{{ voucher.voucherId }}</td>
-            <td class="p-3 text-gray-700">{{ voucher.voucherValue }}</td>
-            <td class="p-3 text-gray-700">{{ voucher.startDateVoucher }}</td>
-            <td class="p-3 text-gray-700">{{ voucher.endDateVoucher }}</td>
-            <td class="p-3 text-gray-700">{{ voucher.totalVoucher }}</td>
-            <td class="p-3 text-gray-700">{{ voucher.codeVoucher }}</td>
-            <td class="p-3 text-gray-700">{{ voucher.statusVoucher }}</td>
-            <td class="p-3 text-right">
-              <button (click)="openEditDialog(i)"
-                class="text-blue-500 hover:text-blue-600 transition-colors duration-200 mr-2">
-                <!-- Icon sửa -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15.232 5.232l3.536 3.536M16 3a2.828 2.828 0 113.999 3.999L7 21H3v-4L16 3z" />
-                </svg>
-              </button>
-              <button (click)="openConfirmDialog(i)"
-                class="text-red-500 hover:text-red-600 transition-colors duration-200">
-                <!-- Icon xóa -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a2 2 0 00-2 2h8a2 2 0 00-2-2m-4 0h4" />
-                </svg>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+<!-- Header -->
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-lg font-bold text-gray-800 flex items-center">
+    <span class="material-icons text-blue-500 mr-2">card_giftcard</span>
+    Quản Lý Voucher
+  </h1>
+  
+  <button 
+    (click)="openDialog()" 
+    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+    <span class="material-icons text-sm mr-1">add</span>
+    Thêm Voucher
+  </button>
+</div>
+
+<!-- Thông báo lỗi -->
+<div *ngIf="errorMessage" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
+  <div class="flex items-center">
+    <span class="material-icons mr-2 text-red-500">error</span>
+    <span>{{ errorMessage }}</span>
+    <button class="ml-auto" (click)="errorMessage = ''">
+      <span class="material-icons text-red-500">close</span>
+    </button>
+  </div>
+</div>
+
+<!-- Loading spinner -->
+<div *ngIf="isLoading" class="flex justify-center my-8">
+  <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+</div>
+
+<!-- Bảng danh sách voucher -->
+<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden" *ngIf="!isLoading">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã Voucher</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá Trị</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hiệu Lực</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số Lượng</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng Thái</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr *ngFor="let voucher of vouchers; let i = index" class="hover:bg-gray-50 transition-colors duration-150">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-full">
+                <span class="material-icons text-blue-600">card_giftcard</span>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">{{ voucher.codeVoucher }}</div>
+                <div class="text-xs text-gray-500">ID: {{ truncateId(voucher.voucherId) }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">{{ formatCurrency(voucher.voucherValue) }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">{{ formatDate(voucher.startDateVoucher) }}</div>
+            <div class="text-xs text-gray-500">đến {{ formatDate(voucher.endDateVoucher) }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ voucher.totalVoucher }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span [ngClass]="{
+              'bg-green-100 text-green-800': voucher.statusVoucher === 'active',
+              'bg-gray-100 text-gray-800': voucher.statusVoucher === 'inactive'
+            }" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full py-1">
+              {{ voucher.statusVoucher === 'active' ? 'Còn hiệu lực' : 'Hết hiệu lực' }}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <button 
+              (click)="openEditDialog(i)" 
+              class="text-blue-600 hover:text-blue-900 mr-4 transition-colors duration-200">
+              <span class="material-icons text-sm">edit</span>
+            </button>
+            <button 
+              (click)="openConfirmDialog(i)" 
+              class="text-red-600 hover:text-red-900 transition-colors duration-200">
+              <span class="material-icons text-sm">delete</span>
+            </button>
+          </td>
+        </tr>
+        
+        <!-- Empty state -->
+        <tr *ngIf="vouchers.length === 0">
+          <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+            <div class="flex flex-col items-center">
+              <span class="material-icons text-gray-300 text-5xl mb-2">card_giftcard</span>
+              <span>Không có voucher nào</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Dialog Thêm Voucher -->
+<div *ngIf="showDialog" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeDialog()"></div>
+
+    <!-- Modal panel -->
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+            <span class="material-icons text-blue-600">card_giftcard</span>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              Thêm Voucher Mới
+            </h3>
+            
+            <div class="mt-4 space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Mã Voucher</label>
+                  <input type="text" [(ngModel)]="voucherForm.codeVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                    placeholder="VCH123">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Voucher ID</label>
+                  <input type="text" [(ngModel)]="voucherForm.voucherId" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                    placeholder="VC001">
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Giá Trị</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 sm:text-sm">₫</span>
+                  </div>
+                  <input type="number" [(ngModel)]="voucherForm.voucherValue" 
+                    class="block w-full pl-7 pr-12 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                    placeholder="0">
+                  <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 sm:text-sm">VND</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Ngày bắt đầu</label>
+                  <input type="date" [(ngModel)]="voucherForm.startDateVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Ngày kết thúc</label>
+                  <input type="date" [(ngModel)]="voucherForm.endDateVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Số lượng</label>
+                  <input type="number" [(ngModel)]="voucherForm.totalVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                    placeholder="100">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Trạng thái</label>
+                  <select [(ngModel)]="voucherForm.statusVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <option value="active">Còn hiệu lực</option>
+                    <option value="inactive">Hết hiệu lực</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button type="button" (click)="saveVoucher()" 
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+          Lưu
+        </button>
+        <button type="button" (click)="closeDialog()" 
+          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+          Hủy
+        </button>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- Dialog Thêm Voucher -->
-  <div *ngIf="showDialog" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-      <h2 class="text-xl font-semibold border-b pb-3 mb-4">THÊM VOUCHER</h2>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Voucher ID</label>
-        <input type="text" [(ngModel)]="voucherForm.voucherId" placeholder="Nhập Voucher ID"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+<!-- Dialog Chỉnh sửa Voucher -->
+<div *ngIf="showEditDialog" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeDialog()"></div>
+
+    <!-- Modal panel -->
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+            <span class="material-icons text-blue-600">edit</span>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              Chỉnh Sửa Voucher
+            </h3>
+            
+            <div class="mt-4 space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Mã Voucher</label>
+                  <input type="text" [(ngModel)]="voucherForm.codeVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                    placeholder="VCH123">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Voucher ID</label>
+                  <input type="text" [(ngModel)]="voucherForm.voucherId" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                    placeholder="VC001">
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Giá Trị</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 sm:text-sm">₫</span>
+                  </div>
+                  <input type="number" [(ngModel)]="voucherForm.voucherValue" 
+                    class="block w-full pl-7 pr-12 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                    placeholder="0">
+                  <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 sm:text-sm">VND</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Ngày bắt đầu</label>
+                  <input type="date" [(ngModel)]="voucherForm.startDateVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Ngày kết thúc</label>
+                  <input type="date" [(ngModel)]="voucherForm.endDateVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Số lượng</label>
+                  <input type="number" [(ngModel)]="voucherForm.totalVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                    placeholder="100">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Trạng thái</label>
+                  <select [(ngModel)]="voucherForm.statusVoucher" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <option value="active">Còn hiệu lực</option>
+                    <option value="inactive">Hết hiệu lực</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Giá Voucher</label>
-        <input type="number" [(ngModel)]="voucherForm.voucherValue" placeholder="Nhập giá"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Ngày bắt đầu</label>
-        <input type="date" [(ngModel)]="voucherForm.startDateVoucher" placeholder="yyyy-MM-dd"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Ngày kết thúc</label>
-        <input type="date" [(ngModel)]="voucherForm.endDateVoucher" placeholder="yyyy-MM-dd"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Số lượng</label>
-        <input type="number" [(ngModel)]="voucherForm.totalVoucher" placeholder="Nhập số lượng"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Mã Voucher</label>
-        <input type="text" [(ngModel)]="voucherForm.codeVoucher" placeholder="Nhập mã voucher"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Trạng thái</label>
-        <select [(ngModel)]="voucherForm.statusVoucher"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-      <div class="flex justify-end gap-3">
-        <button (click)="closeDialog()"
-          class="bg-gray-500 hover:bg-gray-600 transition-colors duration-200 text-white px-4 py-2 rounded-md">
-          ĐÓNG
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button type="button" (click)="updateVoucher()" 
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+          Cập nhật
         </button>
-        <button *ngIf="!isEditMode" (click)="saveVoucher()"
-          class="bg-green-500 hover:bg-green-600 transition-colors duration-200 text-white px-4 py-2 rounded-md">
-          LƯU
+        <button type="button" (click)="closeDialog()" 
+          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+          Hủy
         </button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Dialog Chỉnh sửa Voucher -->
-  <div *ngIf="showEditDialog" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-      <h2 class="text-xl font-semibold border-b pb-3 mb-4">CHỈNH SỬA VOUCHER</h2>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Voucher ID</label>
-        <input type="text" [(ngModel)]="voucherForm.voucherId" placeholder="Nhập Voucher ID"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Giá Voucher</label>
-        <input type="number" [(ngModel)]="voucherForm.voucherValue" placeholder="Nhập giá"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Ngày bắt đầu</label>
-        <input type="date" [(ngModel)]="voucherForm.startDateVoucher" placeholder="yyyy-MM-dd"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Ngày kết thúc</label>
-        <input type="date" [(ngModel)]="voucherForm.endDateVoucher" placeholder="yyyy-MM-dd"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Số lượng</label>
-        <input type="number" [(ngModel)]="voucherForm.totalVoucher" placeholder="Nhập số lượng"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Mã Voucher</label>
-        <input type="text" [(ngModel)]="voucherForm.codeVoucher" placeholder="Nhập mã voucher"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-1">Trạng thái</label>
-        <select [(ngModel)]="voucherForm.statusVoucher"
-          class="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-      <div class="flex justify-end gap-3">
-        <button (click)="closeDialog()"
-          class="bg-gray-500 hover:bg-gray-600 transition-colors duration-200 text-white px-4 py-2 rounded-md">
-          HỦY
-        </button>
-        <button (click)="updateVoucher()"
-          class="bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-4 py-2 rounded-md">
-          CẬP NHẬT
-        </button>
-      </div>
-    </div>
-  </div>
+<!-- Dialog Xác nhận xóa Voucher -->
+<div *ngIf="showConfirmDialog" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeDialog()"></div>
 
-  <!-- Dialog Xác nhận xóa Voucher -->
-  <div *ngIf="showConfirmDialog" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-      <h2 class="text-xl font-semibold border-b pb-3 mb-4">XÁC NHẬN XÓA</h2>
-      <p class="mb-6">Bạn có chắc muốn xóa voucher "{{ voucherForm.voucherId }}" không?</p>
-      <div class="flex justify-end gap-3">
-        <button (click)="closeDialog()"
-          class="bg-gray-500 hover:bg-gray-600 transition-colors duration-200 text-white px-4 py-2 rounded-md">
-          KHÔNG
+    <!-- Modal panel -->
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+            <span class="material-icons text-red-600">warning</span>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              Xác nhận xóa
+            </h3>
+            <div class="mt-2">
+              <p class="text-sm text-gray-500">
+                Bạn có chắc muốn xóa voucher "<span class="font-medium">{{ voucherForm.codeVoucher }}</span>" không? Thao tác này không thể hoàn tác.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button type="button" (click)="confirmDelete()" 
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+          Xóa
         </button>
-        <button (click)="confirmDelete()"
-          class="bg-red-600 hover:bg-red-700 transition-colors duration-200 text-white px-4 py-2 rounded-md">
-          CÓ
+        <button type="button" (click)="closeDialog()" 
+          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+          Hủy
         </button>
       </div>
     </div>
