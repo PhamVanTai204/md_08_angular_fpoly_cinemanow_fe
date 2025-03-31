@@ -1,5 +1,20 @@
-/* Transitions và animations */
-.transition-all {
+/* Tương thích với router-outlet */
+:host {
+    display: block;
+    width: 100%;
+    overflow: visible;
+    height: auto;
+  }
+  
+  /* Loại bỏ các thuộc tính có thể gây cuộn */
+  .min-h-screen {
+    min-height: auto;
+    height: auto;
+    overflow: visible;
+  }
+  
+  /* Transitions và animations */
+  .transition-all {
     transition: all 0.3s ease;
   }
   
@@ -25,26 +40,6 @@
   
   .fixed > div {
     animation: slideUp 0.3s ease;
-  }
-  
-  /* Scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #ddd;
-    border-radius: 10px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #ccc;
   }
   
   /* Card hover effect */
@@ -79,14 +74,6 @@
   .status-inactive {
     background-color: rgba(239, 68, 68, 0.1);
     color: rgb(239, 68, 68);
-  }
-  
-  /* Transparent Container */
-  .p-6.bg-gray-50 {
-    background-color: transparent !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
   }
   
   /* Card Design Enhancements */

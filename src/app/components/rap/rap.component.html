@@ -1,7 +1,19 @@
-<div class="min-h-screen">
+<div>
   <h1 class="text-3xl font-bold mb-6 text-gray-800">DANH SÁCH RẠP</h1>
 
-  <!-- Card grid thay thế cho bảng -->
+  <!-- Search section -->
+  <div class="mb-6">
+    <div class="relative w-full md:w-64">
+      <input type="text" placeholder="Tìm kiếm rạp"
+        class="w-full border border-gray-300 rounded-lg py-2 px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700" />
+      <button
+        class="absolute right-1 top-1 bottom-1 px-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Card grid for cinemas -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div *ngFor="let rap of rapList; let i = index" 
          class="bg-white rounded-lg shadow hover:shadow-lg transition-all border-l-4 border-red-500 card-hover">
@@ -22,7 +34,7 @@
           </div>
         </div>
         
-        <div class="space-y-2 mb-4">
+        <div class="space-y-2 mb-3">
           <div class="flex items-start">
             <i class="fas fa-map-marker-alt text-gray-500 mt-1 mr-2"></i>
             <p class="text-gray-600">{{ rap.location }}</p>
