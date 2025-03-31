@@ -1,26 +1,20 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';  // Quan trọng để sử dụng ngModel
-import { RouterModule, Routes } from '@angular/router';
+import { CommonModule, CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ComboComponent } from './combo.component';
-import { CurrencyPipe } from '@angular/common';  // Để sử dụng currency pipe
-
-const routes: Routes = [
-  {
-    path: '',
-    component: ComboComponent
-  }
-];
+import { ComboRoutingModule } from './combo-routing.module';
 
 @NgModule({
-  declarations: [ComboComponent],
+  declarations: [
+    ComboComponent
+  ],
   imports: [
     CommonModule,
-    FormsModule,  // Cần thiết cho [(ngModel)]
-    RouterModule.forChild(routes)
+    FormsModule,
+    ComboRoutingModule
   ],
   providers: [
-    CurrencyPipe  // Để sử dụng currency pipe
+    CurrencyPipe
   ]
 })
 export class ComboModule { }
