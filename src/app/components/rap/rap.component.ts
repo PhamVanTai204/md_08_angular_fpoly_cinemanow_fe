@@ -4,14 +4,13 @@ import { CinemaDto } from '../../../shared/dtos/cinemasDto.dto';
 import { RoomService } from '../../../shared/services/room.service';
 import { RoomDto } from '../../../shared/dtos/roomDto.dto';
 import { lastValueFrom } from 'rxjs';
-import { RoomComponent } from '../room/room.component';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-rap',
   templateUrl: './rap.component.html',
   styleUrls: ['./rap.component.css'],
-  standalone: false // Đảm bảo component không phải standalone
+  standalone: false
 })
 export class RapComponent implements OnInit {
   rapList: CinemaDto[] = [];
@@ -20,8 +19,7 @@ export class RapComponent implements OnInit {
   newRap: CinemaDto = new CinemaDto();
   isAddRoomModalOpen = false;
   newRoom: RoomDto = new RoomDto();
-  selectedCinemaId: string = ''; // ID của rạp đang được chỉnh sửa
-  // Modal sửa
+  selectedCinemaId: string = '';
   isEditModalOpen = false;
   editRapIndex: number = -1;
   editRapData: CinemaDto = new CinemaDto();
@@ -33,7 +31,7 @@ export class RapComponent implements OnInit {
 
   // Pagination properties
   currentPage: number = 1;
-  pageSize: number = 6; // Số rạp hiển thị trên mỗi trang
+  pageSize: number = 6;
   totalPages: number = 1;
   pagedRapList: CinemaDto[] = [];
 
@@ -75,27 +73,22 @@ export class RapComponent implements OnInit {
     }
   }
 
-  // Tạo mảng số trang với điểm ngắt (...) cho giao diện phân trang
   getPageNumbers(): (number | string)[] {
     const totalPages = this.totalPages;
     const currentPage = this.currentPage;
-    const visiblePages = 5; // Số nút trang hiển thị (không tính Previous/Next)
+    const visiblePages = 5;
     
     if (totalPages <= visiblePages) {
-      // Nếu tổng số trang <= số nút hiển thị, hiển thị tất cả
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
     const pages: (number | string)[] = [];
     
-    // Luôn hiển thị trang 1
     pages.push(1);
     
-    // Tính toán phạm vi trang hiển thị xung quanh trang hiện tại
     let rangeStart = Math.max(2, currentPage - 1);
     let rangeEnd = Math.min(totalPages - 1, currentPage + 1);
     
-    // Điều chỉnh để đảm bảo có đủ số lượng nút trang hiển thị
     while (rangeEnd - rangeStart < Math.min(visiblePages - 3, totalPages - 2)) {
       if (rangeStart > 2) {
         rangeStart--;
@@ -106,22 +99,18 @@ export class RapComponent implements OnInit {
       }
     }
     
-    // Thêm dấu ... trước các trang ở giữa nếu cần
     if (rangeStart > 2) {
       pages.push('...');
     }
     
-    // Thêm các trang ở giữa
     for (let i = rangeStart; i <= rangeEnd; i++) {
       pages.push(i);
     }
     
-    // Thêm dấu ... sau các trang ở giữa nếu cần
     if (rangeEnd < totalPages - 1) {
       pages.push('...');
     }
     
-    // Luôn hiển thị trang cuối cùng
     if (totalPages > 1) {
       pages.push(totalPages);
     }
@@ -137,6 +126,7 @@ export class RapComponent implements OnInit {
   closeAddRoomModal(): void {
     this.isAddRoomModalOpen = false;
   }
+
   saveNewRoom(): void {
     if (!this.selectedCinemaId) {
       console.error('Không có rạp nào được chọn để thêm phòng.');
@@ -146,19 +136,18 @@ export class RapComponent implements OnInit {
     this.roomService.createRoom(this.selectedCinemaId, this.room_name, this.room_style, this.total_seat).subscribe({
       next: (addedRoom: RoomDto) => {
         this.roomLisst.push(addedRoom);
-        this.getRoom(this.selectedCinemaId)
+        this.getRoom(this.selectedCinemaId);
         this.isAddRoomModalOpen = false;
       },
       error: (err) => console.error('Lỗi khi thêm phòng:', err)
     });
   }
 
-  // ====== Lấy danh sách rạp ======
   getAllRaps(): void {
     this.cinemasService.getCinemas().subscribe({
       next: (data) => {
         this.rapList = data;
-        this.updatePagedData(); // Cập nhật dữ liệu phân trang
+        this.updatePagedData();
       },
       error: (err) => {
         console.error('Error fetching cinemas:', err);
@@ -166,7 +155,6 @@ export class RapComponent implements OnInit {
     });
   }
 
-  // ====== Thêm rạp ======
   openAddModal(): void {
     this.isAddModalOpen = true;
     this.newRap = new CinemaDto();
@@ -179,10 +167,8 @@ export class RapComponent implements OnInit {
   saveNewRap(): void {
     this.cinemasService.addCinema(this.newRap).subscribe({
       next: (addedCinema: CinemaDto) => {
-        // Thêm vào danh sách hiện có
         this.rapList = [...this.rapList, addedCinema];
-        this.updatePagedData(); // Cập nhật dữ liệu phân trang
-        // Đóng modal, reset form
+        this.updatePagedData();
         this.isAddModalOpen = false;
         this.newRap = new CinemaDto();
       },
@@ -190,23 +176,22 @@ export class RapComponent implements OnInit {
     });
   }
 
-  // ====== Sửa rạp ======
   async openEditModal(rap: CinemaDto, index: number): Promise<void> {
-    // Tính toán lại chỉ số thực của rap trong danh sách gốc
     const actualIndex = (this.currentPage - 1) * this.pageSize + index;
     this.editRapIndex = actualIndex;
     this.editRapData = rap.clone();
-    this.isEditModalOpen = true; // Mở modal trước khi tải dữ liệu phòng
-    this.selectedCinemaId = rap.id; // Gán ID rạp đang chỉnh sửa
+    this.isEditModalOpen = true;
+    this.selectedCinemaId = rap.id;
 
     try {
       this.roomLisst = await lastValueFrom(this.roomService.getByCinemaId(rap.id));
       console.log(this.roomLisst, 'Danh sách phòng đã tải');
     } catch (error) {
       console.error('Lỗi khi tải danh sách phòng:', error);
-      this.roomLisst = []; // Đặt danh sách phòng thành rỗng nếu có lỗi
+      this.roomLisst = [];
     }
   }
+
   closeEditModal(): void {
     this.isEditModalOpen = false;
     this.editRapIndex = -1;
@@ -216,11 +201,10 @@ export class RapComponent implements OnInit {
     this.cinemasService.editCinema(this.editRapData.id, this.editRapData).subscribe({
       next: (updatedCinema: CinemaDto) => {
         if (this.editRapIndex > -1) {
-          // Thay thế phần tử trong mảng
           this.rapList = this.rapList.map((rap, i) =>
             i === this.editRapIndex ? updatedCinema : rap
           );
-          this.updatePagedData(); // Cập nhật dữ liệu phân trang
+          this.updatePagedData();
         }
         this.isEditModalOpen = false;
         this.editRapIndex = -1;
@@ -228,32 +212,38 @@ export class RapComponent implements OnInit {
       error: (err) => console.error('Error updating cinema:', err)
     });
   }
-  // ====== Xóa rạp ======
+
   deleteRap(rap: CinemaDto): void {
     const confirmDelete = confirm(`Bạn có chắc muốn xóa rạp: ${rap.cinemaName}?`);
     if (!confirmDelete) return;
 
     this.cinemasService.deleteCinema(rap.id).subscribe({
       next: () => {
-        // Loại bỏ rạp khỏi danh sách
         this.rapList = this.rapList.filter(item => item.id !== rap.id);
-        this.updatePagedData(); // Cập nhật dữ liệu phân trang
+        this.updatePagedData();
       },
       error: (err) => console.error('Error deleting cinema:', err)
     });
   }
 
-  // Hàm chỉnh sửa phòng
-  editRoom(index: number) {
+  editRoom(index: number): void {
     // Phương thức xử lý chỉnh sửa phòng
+    console.log('Editing room at index:', index);
   }
   
-  // Hàm xóa phòng
-  deleteRoom(index: number) {
+  deleteRoom(index: number): void {
     // Phương thức xử lý xóa phòng
+    if (index >= 0 && index < this.roomLisst.length) {
+      const room = this.roomLisst[index];
+      const confirmDelete = confirm(`Bạn có chắc muốn xóa phòng: ${room.room_name}?`);
+      if (!confirmDelete) return;
+
+      // Implement the delete functionality here
+      console.log('Deleting room at index:', index);
+    }
   }
   
-  getRoom(id: string) {
+  getRoom(id: string): void {
     this.roomService.getByCinemaId(id)
       .subscribe({
         next: (result: RoomDto[]) => {
@@ -265,10 +255,9 @@ export class RapComponent implements OnInit {
         }
       });
   }
- }
- 
-  showRomDialog(idRoom: string) {
+
+  // Fix: Move this method inside the class
+  showRomDialog(idRoom: string): void {
     this.router.navigate(['/layout', 'room', idRoom]);
   }
 }
- 

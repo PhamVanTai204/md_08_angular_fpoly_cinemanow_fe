@@ -23,7 +23,9 @@ export class RoomComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.idRoom = params.get('idRoom') || '';
+      const idRoomParam = params.get('idRoom');
+      this.idRoom = idRoomParam || '';
+      
       if (this.idRoom) {
         this.list();
       } else {
@@ -31,16 +33,17 @@ export class RoomComponent implements OnInit {
       }
     });
   }
-  // Thêm phương thức objectKeys vào RoomComponent
+
+  // Method to safely access object keys
   objectKeys(obj: any): string[] {
     return Object.keys(obj);
   }
 
-  close() {
+  close(): void {
     this.bsModalRef.hide();
   }
 
-  list() {
+  list(): void {
     console.log("Fetching seats for Room ID:", this.idRoom);
     this.seatService.getSeatByRoomId(this.idRoom).subscribe(
       data => {
