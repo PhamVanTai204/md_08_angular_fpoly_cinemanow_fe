@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';  // Quan trọng để sử dụng ngModel, ngForm, ngClass
 import { RouterModule, Routes } from '@angular/router';
 import { RapComponent } from './rap.component';
-
 const routes: Routes = [
   {
     path: '',
@@ -16,7 +15,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule.forChild(routes)
+    RouterModule.forChild(routes),
   ]
 })
 export class RapModule { }

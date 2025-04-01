@@ -238,10 +238,52 @@
             Lưu thay đổi
           </button>
         </div>
-      </form>
+       </form>
     </div>
   </div>
-
+       </div>
+      <button (click)="openAddRoomModal()" type="button"
+        class="flex items-center bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
+        <span class="material-icons mr-1">add_circle_outline</span> Thêm phòng
+      </button>
+      <!-- Bảng danh sách phòng -->
+      <div class="mt-4 max-h-[300px] overflow-auto">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Danh sách phòng</h3>
+        <table class="w-full border border-gray-200 rounded-lg text-sm shadow-sm">
+          <thead>
+            <tr class="bg-gray-100 text-gray-700">
+              <th class="px-4 py-2 text-left">Tên phòng</th>
+              <th class="px-4 py-2 text-left">Loại</th>
+              <th class="px-4 py-2 text-left">Số ghế</th>
+              <th class="px-4 py-2 text-left">Trạng thái</th>
+              <th class="px-4 py-2 text-center">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let room of roomLisst; let i = index" class="hover:bg-gray-50 transition-all">
+              <td class="px-4 py-2">{{ room.room_name }}</td>
+              <td class="px-4 py-2">{{ room.room_style }}</td>
+              <td class="px-4 py-2">{{ room.total_seat }}</td>
+              <td class="px-4 py-2">
+                <span
+                  [ngClass]="{'text-green-600': room.status === 'active', 'text-red-600': room.status === 'inactive'}">
+                  {{ room.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
+                </span>
+              </td>
+              <td class="px-4 py-2 flex space-x-2 justify-center">
+                <button (click)="showRomDialog(room.id)"
+                  class="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm">
+                  ✏️
+                </button>
+                <button (click)="deleteRoom(i)" class="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-sm">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+ 
   <!-- ========== DIALOG THÊM PHÒNG ========== -->
   <div *ngIf="isAddRoomModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50 backdrop-blur-sm">
     <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all">

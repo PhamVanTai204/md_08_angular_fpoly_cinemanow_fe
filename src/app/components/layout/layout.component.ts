@@ -14,16 +14,17 @@ import { filter } from 'rxjs/operators';
 export class LayoutComponent implements OnInit {
   currentUser: any;
   currentRoute: string = '';
-  
+
   constructor(
     private userService: UserService,
     private router: Router
-  ) {}
-  
+  ) { }
+
   ngOnInit(): void {
     // Lấy thông tin người dùng đã đăng nhập
     this.currentUser = this.userService.getCurrentUser();
-    
+    console.log(this.currentUser, "chfkujhaskjfhsajk");
+
     // Track current route for navigation highlighting
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -32,7 +33,7 @@ export class LayoutComponent implements OnInit {
         this.currentRoute = url.split('/').pop();
       });
   }
-  
+
   // Xử lý logout
   logout(): void {
     // Gọi phương thức đăng xuất từ UserService

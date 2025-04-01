@@ -4,16 +4,18 @@
   <header class="w-full h-16 bg-gradient-to-r from-blue-600 to-blue-400 shadow-lg z-20">
     <div class="container mx-auto px-6 h-full flex items-center justify-between">
       <div class="flex items-center space-x-4">
-        <img src="https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc" alt="Logo" class="h-10 w-10 rounded-full bg-white p-1" />
-        <span class="font-['Inter'] font-extrabold text-xl text-white">ADMIN DASHBOARD</span>
+ 
+        <img [src]="currentUser.url_image" alt="Logo" class="h-10 w-10 rounded-full bg-white p-1" />
+         <span class="font-['Inter'] font-extrabold text-xl text-white">ADMIN DASHBOARD</span>
       </div>
-      
+
       <div class="flex items-center space-x-6">
         <div class="flex items-center text-white">
           <span class="material-icons mr-2">account_circle</span>
-          <span>{{ currentUser?.user_name || 'Admin' }}</span>
+          <span>{{ currentUser?.email || 'Admin' }}</span>
         </div>
-        <button (click)="logout()" class="px-5 py-2 bg-white text-blue-600 rounded-md hover:bg-gray-100 transition font-medium shadow-sm flex items-center">
+        <button (click)="logout()"
+          class="px-5 py-2 bg-white text-blue-600 rounded-md hover:bg-gray-100 transition font-medium shadow-sm flex items-center">
           <span class="material-icons text-sm mr-2">logout</span>
           <span>Đăng xuất</span>
         </button>
@@ -29,96 +31,96 @@
         <ul class="space-y-1">
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['theloaiphim']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['theloaiphim']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">movie_filter</span>
               <span>Thể loại phim</span>
             </a>
           </li>
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['phim']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['phim']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">movie</span>
               <span>Phim</span>
             </a>
           </li>
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['rap']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['rap']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">store</span>
               <span>Rạp</span>
             </a>
           </li>
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['lichchieu']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['lichchieu']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">event</span>
               <span>Lịch chiếu</span>
             </a>
           </li>
         </ul>
-        
+
         <div class="font-medium text-gray-400 uppercase text-xs tracking-wider mb-3 mt-6 pl-2">Quản lý kinh doanh</div>
         <ul class="space-y-1">
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['thanhtoan']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['thanhtoan']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">credit_card</span>
               <span>Thanh toán</span>
             </a>
           </li>
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['thongke']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['thongke']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">bar_chart</span>
               <span>Thống kê</span>
             </a>
           </li>
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['giaodich']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['giaodich']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">paid</span>
               <span>Giao dịch</span>
             </a>
           </li>
         </ul>
-        
+
         <div class="font-medium text-gray-400 uppercase text-xs tracking-wider mb-3 mt-6 pl-2">Người dùng</div>
         <ul class="space-y-1">
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['nhanvien']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['nhanvien']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">badge</span>
               <span>Nhân viên</span>
             </a>
           </li>
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['nguoidung']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['nguoidung']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">person</span>
               <span>Người dùng</span>
             </a>
           </li>
         </ul>
-        
+
         <div class="font-medium text-gray-400 uppercase text-xs tracking-wider mb-3 mt-6 pl-2">Marketing</div>
         <ul class="space-y-1">
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['banner']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['banner']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">image</span>
               <span>Banner</span>
             </a>
           </li>
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['voucher']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['voucher']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">card_giftcard</span>
               <span>Voucher</span>
             </a>
           </li>
           <li>
             <a class="flex items-center gap-3 py-2.5 px-4 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-all"
-               [routerLink]="['combo']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
+              [routerLink]="['combo']" routerLinkActive="bg-blue-100 text-blue-600 font-medium">
               <span class="material-icons text-current">fastfood</span>
               <span>Combo</span>
             </a>

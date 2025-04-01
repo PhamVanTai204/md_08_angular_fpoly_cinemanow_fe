@@ -8,7 +8,7 @@ export interface IRoomDto {
 }
 
 export class RoomDto implements IRoomDto {
-    id?: string;
+    id: string = 's';
     cinema_id: string = '';
     room_name: string = '';
     room_style: '2D' | '3D' | '4DX' | 'IMAX' = '2D';
