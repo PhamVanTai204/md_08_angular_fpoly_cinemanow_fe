@@ -1,0 +1,12 @@
+<div class="seat-grid">
+    <div class="screen"></div>
+    <h3>Màn hình</h3>
+    <div *ngFor="let row of objectKeys(groupedSeats)" class="row-container">
+        <h3>Row {{ row }}</h3>
+        <div class="seats">
+            <div *ngFor="let seat of groupedSeats[row]" class="seat">
+                {{ seat.seat_id }}
+            </div>
+        </div>
+    </div>
+</div>

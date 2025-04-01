@@ -6,7 +6,8 @@
       <p class="text-gray-600 mt-1">Xem và quản lý danh sách admin và nhân viên</p>
     </div>
     <!-- Chỉ hiển thị nút thêm mới nếu là admin -->
-    <button *ngIf="isAdmin" (click)="addUser()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm flex items-center transition-colors duration-200">
+    <button *ngIf="isAdmin" (click)="addUser()"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm flex items-center transition-colors duration-200">
       <span class="material-icons text-sm mr-1">person_add</span>
       Thêm người dùng
     </button>
@@ -21,7 +22,8 @@
   </div>
 
   <!-- Thông báo thành công -->
-  <div *ngIf="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 relative">
+  <div *ngIf="successMessage"
+    class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 relative">
     {{ successMessage }}
     <button class="absolute top-0 bottom-0 right-0 px-4 py-3" (click)="successMessage = ''">
       <span class="material-icons">close</span>
@@ -36,14 +38,15 @@
   <!-- Thông tin về user đăng nhập -->
   <div *ngIf="currentUser" class="mb-6 p-4 bg-blue-50 rounded-lg">
     <div class="flex items-center">
-      <img [src]="currentUser.url_image" alt="Avatar" class="h-12 w-12 rounded-full object-cover border border-blue-300"
-        onerror="this.src='https://via.placeholder.com/40?text=?'" />
+      <img [src]="currentUser.url_image" alt="Avatar"
+        class="h-12 w-12 rounded-full object-cover border border-blue-300" />
       <div class="ml-4">
-        <p class="font-medium">Đăng nhập với tài khoản: <span class="text-blue-700">{{ currentUser.user_name }}</span></p>
+        <p class="font-medium">Đăng nhập với tài khoản: <span class="text-blue-700">{{ currentUser.user_name }}</span>
+        </p>
         <p class="text-sm text-gray-600">
-          Vai trò: 
-          <span class="px-2 py-1 rounded-full text-xs font-medium" 
-                [ngClass]="isAdmin ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
+          Vai trò:
+          <span class="px-2 py-1 rounded-full text-xs font-medium"
+            [ngClass]="isAdmin ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
             {{ getRoleName(currentUser.role) }}
           </span>
         </p>
@@ -59,31 +62,34 @@
         <span class="material-icons text-blue-700 mr-2">admin_panel_settings</span>
         Quản trị viên (Admin)
       </h3>
-      
+
       <div class="overflow-x-auto rounded-lg shadow">
         <table class="min-w-full divide-y divide-gray-200 bg-white">
           <!-- Tiêu đề bảng -->
           <thead class="bg-gray-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avatar</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên người dùng</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên người dùng
+              </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quyền</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
             </tr>
           </thead>
-          
+
           <!-- Dữ liệu admin -->
           <tbody class="divide-y divide-gray-200">
             <tr *ngFor="let user of adminUsers">
               <td class="px-6 py-4 whitespace-nowrap">
-                <img [src]="user.url_image" alt="Avatar" class="h-10 w-10 rounded-full object-cover border border-gray-200"
+                <img [src]="user.url_image" alt="Avatar"
+                  class="h-10 w-10 rounded-full object-cover border border-gray-200"
                   onerror="this.src='https://via.placeholder.com/40?text=?'" />
               </td>
               <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
                 {{ user.user_name }}
-                <span *ngIf="currentUser?._id === user._id" class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                <span *ngIf="currentUser?._id === user._id"
+                  class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
                   Bạn
                 </span>
               </td>
@@ -96,27 +102,30 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" 
-                      class="px-2 py-1 rounded-full text-xs font-medium">
+                <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                  class="px-2 py-1 rounded-full text-xs font-medium">
                   {{ user.isActive ? 'Đang hoạt động' : 'Đã khóa' }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex space-x-2">
-                  <button (click)="editUser(user)" class="text-blue-600 hover:bg-blue-100 p-1 rounded-full transition-colors duration-200">
+                  <button (click)="editUser(user)"
+                    class="text-blue-600 hover:bg-blue-100 p-1 rounded-full transition-colors duration-200">
                     <span class="material-icons text-sm">edit</span>
                   </button>
-                  <button (click)="toggleUserStatus(user)" [ngClass]="user.isActive ? 'text-red-600 hover:bg-red-100' : 'text-green-600 hover:bg-green-100'" 
-                          class="p-1 rounded-full transition-colors duration-200">
+                  <button (click)="toggleUserStatus(user)"
+                    [ngClass]="user.isActive ? 'text-red-600 hover:bg-red-100' : 'text-green-600 hover:bg-green-100'"
+                    class="p-1 rounded-full transition-colors duration-200">
                     <span class="material-icons text-sm">{{ user.isActive ? 'lock' : 'lock_open' }}</span>
                   </button>
-                  <button *ngIf="currentUser?._id !== user._id" (click)="deleteUser(user)" class="text-red-600 hover:bg-red-100 p-1 rounded-full transition-colors duration-200">
+                  <button *ngIf="currentUser?._id !== user._id" (click)="deleteUser(user)"
+                    class="text-red-600 hover:bg-red-100 p-1 rounded-full transition-colors duration-200">
                     <span class="material-icons text-sm">delete</span>
                   </button>
                 </div>
               </td>
             </tr>
-            
+
             <!-- Hiển thị khi không có dữ liệu -->
             <tr *ngIf="adminUsers.length === 0">
               <td colspan="6" class="px-6 py-4 text-center text-gray-500">
@@ -127,34 +136,37 @@
         </table>
       </div>
     </div>
-    
+
     <!-- Phần Nhân viên -->
     <div>
       <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
         <span class="material-icons text-green-700 mr-2">badge</span>
         Nhân viên
       </h3>
-      
+
       <div class="overflow-x-auto rounded-lg shadow">
         <table class="min-w-full divide-y divide-gray-200 bg-white">
           <!-- Tiêu đề bảng -->
           <thead class="bg-gray-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avatar</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên người dùng</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên người dùng
+              </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại
+              </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quyền</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
             </tr>
           </thead>
-          
+
           <!-- Dữ liệu nhân viên -->
           <tbody class="divide-y divide-gray-200">
             <tr *ngFor="let user of staffUsers">
               <td class="px-6 py-4 whitespace-nowrap">
-                <img [src]="user.url_image" alt="Avatar" class="h-10 w-10 rounded-full object-cover border border-gray-200"
+                <img [src]="user.url_image" alt="Avatar"
+                  class="h-10 w-10 rounded-full object-cover border border-gray-200"
                   onerror="this.src='https://via.placeholder.com/40?text=?'" />
               </td>
               <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
@@ -172,27 +184,30 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" 
-                      class="px-2 py-1 rounded-full text-xs font-medium">
+                <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                  class="px-2 py-1 rounded-full text-xs font-medium">
                   {{ user.isActive ? 'Đang hoạt động' : 'Đã khóa' }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex space-x-2">
-                  <button (click)="editUser(user)" class="text-blue-600 hover:bg-blue-100 p-1 rounded-full transition-colors duration-200">
+                  <button (click)="editUser(user)"
+                    class="text-blue-600 hover:bg-blue-100 p-1 rounded-full transition-colors duration-200">
                     <span class="material-icons text-sm">edit</span>
                   </button>
-                  <button (click)="toggleUserStatus(user)" [ngClass]="user.isActive ? 'text-red-600 hover:bg-red-100' : 'text-green-600 hover:bg-green-100'" 
-                          class="p-1 rounded-full transition-colors duration-200">
+                  <button (click)="toggleUserStatus(user)"
+                    [ngClass]="user.isActive ? 'text-red-600 hover:bg-red-100' : 'text-green-600 hover:bg-green-100'"
+                    class="p-1 rounded-full transition-colors duration-200">
                     <span class="material-icons text-sm">{{ user.isActive ? 'lock' : 'lock_open' }}</span>
                   </button>
-                  <button (click)="deleteUser(user)" class="text-red-600 hover:bg-red-100 p-1 rounded-full transition-colors duration-200">
+                  <button (click)="deleteUser(user)"
+                    class="text-red-600 hover:bg-red-100 p-1 rounded-full transition-colors duration-200">
                     <span class="material-icons text-sm">delete</span>
                   </button>
                 </div>
               </td>
             </tr>
-            
+
             <!-- Hiển thị khi không có dữ liệu -->
             <tr *ngIf="staffUsers.length === 0">
               <td colspan="7" class="px-6 py-4 text-center text-gray-500">
@@ -234,37 +249,38 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Tên người dùng</label>
             <input type="text" [(ngModel)]="newUser.user_name"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input type="email" [(ngModel)]="newUser.email"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
           </div>
-          
+
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu {{ editMode ? '(để trống nếu không đổi)' : '' }}</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu {{ editMode ? '(để trống nếu không
+              đổi)' : '' }}</label>
             <input type="password" [(ngModel)]="newUser.password"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">URL hình ảnh</label>
             <input type="text" [(ngModel)]="newUser.url_image"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
             <input type="text" [(ngModel)]="newUser.phone"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
             <select [(ngModel)]="newUser.role"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               <option [ngValue]="2">Admin (Quyền 2)</option>
               <option [ngValue]="3">Nhân viên (Quyền 3)</option>
             </select>

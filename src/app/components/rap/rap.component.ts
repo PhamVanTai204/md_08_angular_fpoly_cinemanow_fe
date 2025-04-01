@@ -4,6 +4,8 @@ import { CinemaDto } from '../../../shared/dtos/cinemasDto.dto';
 import { RoomService } from '../../../shared/services/room.service';
 import { RoomDto } from '../../../shared/dtos/roomDto.dto';
 import { lastValueFrom } from 'rxjs';
+import { RoomComponent } from '../room/room.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-rap',
@@ -30,7 +32,8 @@ export class RapComponent implements OnInit {
   total_seat: number = 0;
   constructor(
     private cinemasService: CinemasService,
-    private roomService: RoomService
+    private roomService: RoomService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -171,5 +174,9 @@ export class RapComponent implements OnInit {
           console.error('Lỗi khi lấy danh sách phòng:', error);
         }
       });
+  }
+
+  showRomDialog(idRoom: string) {
+    this.router.navigate(['/layout', 'room', idRoom]);
   }
 }
