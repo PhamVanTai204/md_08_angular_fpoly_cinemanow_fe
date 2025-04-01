@@ -152,7 +152,8 @@
                 </span>
               </td>
               <td class="px-4 py-2 flex space-x-2 justify-center">
-                <button (click)="editRoom(i)" class="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm">
+                <button (click)="showRomDialog(room.id)"
+                  class="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm">
                   ✏️
                 </button>
                 <button (click)="deleteRoom(i)" class="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-sm">
