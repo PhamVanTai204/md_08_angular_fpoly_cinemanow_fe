@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { FormsModule } from '@angular/forms';
 import { NguoiDungComponent } from './nguoi-dung.component';
 
 describe('NguoiDungComponent', () => {
@@ -8,7 +9,11 @@ describe('NguoiDungComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [NguoiDungComponent]
+      declarations: [NguoiDungComponent],
+      imports: [
+        HttpClientTestingModule,
+        FormsModule
+      ]
     })
       .compileComponents();
 

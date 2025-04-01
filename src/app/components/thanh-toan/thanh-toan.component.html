@@ -1,14 +1,24 @@
-<div class="p-4">
-  <!-- Dòng tiêu đề + ô tìm kiếm bên phải -->
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-xl font-bold">Danh sách giao dịch</h2>
-    <input type="text" [(ngModel)]="searchTerm" placeholder="Nhập tên phim"
-      class="border border-gray-300 rounded px-2 py-1" />
+<!-- Giao diện đã tối ưu - loại bỏ các khung thừa để phù hợp với layout router -->
+<!-- Header với tiêu đề và ô tìm kiếm -->
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-bold text-gray-800">Danh sách giao dịch</h2>
+  <div class="relative">
+    <input 
+      type="text" 
+      [(ngModel)]="searchTerm" 
+      placeholder="Nhập tên phim" 
+      class="border border-gray-300 rounded-md px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    />
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-2 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
   </div>
+</div>
 
-  <!-- Bảng danh sách -->
+<!-- Bảng danh sách -->
+<div class="overflow-hidden rounded-lg shadow-sm border border-gray-200">
   <div class="overflow-x-auto w-full">
-    <table class="min-w-full divide-y divide-gray-200 bg-white">
+    <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -34,44 +44,55 @@
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-200">
-        <tr *ngFor="let item of filteredThanhToanList">
-          <td class="px-6 py-4 whitespace-nowrap">
+      <tbody class="divide-y divide-gray-200 bg-white">
+        <tr *ngFor="let item of filteredThanhToanList; let i = index" 
+            [ngClass]="{'bg-gray-50': i % 2 === 1}"
+            class="hover:bg-blue-50 transition-colors duration-150">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             {{ item.maGD }}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
             {{ item.tenPhim }}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
             {{ item.suatChieu }}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
             {{ item.phongChieu }}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap" [ngClass]="{
-              'text-green-600 font-semibold': item.trangThai === 'Đã thanh toán',
-              'text-red-600 font-semibold': item.trangThai === 'Đã hủy'
-            }">
-            {{ item.trangThai }}
-          </td>
           <td class="px-6 py-4 whitespace-nowrap">
+            <span [ngClass]="{
+              'px-2 py-1 text-xs font-semibold rounded-full': true,
+              'bg-green-100 text-green-800': item.trangThai === 'Đã thanh toán',
+              'bg-red-100 text-red-800': item.trangThai === 'Đã hủy'
+            }">
+              {{ item.trangThai }}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
             {{ item.tongTien | currency:'VND':'symbol':'1.0-0' }}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
             {{ item.ngayDat }}
+          </td>
+        </tr>
+        <!-- Hiển thị thông báo khi không có kết quả tìm kiếm -->
+        <tr *ngIf="filteredThanhToanList.length === 0">
+          <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+            Không tìm thấy giao dịch phù hợp
           </td>
         </tr>
       </tbody>
     </table>
   </div>
+</div>
 
-  <!-- Hai nút bên dưới -->
-  <div class="mt-6 flex gap-4">
-    <button (click)="traCuuGD()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-      Tra cứu GD
-    </button>
-    <button (click)="taoGiaoDich()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-      Tạo giao dịch
-    </button>
-  </div>
+<!-- Nút tra cứu GD ở cuối trang -->
+<div class="mt-6 flex justify-end">
+  <button (click)="traCuuGD()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition duration-150 ease-in-out flex items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+    Tra cứu GD
+  </button>
 </div>

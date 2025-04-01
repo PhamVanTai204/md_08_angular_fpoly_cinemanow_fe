@@ -1,26 +1,22 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';  // Quan trọng để sử dụng ngModel
-import { RouterModule, Routes } from '@angular/router';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 import { NguoiDungComponent } from './nguoi-dung.component';
-import { DatePipe } from '@angular/common';  // Để sử dụng date pipe
-
-const routes: Routes = [
-  {
-    path: '',
-    component: NguoiDungComponent
-  }
-];
+import { NguoiDungRoutingModule } from './nguoi-dung-routing.module';
 
 @NgModule({
-  declarations: [NguoiDungComponent],
+  declarations: [
+    NguoiDungComponent
+  ],
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule.forChild(routes)
+    HttpClientModule,
+    NguoiDungRoutingModule
   ],
   providers: [
-    DatePipe  // Để sử dụng date pipe
+    DatePipe
   ]
 })
 export class NguoiDungModule { }
