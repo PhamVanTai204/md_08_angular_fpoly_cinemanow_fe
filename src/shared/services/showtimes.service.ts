@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ShowtimesDto } from '../dtos/showtimesDto.dto';
 import { Observable, throwError, forkJoin } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -122,7 +122,11 @@ export class ShowtimesService {
   }
 
   createShowtime(showtime: ShowtimesDto): Observable<ShowtimesDto> {
-    return this.http.post<any>(this.createUrl, showtime.toJSON()).pipe(
+    const data = showtime.toJSON();
+    console.log('Dữ liệu gửi đến API createShowtime:', data);
+    
+    return this.http.post<any>(this.createUrl, data).pipe(
+      tap(response => console.log('API Response:', response)),
       map(response => {
         // Giả sử server trả về { code: 201, data: {...} } hoặc { code: 200, data: {...} }
         if (response && (response.code === 201 || response.code === 200) && response.data) {
@@ -135,7 +139,11 @@ export class ShowtimesService {
   }
 
   updateShowtime(id: string, showtime: ShowtimesDto): Observable<ShowtimesDto> {
-    return this.http.put<any>(`${this.updateUrl}/${id}`, showtime.toJSON()).pipe(
+    const data = showtime.toJSON();
+    console.log('Dữ liệu gửi đến API updateShowtime:', data);
+    
+    return this.http.put<any>(`${this.updateUrl}/${id}`, data).pipe(
+      tap(response => console.log('API Response:', response)),
       map(response => {
         // Giả sử server trả về { code: 200, data: {...} }
         if (response && response.code === 200 && response.data) {
@@ -162,6 +170,9 @@ export class ShowtimesService {
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('ShowtimesService Error:', error);
-    return throwError(() => new Error(error.message || 'Server error'));
+    if (error.error && error.error.message) {
+      console.error('Server error message:', error.error.message);
+    }
+    return throwError(() => error);
   }
 }

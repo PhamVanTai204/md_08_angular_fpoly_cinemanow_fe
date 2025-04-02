@@ -35,18 +35,20 @@ export class ShowtimesDto implements IShowtimesDto {
       this.id = _data["_id"] || _data["id"];
       this.showtimeId = _data["showtime_id"];
 
-      // Nếu movie_id được populate (object) => trích xuất ._id và .name
+      // Nếu movie_id được populate (object) => trích xuất ._id và .title/name
       if (typeof _data["movie_id"] === 'object' && _data["movie_id"] !== null) {
         this.movieId = _data["movie_id"]._id;
-        this.movieName = _data["movie_id"].name;
+        // Ưu tiên sử dụng title, nếu không có thì dùng name
+        this.movieName = _data["movie_id"].title || _data["movie_id"].name;
       } else {
         this.movieId = _data["movie_id"];
       }
 
-      // Nếu room_id được populate (object) => trích xuất ._id và .name
+      // Nếu room_id được populate (object) => trích xuất ._id và .room_name/name
       if (typeof _data["room_id"] === 'object' && _data["room_id"] !== null) {
         this.roomId = _data["room_id"]._id;
-        this.roomName = _data["room_id"].name;
+        // Ưu tiên sử dụng room_name, nếu không có thì dùng name
+        this.roomName = _data["room_id"].room_name || _data["room_id"].name;
       } else {
         this.roomId = _data["room_id"];
       }
@@ -55,9 +57,14 @@ export class ShowtimesDto implements IShowtimesDto {
       this.endTime = _data["end_time"];
 
       // show_date là kiểu Date => chuyển sang chuỗi ISO
-      this.showDate = _data["show_date"]
-        ? new Date(_data["show_date"]).toISOString()
-        : "";
+      if (_data["show_date"]) {
+        // Nếu đã là chuỗi ISO thì giữ nguyên, nếu là Date thì chuyển
+        this.showDate = typeof _data["show_date"] === 'string' 
+          ? _data["show_date"]
+          : new Date(_data["show_date"]).toISOString();
+      } else {
+        this.showDate = "";
+      }
     }
   }
 
@@ -74,14 +81,35 @@ export class ShowtimesDto implements IShowtimesDto {
    * Chuyển đối tượng hiện tại thành JSON để gửi lên server
    */
   toJSON() {
+    // Đặt giá trị mặc định cho cinema_id (lấy từ ví dụ của bạn)
+    const cinema_id = "67e7a459496d88d4883c43a0"; // ID mặc định của rạp chiếu phim
+    
+    // Định dạng lại ngày tháng từ ISO sang DD/MM/YYYY nếu có
+    let formattedDate = this.showDate;
+    if (this.showDate) {
+      try {
+        const date = new Date(this.showDate);
+        if (!isNaN(date.getTime())) {
+          // Định dạng thành DD/MM/YYYY
+          const day = date.getDate().toString().padStart(2, '0');
+          const month = (date.getMonth() + 1).toString(); // Không cần padStart vì API dùng D/M/YYYY
+          const year = date.getFullYear();
+          formattedDate = `${day}/${month}/${year}`;
+        }
+      } catch (e) {
+        console.error('Lỗi định dạng ngày tháng:', e);
+      }
+    }
+    
     return {
       _id: this.id,
       showtime_id: this.showtimeId,
       movie_id: this.movieId,
       room_id: this.roomId,
+      cinema_id: cinema_id, // Thêm cinema_id
       start_time: this.startTime,
       end_time: this.endTime,
-      show_date: this.showDate
+      show_date: formattedDate
     };
   }
 
