@@ -22,12 +22,12 @@ export interface User {
 })
 export class UserService {
   private baseUrl = 'http://127.0.0.1:3000/users';
-  
+
   constructor(
     private http: HttpClient,
     private router: Router
   ) { }
-  
+
   // Lấy headers với token xác thực
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -36,7 +36,7 @@ export class UserService {
       'Authorization': token ? `Bearer ${token}` : ''
     });
   }
-  
+
   // Đăng nhập
   login(user: UserLoginDto): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/login`, user.toJSON()).pipe(
@@ -44,7 +44,7 @@ export class UserService {
         // Lưu thông tin người dùng vào localStorage
         if (response && response.data) {
           localStorage.setItem('currentUser', JSON.stringify(response.data));
-          localStorage.setItem('token', response.token || '');
+          localStorage.setItem('token', response.data.token || '');
         } else if (response) {
           localStorage.setItem('currentUser', JSON.stringify(response));
         }
@@ -61,15 +61,15 @@ export class UserService {
     // Xóa thông tin người dùng và token khỏi localStorage
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
-    
+
     // Có thể thêm API call để invalidate token phía server nếu cần
     // const headers = this.getHeaders();
     // this.http.post(`${this.baseUrl}/logout`, {}, { headers }).subscribe();
-    
+
     // Điều hướng về trang đăng nhập
     this.router.navigate(['/login']);
   }
-  
+
   // Lấy danh sách người dùng
   getAllUsers(): Observable<User[]> {
     const headers = this.getHeaders();
@@ -80,7 +80,7 @@ export class UserService {
       })
     );
   }
-  
+
   // Khoá/mở khoá người dùng (giả lập vì API chưa có endpoint này)
   toggleUserStatus(userId: string, isActive: boolean): Observable<any> {
     const headers = this.getHeaders();
@@ -95,7 +95,7 @@ export class UserService {
       })
     );
   }
-  
+
   // Lấy người dùng hiện tại từ localStorage
   getCurrentUser(): any {
     const userStr = localStorage.getItem('currentUser');
@@ -104,36 +104,36 @@ export class UserService {
     }
     return null;
   }
-  
+
   // Lấy ID người dùng hiện tại
   getCurrentUserId(): string | null {
     const user = this.getCurrentUser();
     return user ? user._id || user.userId : null;
   }
-  
+
   // Kiểm tra người dùng đã đăng nhập
   isLoggedIn(): boolean {
     return !!this.getCurrentUser();
   }
-  
+
   // Kiểm tra vai trò standard user (role 1)
   isStandardUser(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 1 : false;
   }
-  
+
   // Kiểm tra vai trò admin (role 2)
   isAdmin(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 2 : false;
   }
-  
+
   // Kiểm tra vai trò super admin hoặc manager (role 3)
   isSuperAdmin(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 3 : false;
   }
-  
+
   // Kiểm tra role theo số
   hasRole(roleNumber: number): boolean {
     const user = this.getCurrentUser();
