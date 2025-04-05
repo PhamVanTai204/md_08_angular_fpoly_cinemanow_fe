@@ -5,13 +5,17 @@ import { RouterModule, Routes } from '@angular/router';
 import { GiaodichComponent } from './giaodich.component';
 import { GiaodichRoutingModule } from './giaodich-routing.module';
 import { CurrencyPipe } from '@angular/common';
+import { ShowTimeDialogComponent } from './show-time-dialog/show-time-dialog.component';
+import { BrowserModule } from '@angular/platform-browser';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 @NgModule({
-  declarations: [GiaodichComponent],
+  declarations: [GiaodichComponent, ShowTimeDialogComponent],
   imports: [
     CommonModule,
     FormsModule,
-    GiaodichRoutingModule
+    GiaodichRoutingModule,
+    ModalModule
   ],
   providers: [
     CurrencyPipe

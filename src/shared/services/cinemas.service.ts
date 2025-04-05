@@ -14,8 +14,32 @@ export class CinemasService {
   private editUrl = 'http://127.0.0.1:3000/cinema/editcinema';
   private deleteUrl = 'http://127.0.0.1:3000/cinema/deletecinema';
   private searchUrl = 'http://127.0.0.1:3000/cinema/search';
+  private apiUrlgetByFilm = "http://127.0.0.1:3000/cinema/get-by-movie/";
 
   constructor(private http: HttpClient) { }
+
+
+  /**
+ * Lấy danh sách rạp theo ID phim
+ * Endpoint: /cinema/get-by-movie/:filmId
+ * Trả về: { code: 200, data: { cinemas: [...] } }
+ */
+  getCinemaByFilm(filmId: string): Observable<CinemaDto[]> {
+    return this.http.get<any>(`${this.apiUrlgetByFilm}${filmId}`).pipe(
+      map(response => {
+        if (
+          response &&
+          response.code === 200 &&
+          Array.isArray(response.data)
+        ) {
+          return response.data.map((item: any) => CinemaDto.fromJS(item));
+        }
+        throw new Error('Failed to fetch cinemas by film ID');
+      }),
+      catchError(this.handleError)
+    );
+  }
+
 
   /**
    * Lấy danh sách rạp

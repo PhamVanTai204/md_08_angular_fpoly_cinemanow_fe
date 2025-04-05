@@ -1,0 +1,194 @@
+/* cinema-dialog.component.css */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.dialog-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dialog-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dialog-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: #1f2937;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0 8px;
+}
+
+.close-button:hover {
+    color: #1f2937;
+}
+
+.dialog-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* Các phần CSS khác giữ nguyên như component trước, nhưng có thể điều chỉnh max-height nếu cần */
+.cinema-grid {
+    max-height: calc(90vh - 200px);
+    overflow-y: auto;
+}
+
+/* Phần còn lại giữ nguyên như CSS ở component trước */
+.search-container {
+    margin-bottom: 1.5rem;
+}
+
+.search-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .search-input-wrapper {
+        width: 16rem;
+    }
+}
+
+.search-input {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    color: #374151;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.cinema-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .cinema-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .cinema-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.cinema-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border-left: 4px solid #ef4444;
+    transition: all 0.3s ease;
+}
+
+.cinema-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-content {
+    padding: 1rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.cinema-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.cinema-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.detail-icon {
+    color: #6b7280;
+    margin-top: 0.25rem;
+    margin-right: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.detail-text {
+    color: #4b5563;
+    margin: 0;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    margin-top: 1.5rem;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+.empty-text {
+    color: #6b7280;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
