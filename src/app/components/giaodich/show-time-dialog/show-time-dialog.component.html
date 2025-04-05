@@ -15,6 +15,7 @@
             </div>
 
             <!-- Card grid for cinemas -->
+            <!-- Card grid for cinemas -->
             <div class="cinema-grid">
                 <div *ngFor="let rap of cinemas; let i = index" class="cinema-card">
                     <div class="card-content">
@@ -27,19 +28,33 @@
                                 <i class="fas fa-map-marker-alt detail-icon"></i>
                                 <p class="detail-text">{{ rap.location }}</p>
                             </div>
-                            <div class="detail-item">
-                                <i class="fas fa-film detail-icon"></i>
-                                <p class="detail-text">{{ rap.totalRoom }} phòng chiếu</p>
+
+                            <!-- Showtimes -->
+                            <!-- Showtimes -->
+                            <div class="showtimes-section" *ngIf="rap.showtimes && rap.showtimes.length > 0">
+                                <p class="showtimes-title">Suất chiếu:</p>
+                                <div class="showtime-button-group" *ngFor="let st of rap.showtimes">
+                                    <button (click)="showRomDialog(st.roomId)" class="showtime-button">
+                                        {{ st.startTime }} - {{ st.endTime }}
+                                    </button>
+                                </div>
+                            </div>
+
+
+                            <!-- No showtime -->
+                            <div *ngIf="!rap.showtimes || rap.showtimes.length === 0" class="no-showtime">
+                                Không có suất chiếu
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+
             <!-- Empty state -->
             <div *ngIf="cinemas.length === 0" class="empty-state">
                 <i class="fas fa-theater-masks empty-icon"></i>
-                <p class="empty-text">Chưa có rạp nào được thêm</p>
+                <p class="empty-text">Phim hiện không chiếu ở rạp nào</p>
             </div>
         </div>
     </div>

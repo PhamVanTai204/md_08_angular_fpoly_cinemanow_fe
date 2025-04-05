@@ -94,7 +94,7 @@
 }
 
 .search-input:focus {
-    border-color: #ef4444;
+    border-color: #1024ff;
     box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
 }
 
@@ -120,7 +120,7 @@
     background-color: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    border-left: 4px solid #ef4444;
+    border-left: 4px solid #1024ff;
     transition: all 0.3s ease;
 }
 
@@ -179,6 +179,35 @@
     border-radius: 0.5rem;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     margin-top: 1.5rem;
+}
+
+.showtimes-title {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.showtime-button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.showtime-button {
+    padding: 0.4rem 0.75rem;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.showtime-button:hover {
+    background-color: #1024ff;
+    color: white;
+    border-color: #1024ff;
 }
 
 .empty-icon {

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CinemasService } from '../../../../shared/services/cinemas.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { CinemaDto } from '../../../../shared/dtos/cinemasDto.dto';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-show-time-dialog',
@@ -21,12 +22,15 @@ export class ShowTimeDialogComponent implements OnInit {
   }
   constructor(
     private cinemasService: CinemasService,
-    private _modalService: BsModalService
+    private _modalService: BsModalService,
+    private router: Router
+
 
   ) { }
   closeModal() {
     this._modalService.hide();
   }
+
   loadCinemas(id: string): void {
     this.cinemasService.getCinemaByFilm(id).subscribe({
       next: (data) => {
@@ -40,5 +44,10 @@ export class ShowTimeDialogComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+  showRomDialog(idRoom: string): void {
+    this._modalService.hide();
+
+    this.router.navigate(['/layout', 'room', idRoom]);
   }
 }

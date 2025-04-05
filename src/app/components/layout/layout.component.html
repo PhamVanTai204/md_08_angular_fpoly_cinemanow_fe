@@ -5,13 +5,15 @@
     <div class="container mx-auto px-6 h-full flex items-center justify-between">
       <div class="flex items-center space-x-4">
 
-        <img [src]="currentUser.url_image" alt="Logo" class="h-10 w-10 rounded-full bg-white p-1" />
         <span class="font-['Inter'] font-extrabold text-xl text-white">ADMIN DASHBOARD</span>
       </div>
 
       <div class="flex items-center space-x-6">
         <div class="flex items-center text-white">
-          <span class="material-icons mr-2">account_circle</span>
+          <img [src]="currentUser.url_image" alt="Avatar"
+            class="h-12 w-12 rounded-full object-cover border border-blue-300"
+            onerror="this.src='https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc'" />
+
           <span>{{ currentUser?.email || 'Admin' }}</span>
         </div>
         <button (click)="logout()"
