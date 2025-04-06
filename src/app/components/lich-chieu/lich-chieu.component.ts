@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { ShowtimesService } from '../../../shared/services/showtimes.service';
 import { ShowtimesDto } from '../../../shared/dtos/showtimesDto.dto';
 import { HttpClient } from '@angular/common/http';
+import { CinemasService } from '../../../shared/services/cinemas.service';
+import { CinemaDto } from '../../../shared/dtos/cinemasDto.dto';
+import { RoomService } from '../../../shared/services/room.service';
+import { RoomDto } from '../../../shared/dtos/roomDto.dto';
 
 interface Movie {
   _id: string;
@@ -23,11 +27,11 @@ export class LichChieuComponent implements OnInit {
   searchTerm: string = '';
   dsShowtimes: ShowtimesDto[] = [];
   filteredShowtimes: ShowtimesDto[] = [];
-
+  rapList: CinemaDto[] = [];
   // Danh sách phim và phòng cho dropdown
   allMovies: Movie[] = [];
   allRooms: Room[] = [];
-
+  roomLisst: RoomDto[] = []
   // Quản lý modal Thêm/Sửa
   isMainModalOpen: boolean = false;
   isEditing: boolean = false;
@@ -37,16 +41,31 @@ export class LichChieuComponent implements OnInit {
   isDeleteModalOpen: boolean = false;
   showtimeDangXoa: ShowtimesDto | null = null;
   deletePassword: string = '';
+  roomErrorMessage: string = '';
 
   constructor(
     private showtimesService: ShowtimesService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cinemasService: CinemasService,
+    private roomService: RoomService,
+
   ) { }
 
   ngOnInit(): void {
     this.loadShowtimes();
     this.loadAllMovies();
-    this.loadAllRooms();
+    this.getAllRaps();
+    // this.loadAllRooms();
+  }
+  onCinemaChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const selectedCinemaId = selectElement.value;
+
+    if (selectedCinemaId) {
+      this.getRoom(selectedCinemaId);
+    } else {
+      this.roomLisst = []; // Reset nếu không chọn gì
+    }
   }
 
   loadShowtimes(): void {
@@ -61,7 +80,16 @@ export class LichChieuComponent implements OnInit {
       }
     });
   }
-
+  getAllRaps(): void {
+    this.cinemasService.getCinemas().subscribe({
+      next: (data) => {
+        this.rapList = data;
+      },
+      error: (err) => {
+        console.error('Error fetching cinemas:', err);
+      }
+    });
+  }
   // Tải danh sách phim
   loadAllMovies(): void {
     this.http.get<any>('http://127.0.0.1:3000/films/getfilm').subscribe({
@@ -75,6 +103,27 @@ export class LichChieuComponent implements OnInit {
         console.error('Error fetching movies:', err);
       }
     });
+  }
+  getRoom(id?: string): void {
+    this.roomErrorMessage = ''; // reset lỗi cũ
+    this.roomService.getByCinemaId(id!)
+      .subscribe({
+        next: (result: RoomDto[]) => {
+          this.roomLisst = result;
+          if (result.length === 0) {
+            this.roomErrorMessage = 'Không tìm thấy phòng nào thuộc rạp này.';
+          }
+        },
+        error: (error) => {
+          console.error('Lỗi khi lấy danh sách phòng:', error);
+          this.roomLisst = []; // đảm bảo list trống nếu lỗi
+          if (error.status === 404 && error.error?.error) {
+            this.roomErrorMessage = error.error.error;
+          } else {
+            this.roomErrorMessage = 'Đã xảy ra lỗi khi tải danh sách phòng.';
+          }
+        }
+      });
   }
 
   // Tải danh sách phòng
@@ -126,12 +175,12 @@ export class LichChieuComponent implements OnInit {
       this.showtimeForm.roomName = '';
     }
   }
-  
+
   // Xử lý nhập thời gian bắt đầu
   onStartTimeInput(time: string): void {
     // Loại bỏ các ký tự không phải số
     const numbersOnly = time.replace(/[^0-9]/g, '');
-    
+
     if (numbersOnly.length >= 1 && numbersOnly.length <= 4) {
       // Nếu có ít nhất 1 số và không quá 4 số
       if (numbersOnly.length <= 2) {
@@ -141,7 +190,7 @@ export class LichChieuComponent implements OnInit {
         // Nếu nhập cả giờ và phút
         const hours = numbersOnly.substring(0, 2);
         const minutes = numbersOnly.substring(2);
-        
+
         // Kiểm tra giá trị hợp lệ
         if (parseInt(hours) < 24) {
           this.showtimeForm.startTime = hours + ':' + minutes;
@@ -151,18 +200,18 @@ export class LichChieuComponent implements OnInit {
       // Nếu nhập quá 4 số, cắt bớt
       const hours = numbersOnly.substring(0, 2);
       const minutes = numbersOnly.substring(2, 4);
-      
+
       if (parseInt(hours) < 24 && parseInt(minutes) < 60) {
         this.showtimeForm.startTime = hours + ':' + minutes;
       }
     }
   }
-  
+
   // Xử lý nhập thời gian kết thúc
   onEndTimeInput(time: string): void {
     // Loại bỏ các ký tự không phải số
     const numbersOnly = time.replace(/[^0-9]/g, '');
-    
+
     if (numbersOnly.length >= 1 && numbersOnly.length <= 4) {
       // Nếu có ít nhất 1 số và không quá 4 số
       if (numbersOnly.length <= 2) {
@@ -172,7 +221,7 @@ export class LichChieuComponent implements OnInit {
         // Nếu nhập cả giờ và phút
         const hours = numbersOnly.substring(0, 2);
         const minutes = numbersOnly.substring(2);
-        
+
         // Kiểm tra giá trị hợp lệ
         if (parseInt(hours) < 24) {
           this.showtimeForm.endTime = hours + ':' + minutes;
@@ -182,7 +231,7 @@ export class LichChieuComponent implements OnInit {
       // Nếu nhập quá 4 số, cắt bớt
       const hours = numbersOnly.substring(0, 2);
       const minutes = numbersOnly.substring(2, 4);
-      
+
       if (parseInt(hours) < 24 && parseInt(minutes) < 60) {
         this.showtimeForm.endTime = hours + ':' + minutes;
       }
@@ -193,33 +242,33 @@ export class LichChieuComponent implements OnInit {
   openAddModal(): void {
     this.isEditing = false;
     this.isMainModalOpen = true;
-    
+
     // Khởi tạo form mới và ngày mặc định
     const currentDate = new Date();
     const formattedDate = currentDate.toISOString().slice(0, 16); // Format: YYYY-MM-DDThh:mm
-    
+
     // Tạo ID suất chiếu theo định dạng "STx" với x là số ngẫu nhiên
     const randomId = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    
+
     // Thời gian bắt đầu mặc định ở giờ hiện tại được làm tròn
     const currentHour = currentDate.getHours();
     const roundedMinutes = Math.ceil(currentDate.getMinutes() / 15) * 15; // Làm tròn đến 15 phút gần nhất
     let defaultStartTime = '';
-    
+
     if (roundedMinutes === 60) {
       defaultStartTime = `${(currentHour + 1) % 24}:00`;
     } else {
       defaultStartTime = `${currentHour}:${roundedMinutes.toString().padStart(2, '0')}`;
     }
-    
+
     // Thời gian kết thúc mặc định là 2 giờ sau thời gian bắt đầu
     const startTimeParts = defaultStartTime.split(':');
     const startHour = parseInt(startTimeParts[0]);
     const startMinute = parseInt(startTimeParts[1]);
-    
+
     const endHour = (startHour + 2) % 24; // Cộng thêm 2 giờ, đảm bảo không vượt quá 24
     const defaultEndTime = `${endHour}:${startMinute.toString().padStart(2, '0')}`;
-    
+
     this.showtimeForm = new ShowtimesDto({
       showtimeId: 'ST' + randomId,
       movieId: '',
@@ -235,7 +284,7 @@ export class LichChieuComponent implements OnInit {
     this.isEditing = true;
     this.isMainModalOpen = true;
     this.showtimeForm = showtime.clone();
-    
+
     // Đảm bảo định dạng ngày giờ cho việc hiển thị trong datetime-local
     if (this.showtimeForm.showDate) {
       // Đảm bảo đúng định dạng YYYY-MM-DDThh:mm
@@ -244,7 +293,7 @@ export class LichChieuComponent implements OnInit {
         this.showtimeForm.showDate = date.toISOString().slice(0, 16);
       }
     }
-    
+
     console.log('Editing showtime:', this.showtimeForm);
   }
 
@@ -260,44 +309,44 @@ export class LichChieuComponent implements OnInit {
       alert('Vui lòng nhập mã suất chiếu!');
       return;
     }
-    
+
     if (!this.showtimeForm.movieId) {
       alert('Vui lòng chọn phim!');
       return;
     }
-    
+
     if (!this.showtimeForm.roomId) {
       alert('Vui lòng chọn phòng!');
       return;
     }
-    
+
     if (!this.showtimeForm.startTime) {
       alert('Vui lòng nhập thời gian bắt đầu!');
       return;
     }
-    
+
     if (!this.showtimeForm.endTime) {
       alert('Vui lòng nhập thời gian kết thúc!');
       return;
     }
-    
+
     if (!this.showtimeForm.showDate) {
       alert('Vui lòng chọn ngày chiếu!');
       return;
     }
-    
+
     // Định dạng thời gian nếu người dùng nhập 4 số mà chưa được định dạng
     if (/^\d{4}$/.test(this.showtimeForm.startTime)) {
       this.onStartTimeInput(this.showtimeForm.startTime);
     }
-    
+
     if (/^\d{4}$/.test(this.showtimeForm.endTime)) {
       this.onEndTimeInput(this.showtimeForm.endTime);
     }
-    
+
     // In dữ liệu trước khi gửi để debug
     console.log('Dữ liệu gửi đi:', this.showtimeForm.toJSON());
-    
+
     if (this.isEditing) {
       // Cập nhật
       if (!this.showtimeForm.id) {
@@ -313,7 +362,7 @@ export class LichChieuComponent implements OnInit {
         },
         error: (err) => {
           console.error('Update error:', err);
-          
+
           // Hiển thị chi tiết lỗi nếu có
           if (err.error && err.error.message) {
             alert(`Lỗi cập nhật: ${err.error.message}`);
@@ -333,7 +382,7 @@ export class LichChieuComponent implements OnInit {
         },
         error: (err) => {
           console.error('Creation error:', err);
-          
+
           // Hiển thị chi tiết lỗi nếu có
           if (err.error && err.error.message) {
             alert(`Lỗi thêm mới: ${err.error.message}`);
