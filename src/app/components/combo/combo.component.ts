@@ -12,11 +12,11 @@ export class ComboComponent implements OnInit {
   // Danh sách combo
   combos: Combo[] = [];
   selectedCombo: Combo | null = null;
-  
+
   // Loading state
   isLoading = false;
   errorMessage = '';
-  
+
   // User info
   currentUserId: string | null = null;
   isAdminView = false;
@@ -25,7 +25,7 @@ export class ComboComponent implements OnInit {
   showDialog = false;
   showDeleteDialog = false;
   showDetailsDialog = false;
-  
+
   // Form data
   newCombo: Partial<Combo> = {
     combo_id: '',
@@ -35,7 +35,7 @@ export class ComboComponent implements OnInit {
     image_combo: '',
     user_id: ''
   };
-  
+
   // Edit/Delete tracking
   isEditing = false;
   editId = '';
@@ -47,7 +47,7 @@ export class ComboComponent implements OnInit {
   totalItems = 0; // Total number of items
   totalPages = 0; // Total number of pages
   pagesToShow: number[] = []; // Pages to show in pagination control
-  
+
   // Make Math available in the template
   Math = Math;
 
@@ -59,11 +59,11 @@ export class ComboComponent implements OnInit {
   ngOnInit(): void {
     // Get current user ID
     this.currentUserId = this.userService.getCurrentUserId();
-    
+
     // Check if admin
     const currentUser = this.userService.getCurrentUser();
     this.isAdminView = currentUser && currentUser.role === 2;
-    
+
     // Verify login
     if (!this.userService.isLoggedIn()) {
       this.errorMessage = "Vui lòng đăng nhập để tiếp tục.";
@@ -83,7 +83,7 @@ export class ComboComponent implements OnInit {
   loadAllCombos(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     this.comboService.getAllCombos().subscribe({
       next: (response) => {
         // Ensure response is an array
@@ -125,7 +125,7 @@ export class ComboComponent implements OnInit {
   generatePagesToShow(): void {
     const maxPagesToShow = 5;
     this.pagesToShow = [];
-    
+
     if (this.totalPages <= maxPagesToShow) {
       // If we have less pages than max, show all
       for (let i = 1; i <= this.totalPages; i++) {
@@ -135,12 +135,12 @@ export class ComboComponent implements OnInit {
       // Show a window of pages around the current page
       let startPage = Math.max(this.currentPage - Math.floor(maxPagesToShow / 2), 1);
       let endPage = startPage + maxPagesToShow - 1;
-      
+
       if (endPage > this.totalPages) {
         endPage = this.totalPages;
         startPage = Math.max(endPage - maxPagesToShow + 1, 1);
       }
-      
+
       for (let i = startPage; i <= endPage; i++) {
         this.pagesToShow.push(i);
       }
@@ -152,10 +152,10 @@ export class ComboComponent implements OnInit {
     if (page < 1 || page > this.totalPages || page === this.currentPage) {
       return;
     }
-    
+
     this.currentPage = page;
     this.generatePagesToShow();
-    
+
     // If a combo is selected, deselect it when changing pages
     if (this.selectedCombo) {
       this.selectedCombo = null;
@@ -192,7 +192,7 @@ export class ComboComponent implements OnInit {
       }
     });
   }
-  
+
   // Close details dialog
   closeDetailsDialog(): void {
     this.showDetailsDialog = false;
@@ -259,17 +259,17 @@ export class ComboComponent implements OnInit {
       this.errorMessage = 'Vui lòng nhập Mã combo';
       return false;
     }
-    
+
     if (!this.newCombo.name_combo || !this.newCombo.name_combo.trim()) {
       this.errorMessage = 'Vui lòng nhập Tên combo';
       return false;
     }
-    
+
     if (!this.newCombo.price_combo || this.newCombo.price_combo <= 0) {
       this.errorMessage = 'Giá combo phải lớn hơn 0';
       return false;
     }
-    
+
     return true;
   }
 
@@ -347,14 +347,14 @@ export class ComboComponent implements OnInit {
   // Delete combo
   deleteCombo(id: string): void {
     this.isLoading = true;
-    
+
     this.comboService.deleteCombo(id).subscribe({
       next: () => {
         // If deleted combo was selected, deselect it
         if (this.selectedCombo && this.selectedCombo._id === id) {
           this.selectedCombo = null;
         }
-        
+
         this.loadAllCombos();
         this.showDeleteDialog = false;
       },
@@ -389,25 +389,25 @@ export class ComboComponent implements OnInit {
     this.errorMessage = ''; // Clear any existing errors
     alert(`Đã thêm ${combo.name_combo} vào giỏ hàng`);
   }
-  
+
   // Format user ID for display
   displayUserId(userId: any): string {
     if (!userId) return 'N/A';
-    
+
     if (typeof userId === 'string') {
       return userId.length > 8 ? userId.substring(0, 8) + '...' : userId;
     }
-    
+
     if (typeof userId === 'object') {
       const id = userId._id || userId.userId || userId.id;
       if (id) {
         return this.displayUserId(id);
       }
     }
-    
+
     return 'N/A';
   }
-  
+
   // Truncate long IDs
   truncateId(id: string): string {
     if (!id) return '';
