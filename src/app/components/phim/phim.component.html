@@ -93,34 +93,29 @@
       </tbody>
     </table>
   </div>
-      
+
   <!-- Phân trang - đã di chuyển xuống dưới cùng -->
   <div *ngIf="!isLoading && danhSachPhimDaLoc.length > 0" class="mt-6 flex justify-between items-center">
     <div class="text-sm text-gray-600">
-      Hiển thị {{ danhSachPhimDaLoc.length ? (page - 1) * limit + 1 : 0 }} đến 
+      Hiển thị {{ danhSachPhimDaLoc.length ? (page - 1) * limit + 1 : 0 }} đến
       {{ Math.min(page * limit, totalPhim) }} trong tổng số {{ totalPhim }} phim
     </div>
     <div class="flex space-x-1">
-      <button 
-        [disabled]="page === 1"
-        [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
+      <button [disabled]="page === 1" [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
         class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
         (click)="changePage(page - 1)">
         Trước
       </button>
-      
+
       <ng-container *ngFor="let p of getPaginationRange()">
-        <button 
-          class="px-3 py-1 rounded transition-colors"
+        <button class="px-3 py-1 rounded transition-colors"
           [ngClass]="p === page ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
           (click)="changePage(p)">
           {{ p }}
         </button>
       </ng-container>
-      
-      <button 
-        [disabled]="page >= totalPages"
-        [ngClass]="{'opacity-50 cursor-not-allowed': page >= totalPages}"
+
+      <button [disabled]="page >= totalPages" [ngClass]="{'opacity-50 cursor-not-allowed': page >= totalPages}"
         class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
         (click)="changePage(page + 1)">
         Sau
@@ -130,8 +125,12 @@
 
   <!-- Modal Thêm/Sửa -->
   <div class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50" *ngIf="showModal">
-    <div class="bg-white p-6 w-full max-w-lg rounded shadow-lg relative max-h-screen overflow-y-auto">
-      <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" (click)="closeModal()">
+    <div class="bg-white p-6 w-full max-w-lg rounded-lg shadow-xl relative  max-h-[94vh] overflow-y-auto"
+      style="margin-top: 2rem; border: 2px solid #e2e8f0; border-radius: 0.5rem;">
+
+      <!-- Nút đóng -->
+      <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+        style="border: 1px solid #e2e8f0; border-radius: 50%; padding: 0.25rem;" (click)="closeModal()">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
           stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18" />
@@ -139,91 +138,127 @@
         </svg>
       </button>
 
-      <h2 class="text-xl font-semibold mb-4" *ngIf="!isEdit">Thêm phim</h2>
-      <h2 class="text-xl font-semibold mb-4" *ngIf="isEdit">Sửa phim</h2>
+      <!-- Tiêu đề -->
+      <h2 class="text-xl font-semibold mb-6 pb-2 border-b-2 border-gray-100" *ngIf="!isEdit">Thêm phim</h2>
+      <h2 class="text-xl font-semibold mb-6 pb-2 border-b-2 border-gray-100" *ngIf="isEdit">Sửa phim</h2>
 
-      <div class="space-y-4">
-        <div>
-          <label class="block font-medium mb-1">Tên phim</label>
-          <input type="text" [(ngModel)]="currentPhim.title" class="border rounded w-full px-3 py-2" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Đạo diễn</label>
-          <input type="text" [(ngModel)]="currentPhim.director" class="border rounded w-full px-3 py-2" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Giới hạn tuổi</label>
-          <input type="number" [(ngModel)]="currentPhim.age_limit" class="border rounded w-full px-3 py-2"
-            placeholder="VD: 18" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Ngôn ngữ</label>
-          <input type="text" [(ngModel)]="currentPhim.language" class="border rounded w-full px-3 py-2"
-            placeholder="VD: Tiếng Việt" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Thể loại phim</label>
-          <select multiple [(ngModel)]="currentPhim.genre_film" class="border rounded w-full px-3 py-2">
-            <option *ngFor="let genre of danhSachTheLoai" [value]="genre.id">
-              {{ genre.genreName }}
-            </option>
-          </select>
-          <small class="text-gray-500">Giữ Ctrl để chọn nhiều thể loại</small>
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Trạng thái</label>
-          <select [(ngModel)]="currentPhim.status_film" class="border rounded w-full px-3 py-2">
-            <option [ngValue]="1">ONLINE</option>
-            <option [ngValue]="0">OFFLINE</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Poster (URL)</label>
-          <input type="text" [(ngModel)]="currentPhim.image_film" class="border rounded w-full px-3 py-2" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Trailer (URL)</label>
-          <input type="text" [(ngModel)]="currentPhim.trailer_film" class="border rounded w-full px-3 py-2" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Thời lượng</label>
-          <input type="text" [(ngModel)]="currentPhim.duration" class="border rounded w-full px-3 py-2"
-            placeholder="VD: 120 phút" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Ngày phát hành</label>
-          <input type="date" [(ngModel)]="currentPhim.release_date" class="border rounded w-full px-3 py-2" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Ngày kết thúc</label>
-          <input type="date" [(ngModel)]="currentPhim.end_date" class="border rounded w-full px-3 py-2" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Diễn viên</label>
-          <input type="text" [(ngModel)]="currentPhim.cast" class="border rounded w-full px-3 py-2"
-            placeholder="VD: Diễn viên A, Diễn viên B" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Đánh giá</label>
-          <input type="number" [(ngModel)]="currentPhim.ratings" class="border rounded w-full px-3 py-2"
-            placeholder="VD: 9.5" step="0.1" min="0" max="10" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Doanh thu</label>
-          <input type="number" [(ngModel)]="currentPhim.box_office" class="border rounded w-full px-3 py-2"
-            placeholder="VD: 500000000" />
-        </div>
-        <div>
-          <label class="block font-medium mb-1">Mô tả</label>
-          <textarea [(ngModel)]="currentPhim.describe" rows="4" class="border rounded w-full px-3 py-2"></textarea>
+      <!-- Nội dung form -->
+      <div class="space-y-5" style="margin-bottom: 1.5rem;">
+        <!-- Các trường input -->
+        <div class="border border-gray-200 rounded-lg p-4">
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Tên phim</label>
+            <input type="text" [(ngModel)]="currentPhim.title"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Đạo diễn</label>
+            <input type="text" [(ngModel)]="currentPhim.director"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Giới hạn tuổi</label>
+            <input type="number" [(ngModel)]="currentPhim.age_limit"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="VD: 18" />
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Ngôn ngữ</label>
+            <input type="text" [(ngModel)]="currentPhim.language"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="VD: Tiếng Việt" />
+          </div>
+
+          <div class="mb-4 border border-gray-200 rounded-lg p-3">
+            <label class="block font-medium mb-2 text-gray-700">Thể loại phim</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div *ngFor="let genre of danhSachTheLoai" class="flex items-center">
+                <label class="inline-flex items-center space-x-3">
+                  <input type="checkbox" [value]="genre.id" [checked]="currentPhim.genre_film?.includes(genre.id)"
+                    (change)="toggleGenre(genre.id, $event)"
+                    class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300" />
+                  <span class="text-gray-700">{{ genre.genreName }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Trạng thái</label>
+            <select [(ngModel)]="currentPhim.status_film"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option [ngValue]="1">ONLINE</option>
+              <option [ngValue]="0">OFFLINE</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Poster (URL)</label>
+            <input type="text" [(ngModel)]="currentPhim.image_film"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Trailer (URL)</label>
+            <input type="text" [(ngModel)]="currentPhim.trailer_film"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Thời lượng</label>
+            <input type="text" [(ngModel)]="currentPhim.duration"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="VD: 120 phút" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">Ngày phát hành</label>
+              <input type="date" [(ngModel)]="currentPhim.release_date"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">Ngày kết thúc</label>
+              <input type="date" [(ngModel)]="currentPhim.end_date"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Diễn viên</label>
+            <input type="text" [(ngModel)]="currentPhim.cast"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="VD: Diễn viên A, Diễn viên B" />
+          </div>
+
+          <div class="mb-4">
+            <label class="block font-medium mb-2 text-gray-700">Đánh giá</label>
+            <input type="number" [(ngModel)]="currentPhim.ratings"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="VD: 9.5" step="0.1" min="0" max="10" />
+          </div>
+
+          <div>
+            <label class="block font-medium mb-2 text-gray-700">Mô tả</label>
+            <textarea [(ngModel)]="currentPhim.describe" rows="4"
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
         </div>
       </div>
 
-      <div class="flex justify-end mt-4">
-        <button class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded" (click)="closeModal()">
+      <!-- Nút hành động -->
+      <div class="flex justify-end mt-6 pt-4 border-t-2 border-gray-100">
+        <button
+          class="mr-3 bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg transition-colors border border-gray-300"
+          (click)="closeModal()">
           Hủy
         </button>
-        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" (click)="savePhim()">
+        <button
+          class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg transition-colors border border-blue-600"
+          (click)="savePhim()">
           Lưu
         </button>
       </div>

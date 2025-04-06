@@ -122,6 +122,38 @@ export class PhimComponent implements OnInit {
       });
     }
   }
+  suaPhim(phim: PhimDto, index: number): void {
+    this.isEdit = true;
+    this.editIndex = index;
+    this.currentPhim = phim.clone();
+
+    // Chuyển đổi genre_film thành mảng các ID string
+    if (this.currentPhim.genre_film && Array.isArray(this.currentPhim.genre_film)) {
+      this.currentPhim.genre_film = this.currentPhim.genre_film.map(genreObj => this.getIdAsString(genreObj));
+    } else {
+      this.currentPhim.genre_film = [];
+    }
+
+    this.showModal = true;
+  }
+  toggleGenre(genreId: string, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+
+    // Khởi tạo genre_film nếu chưa có
+    if (!this.currentPhim.genre_film) {
+      this.currentPhim.genre_film = [];
+    }
+
+    if (checked) {
+      // Thêm thể loại nếu chưa có
+      if (!this.currentPhim.genre_film.includes(genreId)) {
+        this.currentPhim.genre_film.push(genreId);
+      }
+    } else {
+      // Loại bỏ thể loại khỏi danh sách
+      this.currentPhim.genre_film = this.currentPhim.genre_film.filter(id => id !== genreId);
+    }
+  }
 
   loadPhims(): void {
     this.isLoading = true;
@@ -130,7 +162,7 @@ export class PhimComponent implements OnInit {
     this.phimService.getPhims(this.page, this.limit).subscribe({
       next: (response: any) => {
         console.log('Tải phim thành công:', response);
-        
+
         // Xử lý dữ liệu phản hồi tùy thuộc vào cấu trúc API
         if (response && typeof response === 'object' && response.data) {
           // Nếu API trả về cấu trúc { data: [...], totalCount: number }
@@ -188,10 +220,10 @@ export class PhimComponent implements OnInit {
     if (newPage < 1 || newPage > this.totalPages) {
       return;
     }
-    
+
     this.page = newPage;
     this.loadPhims();
-    
+
     // Cuộn lên đầu bảng khi chuyển trang
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -199,16 +231,16 @@ export class PhimComponent implements OnInit {
   // Tạo mảng số trang cho phân trang
   getPaginationRange(): number[] {
     const maxPagesToShow = 5;
-    
+
     let startPage = Math.max(1, this.page - Math.floor(maxPagesToShow / 2));
     let endPage = startPage + maxPagesToShow - 1;
-    
+
     if (endPage > this.totalPages) {
       endPage = this.totalPages;
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-    
-    return Array.from({length: (endPage - startPage) + 1}, (_, i) => startPage + i);
+
+    return Array.from({ length: (endPage - startPage) + 1 }, (_, i) => startPage + i);
   }
 
   getGenreNames(genreItems: any[] | null | undefined): string {
@@ -251,7 +283,7 @@ export class PhimComponent implements OnInit {
     this.isLoading = true;
     // Reset về trang 1 khi tìm kiếm
     this.page = 1;
-    
+
     this.phimService.searchPhims(this.searchTerm).subscribe({
       next: (response: any) => {
         // Xử lý dữ liệu phản hồi tùy thuộc vào cấu trúc API
@@ -265,7 +297,7 @@ export class PhimComponent implements OnInit {
           this.danhSachPhim = response.items || response.results || [];
           this.totalPhim = response.total || response.totalItems || response.count || 0;
         }
-        
+
         this.isLoading = false;
       },
       error: (error) => {
@@ -312,12 +344,6 @@ export class PhimComponent implements OnInit {
     this.showModal = true;
   }
 
-  suaPhim(phim: PhimDto, index: number): void {
-    this.isEdit = true;
-    this.editIndex = index;
-    this.currentPhim = phim.clone();
-    this.showModal = true;
-  }
 
   savePhim(): void {
     console.log('Saving film data:', this.currentPhim);
@@ -377,8 +403,7 @@ export class PhimComponent implements OnInit {
       this.currentPhim.trailer_film &&
       this.currentPhim.describe &&
       this.currentPhim.cast &&
-      this.currentPhim.ratings >= 0 &&
-      this.currentPhim.box_office >= 0
+      this.currentPhim.ratings >= 0
     );
   }
 
