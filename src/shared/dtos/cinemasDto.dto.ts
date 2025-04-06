@@ -1,8 +1,11 @@
+import { ShowtimesDto } from "./showtimesDto.dto"; // import đúng đường dẫn
+
 export interface ICinemaDto {
-  id: string;          // _id từ MongoDB
-  cinemaName: string;  // Tên rạp
-  location: string;    // Địa chỉ
-  totalRoom: number;   // Số phòng
+  id: string;
+  cinemaName: string;
+  location: string;
+  totalRoom: number;
+  showtimes?: ShowtimesDto[]; // Thêm dòng này
 }
 
 export class CinemaDto implements ICinemaDto {
@@ -10,14 +13,11 @@ export class CinemaDto implements ICinemaDto {
   cinemaName!: string;
   location!: string;
   totalRoom!: number;
+  showtimes?: ShowtimesDto[]; // Thêm dòng này
 
   constructor(data?: ICinemaDto) {
     if (data) {
-      for (const property in data) {
-        if (data.hasOwnProperty(property)) {
-          (this as any)[property] = (data as any)[property];
-        }
-      }
+      Object.assign(this, data);
     }
   }
 
@@ -27,22 +27,29 @@ export class CinemaDto implements ICinemaDto {
       this.cinemaName = _data["cinema_name"];
       this.location = _data["location"];
       this.totalRoom = _data["total_room"];
+
+      // Map showtimes nếu có
+      if (Array.isArray(_data["showtimes"])) {
+        this.showtimes = _data["showtimes"].map((s: any) => ShowtimesDto.fromJS(s));
+      } else {
+        this.showtimes = [];
+      }
     }
   }
 
   static fromJS(data: any): CinemaDto {
-    data = typeof data === 'object' ? data : {};
-    let result = new CinemaDto();
+    const result = new CinemaDto();
     result.init(data);
     return result;
   }
 
-  toJSON(data?: any) {
-    data = typeof data === 'object' ? data : {};
+  toJSON() {
+    const data: any = {};
     data["_id"] = this.id;
     data["cinema_name"] = this.cinemaName;
     data["location"] = this.location;
     data["total_room"] = this.totalRoom;
+    data["showtimes"] = this.showtimes?.map(s => s.toJSON()); // optional
     return data;
   }
 

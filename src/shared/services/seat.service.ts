@@ -33,7 +33,7 @@ export class SeatService {
             );
     }
     getSeatByRoomId(roomId: string): Observable<SeatDto[]> {
-        return this.http.get<{ code: number, error: any, data: ISeatDto[] }>(`${this.apiUrlGetbyrom}/${roomId}`)
+        return this.http.get<{ code: number, error: any, data: SeatDto[] }>(`${this.apiUrlGetbyrom}/${roomId}`)
             .pipe(
                 map(response => {
                     if (response.code === 200 && response.data) {

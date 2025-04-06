@@ -1,43 +1,147 @@
-/* room.component.css (hoặc style.css) */
-.screen-container {
+/* Thiết lập cho container chứa cả ghế và combo */
+.container {
+    display: flex;
+    /* Khoảng cách giữa danh sách ghế và bảng combo */
+    width: 100%;
+}
+
+/* Phần dành cho ghế */
+.seat-grid {
+    flex: 7;
+    /* Dành 7 phần cho ghế */
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    /* Giảm khoảng cách với tiêu đề "Màn hình" */
     width: 100%;
 }
 
-.screen {
-    width: 70%;
-    /* Điều chỉnh chiều rộng cho phù hợp */
-    height: 20px;
-    /* Tăng chiều cao để thấy rõ độ cong hơn */
-    background-color: #000000;
-    /* Màu nền nhạt hơn cho thanh */
-    margin-bottom: 5px;
-    /* Giảm khoảng cách với tiêu đề "Màn hình" */
-    border-radius: 50% 50% 0 0;
-    /* Bo tròn góc trên, góc dưới thẳng */
-    /* Thêm bóng đổ nhẹ để tạo cảm giác 3D */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+/* Phần dành cho combo */
+.combo-table {
+    flex: 4;
+    /* Dành 3 phần cho combo */
+    background-color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    overflow: auto;
+    width: 100%;
 }
 
-h3 {
-    margin: 0;
-    font-size: 1.1em;
-    /* Стиль cho tiêu đề "Màn hình" */
-    color: #555;
+/* CSS cho nút cộng */
+.add-button {
+    padding: 8px 12px;
+    font-size: 1.2em;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.add-button:hover {
+    background-color: #2563eb;
+}
+
+.table-cell.actions {
     text-align: center;
 }
 
+
+
+.combo-table-content {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header {
+    background-color: #f9fafb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table-header-cell {
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-body {
+    background-color: white;
+    border-top: 1px solid #e5e7eb;
+}
+
+.table-row:hover {
+    background-color: #f9fafb;
+    transition: background-color 0.15s;
+}
+
+.table-cell {
+    padding: 1rem 1rem;
+    white-space: nowrap;
+}
+
+.combo-info {
+    display: flex;
+    align-items: center;
+}
+
+.combo-image {
+    flex-shrink: 0;
+    height: 2.5rem;
+    width: 2.5rem;
+}
+
+.combo-image-img {
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.combo-details {
+    margin-left: 1rem;
+}
+
+.combo-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.combo-id {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.price-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #3b82f6;
+}
+
+.description-text {
+    font-size: 0.875rem;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 20rem;
+}
+
+/* Thiết lập cho ghế */
 .seat-grid {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    /* Giảm khoảng cách giữa các hàng ghế */
-    width: auto;
+    width: 100%;
 }
 
 .row-container {
@@ -74,4 +178,137 @@ h3 {
     background-color: #f0f0f0;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Thiết lập cho màn hình */
+.screen {
+    width: 70%;
+    height: 20px;
+    background-color: #000000;
+    margin-bottom: 5px;
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.seat.selected {
+    background-color: #3b82f6;
+    /* Màu xanh cho ghế đã chọn */
+    color: white;
+}
+
+
+/* Media Query cho màn hình nhỏ */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        /* Chuyển hướng layout thành dọc cho màn hình nhỏ */
+    }
+
+    .seat-grid,
+    .combo-table {
+        flex: none;
+        width: 100%;
+    }
+}
+
+.create-ticket-button {
+    padding: 12px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.create-ticket-button:hover {
+    background-color: #45a049;
+}
+
+/* Phần combo */
+.combo-section {
+    width: 550px;
+    /* Chiều rộng cố định cho combo */
+    flex-shrink: 0;
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 1px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.combo-table-content {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header {
+    background-color: #f1f1f1;
+}
+
+.table-header-cell {
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.table-body {
+    background-color: #fff;
+}
+
+.table-row {
+    border-bottom: 1px solid #ddd;
+}
+
+.table-cell {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.combo-info-content {
+    display: flex;
+    align-items: center;
+}
+
+.combo-image {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.combo-image-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.combo-details .combo-name {
+    font-weight: bold;
+}
+
+.price-text {
+    font-size: 16px;
+}
+
+.description-text {
+    font-size: 14px;
+    color: #777;
+}
+
+.add-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.add-button:hover {
+    background-color: #218838;
 }

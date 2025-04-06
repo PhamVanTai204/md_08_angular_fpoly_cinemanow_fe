@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, catchError } from 'rxjs';
+import { ComboDto } from '../dtos/ComboDto.dto';
 
 export interface Combo {
   _id: string;
@@ -25,6 +26,7 @@ interface ApiResponseWithData {
 @Injectable({
   providedIn: 'root'
 })
+
 export class ComboService {
   private baseUrl = 'http://127.0.0.1:3000/combos';
 
@@ -38,7 +40,31 @@ export class ComboService {
       'Authorization': token ? `Bearer ${token}` : ''
     });
   }
-
+  getAllCombos1(): Observable<ComboDto[]> {
+    const headers = this.getHeaders();
+    return this.http.get<any>(`${this.baseUrl}/get-all`, { headers })
+      .pipe(
+        map((response: any) => {
+          // Nếu response là mảng, ánh xạ từng combo thành ComboDto
+          if (Array.isArray(response)) {
+            return response.map((combo: any) => ComboDto.fromJS(combo));
+          }
+          // Nếu response là object chứa mảng data
+          else if (response && typeof response === 'object') {
+            if (response.data && Array.isArray(response.data)) {
+              return response.data.map((combo: any) => ComboDto.fromJS(combo));
+            }
+          }
+          // Trường hợp không tìm thấy mảng, trả về mảng rỗng
+          console.warn('API không trả về dữ liệu mong đợi:', response);
+          return [];
+        }),
+        catchError(error => {
+          console.error('Error in getAllCombos:', error);
+          throw error;
+        })
+      );
+  }
   // Lấy tất cả combos
   getAllCombos(): Observable<Combo[]> {
     const headers = this.getHeaders();
@@ -53,7 +79,7 @@ export class ComboService {
           else if (response && typeof response === 'object') {
             if (response.data && Array.isArray(response.data)) {
               return response.data;
-            } 
+            }
             // Nếu response là object chứa mảng combos
             else if (response.combos && Array.isArray(response.combos)) {
               return response.combos;
@@ -96,7 +122,7 @@ export class ComboService {
   // Tạo combo mới
   createCombo(combo: Omit<Combo, '_id'>): Observable<Combo> {
     const headers = this.getHeaders();
-    
+
     // Đảm bảo rằng combo đủ các trường cần thiết
     const comboToCreate = {
       combo_id: combo.combo_id,
@@ -133,7 +159,7 @@ export class ComboService {
   // Cập nhật combo
   updateCombo(id: string, combo: Partial<Combo>): Observable<Combo> {
     const headers = this.getHeaders();
-    
+
     // Đảm bảo rằng combo đủ các trường cần thiết để cập nhật
     const comboToUpdate = {
       combo_id: combo.combo_id,
