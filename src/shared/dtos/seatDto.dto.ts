@@ -1,5 +1,5 @@
 export interface ISeatDto {
-    id?: string;
+    _id?: string;  // Chuyển từ id thành _id
     seat_id: string;
     room_id: string;
     seat_status: 'available' | 'booked' | 'unavailable';
@@ -7,12 +7,12 @@ export interface ISeatDto {
     price_seat: number;
     column_of_seat: string;
     row_of_seat: string;
-    created_at?: string;
-    updated_at?: string;
+    createdAt?: string;  // Cập nhật tên trường
+    updatedAt?: string;  // Cập nhật tên trường
 }
 
 export class SeatDto implements ISeatDto {
-    id?: string;
+    _id: string = '';  // Chuyển từ id thành _id
     seat_id: string = '';
     room_id: string = '';
     seat_status: 'available' | 'booked' | 'unavailable' = 'available';
@@ -20,8 +20,8 @@ export class SeatDto implements ISeatDto {
     price_seat: number = 0;
     column_of_seat: string = '';
     row_of_seat: string = '';
-    created_at?: string;
-    updated_at?: string;
+    createdAt?: string;  // Cập nhật tên trường
+    updatedAt?: string;  // Cập nhật tên trường
 
     constructor(data?: ISeatDto) {
         if (data) {
@@ -35,7 +35,7 @@ export class SeatDto implements ISeatDto {
 
     init(_data?: any) {
         if (_data) {
-            this.id = _data["_id"];
+            this._id = _data["_id"];  // Sử dụng _id thay vì id
             this.seat_id = _data["seat_id"];
             this.room_id = _data["room_id"];
             this.seat_status = _data["seat_status"];
@@ -43,8 +43,8 @@ export class SeatDto implements ISeatDto {
             this.price_seat = _data["price_seat"];
             this.column_of_seat = _data["column_of_seat"];
             this.row_of_seat = _data["row_of_seat"];
-            this.created_at = _data["createdAt"];
-            this.updated_at = _data["updatedAt"];
+            this.createdAt = _data["createdAt"];  // Cập nhật tên trường
+            this.updatedAt = _data["updatedAt"];  // Cập nhật tên trường
         }
     }
 
@@ -57,8 +57,8 @@ export class SeatDto implements ISeatDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        if (this.id) {
-            data["_id"] = this.id;
+        if (this._id) {  // Sử dụng _id thay vì id
+            data["_id"] = this._id;
         }
         data["seat_id"] = this.seat_id;
         data["room_id"] = this.room_id;
@@ -67,8 +67,8 @@ export class SeatDto implements ISeatDto {
         data["price_seat"] = this.price_seat;
         data["column_of_seat"] = this.column_of_seat;
         data["row_of_seat"] = this.row_of_seat;
-        data["createdAt"] = this.created_at;
-        data["updatedAt"] = this.updated_at;
+        data["createdAt"] = this.createdAt;  // Cập nhật tên trường
+        data["updatedAt"] = this.updatedAt;  // Cập nhật tên trường
         return data;
     }
 

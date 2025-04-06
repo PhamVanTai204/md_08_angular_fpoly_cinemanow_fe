@@ -38,7 +38,7 @@
   <!-- Thông tin về user đăng nhập -->
   <div *ngIf="currentUser" class="mb-6 p-4 bg-blue-50 rounded-lg">
     <div class="flex items-center">
-       <img [src]="currentUser.url_image" alt="Avatar" class="h-12 w-12 rounded-full object-cover border border-blue-300"
+      <img [src]="currentUser.url_image" alt="Avatar" class="h-12 w-12 rounded-full object-cover border border-blue-300"
         onerror="this.src='https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc'" />
 
       <div class="ml-4">
@@ -84,8 +84,7 @@
             <tr *ngFor="let user of adminUsers">
               <td class="px-6 py-4 whitespace-nowrap">
                 <img [src]="user.url_image" alt="Avatar"
-                  class="h-10 w-10 rounded-full object-cover border border-gray-200"
-                  onerror="this.src='https://via.placeholder.com/40?text=?'" />
+                  class="h-10 w-10 rounded-full object-cover border border-gray-200" />
               </td>
               <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
                 {{ user.user_name }}
@@ -167,8 +166,7 @@
             <tr *ngFor="let user of staffUsers">
               <td class="px-6 py-4 whitespace-nowrap">
                 <img [src]="user.url_image" alt="Avatar"
-                  class="h-10 w-10 rounded-full object-cover border border-gray-200"
-                  onerror="this.src='https://via.placeholder.com/40?text=?'" />
+                  class="h-10 w-10 rounded-full object-cover border border-gray-200" />
               </td>
               <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
                 {{ user.user_name }}

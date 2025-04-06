@@ -1,12 +1,98 @@
-<div class="seat-grid">
-    <div class="screen"></div>
-    <h3>Màn hình</h3>
-    <div *ngFor="let row of objectKeys(groupedSeats)" class="row-container">
-        <h3>Row {{ row }}</h3>
-        <div class="seats">
-            <div *ngFor="let seat of groupedSeats[row]" class="seat">
-                {{ seat.seat_id }}
+<div class="container">
+    <div class="seat-grid">
+        <div class="screen"></div>
+        <h3>Màn hình</h3>
+        <div *ngFor="let row of objectKeys(groupedSeats)" class="row-container">
+            <h3>Row {{ row }}</h3>
+            <div class="seats">
+                <div *ngFor="let seat of groupedSeats[row]" class="seat" (click)="selectSeat(seat)"
+                    [ngClass]="{'selected': isSelected(seat)}">
+                    {{ seat.seat_id }}
+                </div>
             </div>
+        </div>
+        <button class="create-ticket-button" (click)="createTicket()">Tạo vé</button>
+        <!-- Phần combo table bên cạnh ghế -->
+        <div class="combo-section">
+            <div class="table-container">
+                <table class="combo-table-content">
+                    <thead class="table-header">
+                        <tr>
+                            <th class="table-header-cell">Combo</th>
+                            <th class="table-header-cell">Giá</th>
+                            <th class="table-header-cell">Mô tả</th>
+                            <th class="table-header-cell">Số lượng</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body">
+                        <tr class="table-row" *ngFor="let combo of selectedCombos">
+                            <td class="table-cell combo-info">
+                                <div class="combo-info-content">
+                                    <div class="combo-image">
+                                        <img [src]="combo.image_combo" alt="Combo" class="combo-image-img"
+                                            onerror="this.src='https://via.placeholder.com/40?text=🍿'" />
+                                    </div>
+                                    <div class="combo-details">
+                                        <div class="combo-name">{{ combo.name_combo }}</div>
+                                        <div class="combo-id">Mã: {{ combo.combo_id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="table-cell price">
+                                <div class="price-text">{{ combo.price_combo | currency:'VND':'':'1.0-0' }}đ</div>
+                            </td>
+                            <td class="table-cell description">
+                                <div class="description-text">{{ combo.description_combo }}</div>
+                            </td>
+                            <td class="table-cell actions">
+                                <div class="combo-name">{{ combo.quantity }}</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="combo-table">
+        <div class="table-container">
+            <table class="combo-table-content">
+                <thead class="table-header">
+                    <tr>
+                        <th class="table-header-cell">Combo</th>
+                        <th class="table-header-cell">Giá</th>
+                        <th class="table-header-cell">Mô tả</th>
+                        <th class="table-header-cell">Thao tác</th> <!-- Thêm cột thao tác -->
+                    </tr>
+                </thead>
+                <tbody class="table-body">
+                    <!-- Dữ liệu được render ở đây -->
+                    <tr class="table-row" *ngFor="let combo of combos">
+                        <td class="table-cell combo-info">
+                            <div class="combo-info-content">
+                                <div class="combo-image">
+                                    <img [src]="combo.image_combo" alt="Combo" class="combo-image-img"
+                                        onerror="this.src='https://via.placeholder.com/40?text=🍿'" />
+                                </div>
+                                <div class="combo-details">
+                                    <div class="combo-name">{{ combo.name_combo }}</div>
+                                    <div class="combo-id">Mã: {{ combo.combo_id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="table-cell price">
+                            <div class="price-text">{{ combo.price_combo | currency:'VND':'':'1.0-0' }}đ</div>
+                        </td>
+                        <td class="table-cell description">
+                            <div class="description-text">{{ combo.description_combo }}</div>
+                        </td>
+                        <!-- Cột thao tác thêm nút cộng -->
+                        <td class="table-cell actions">
+                            <button class="add-button" (click)="addToCart(combo)">+</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
