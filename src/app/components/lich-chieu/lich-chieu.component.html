@@ -89,6 +89,42 @@
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
       </div>
 
+      <!-- Dropdown chọn phòng -->
+      <div>
+        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn phòng</label>
+        <select (change)="onCinemaChange($event)"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+          <option value="">-- Chọn Rạp --</option>
+          <option *ngFor="let room of rapList" [value]="room.id">
+            {{ room.cinemaName }}
+          </option>
+        </select>
+        <div *ngIf="roomErrorMessage" class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md">
+          {{ roomErrorMessage }}
+        </div>
+
+        <div *ngIf="showtimeForm.roomName" class="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-md">
+          <span class="font-medium">Phòng đã chọn:</span> {{ showtimeForm.roomName }}
+        </div>
+      </div>
+
+
+      <!-- Dropdown chọn phòng -->
+      <div>
+        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn phòng</label>
+        <select [(ngModel)]="showtimeForm.roomId" (change)="onRoomChange(showtimeForm.roomId)"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+          <option value="">-- Chọn phòng --</option>
+          <option *ngFor="let room of roomLisst" [value]="room.id">
+            {{ room.room_name }}
+          </option>
+        </select>
+        <div *ngIf="showtimeForm.roomName" class="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-md">
+          <span class="font-medium">Phòng đã chọn:</span> {{ showtimeForm.roomName }}
+        </div>
+      </div>
+
+
       <!-- Dropdown chọn phim -->
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn phim</label>
@@ -101,21 +137,6 @@
         </select>
         <div *ngIf="showtimeForm.movieName" class="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-md">
           <span class="font-medium">Phim đã chọn:</span> {{ showtimeForm.movieName }}
-        </div>
-      </div>
-
-      <!-- Dropdown chọn phòng -->
-      <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn phòng</label>
-        <select [(ngModel)]="showtimeForm.roomId" (change)="onRoomChange(showtimeForm.roomId)"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
-          <option value="">-- Chọn phòng --</option>
-          <option *ngFor="let room of allRooms" [value]="room._id">
-            {{ room.room_name }}
-          </option>
-        </select>
-        <div *ngIf="showtimeForm.roomName" class="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-md">
-          <span class="font-medium">Phòng đã chọn:</span> {{ showtimeForm.roomName }}
         </div>
       </div>
 
