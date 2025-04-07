@@ -10,6 +10,7 @@ import { ISeatDto, SeatDto } from "../dtos/seatDto.dto";
 export class SeatService {
     private apiUrlGetbyrom = "http://127.0.0.1:3000/cinema/rooms/seats"; // Base URL
     private apiUrlAddMultiple = "http://127.0.0.1:3000/seats/addmuti"; // URL để tạo hàng loạt ghế
+    private apiUrlUpdateSeat = "http://127.0.0.1:3000/seats/update/"; // URL để tạo hàng loạt ghế
 
     constructor(private http: HttpClient) { }
     // Phương thức thêm nhiều ghế
@@ -45,13 +46,27 @@ export class SeatService {
             );
     }
 
+    // Phương thức cập nhật ghế
+    updateSeatStatus(seatId: string, seat_status: string): Observable<any> {
+        const data = {
+            seat_status: seat_status
+        };
+
+        return this.http.put(`${this.apiUrlUpdateSeat}/${seatId}`, data)
+            .pipe(
+                map(response => {
+                    return response;
+                }),
+                catchError(this.handleError)
+            );
+    }
     groupSeatsByRow(seats: any[]): { [key: string]: any[] } {
         return seats.reduce((acc, seat) => {
-            const row = seat.row; // Sử dụng trực tiếp trường row
-            if (!acc[row]) {
-                acc[row] = [];
+            const row_of_seat = seat.row_of_seat; // Sử dụng trực tiếp trường row_of_seat
+            if (!acc[row_of_seat]) {
+                acc[row_of_seat] = [];
             }
-            acc[row].push(seat);
+            acc[row_of_seat].push(seat);
             return acc;
         }, {});
     }

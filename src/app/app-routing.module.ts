@@ -19,6 +19,7 @@ const routes: Routes = [
   { path: 'combo', loadChildren: () => import('./components/combo/combo.module').then(m => m.ComboModule) },
   { path: 'voucher', loadChildren: () => import('./components/voucher/voucher.module').then(m => m.VoucherModule) },
   { path: 'room/:idRoom', loadChildren: () => import('./components/room/room.module').then(m => m.RoomModule) },
+  { path: 'confirmVNPay', loadChildren: () => import('./components/comfirm-vnpay/comfirm-vnpay.module').then(m => m.ComfirmVNPayModule) },
 
   { path: '', redirectTo: 'login', pathMatch: 'full' }, // Mặc định vào trang "Thể loại phim"
 ];
