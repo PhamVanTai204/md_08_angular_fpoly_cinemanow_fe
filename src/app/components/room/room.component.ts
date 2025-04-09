@@ -32,6 +32,7 @@ export class RoomComponent implements OnInit {
   orderId: string = '';
   orderInfo: string = '';
   paymentUrl: string = '';
+  showtime_id: string = '';
   constructor(
     public bsModalRef: BsModalRef,
     private seatService: SeatService,
@@ -76,8 +77,9 @@ export class RoomComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const idRoomParam = params.get('idRoom');
+      const showtimeId = params.get('showtimeId');
       this.idRoom = idRoomParam || '';
-
+      this.showtime_id = showtimeId ?? '';
       if (this.idRoom) {
         this.list();
       } else {
@@ -197,7 +199,7 @@ export class RoomComponent implements OnInit {
       id: "", // Nếu cần, có thể điền giá trị mặc định hoặc gán giá trị sau khi tạo ticket
       user_id: "67ea1c5108d4e0d7db8e5d16", // User ID
       ticket_id: '',
-      showtime_id: "67ea64f835e3725cd9edd1f1", // Showtime ID
+      showtime_id: this.showtime_id, // Showtime ID
       seats: this.selectedSeats.map(seat => new SeatDto({
         seat_id: seat._id,
         price_seat: seat.price_seat,

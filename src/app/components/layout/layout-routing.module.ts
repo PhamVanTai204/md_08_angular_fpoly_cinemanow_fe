@@ -20,7 +20,7 @@ const routes: Routes = [
       { path: 'banner', loadChildren: () => import('../banner/banner.module').then(m => m.BannerModule) },
       { path: 'combo', loadChildren: () => import('../combo/combo.module').then(m => m.ComboModule) },
       { path: 'voucher', loadChildren: () => import('../voucher/voucher.module').then(m => m.VoucherModule) },
-      { path: 'room/:idRoom', loadChildren: () => import('../room/room.module').then(m => m.RoomModule) },
+      { path: 'room/:idRoom/:showtimeId', loadChildren: () => import('../room/room.module').then(m => m.RoomModule) },
 
 
       { path: '', redirectTo: 'theloaiphim', pathMatch: 'full' }
