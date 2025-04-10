@@ -38,8 +38,7 @@
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item.startTime }}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item.endTime }}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item.showDate | date: 'yyyy-MM-dd HH:mm' }}
-        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item.showDate | date: 'yyyy-MM-dd HH:mm' }}</td>
         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
           <button class="mr-3 text-blue-600 hover:text-blue-800 px-2 py-1 rounded transition-colors duration-200"
             (click)="editSchedule(item)" title="Chỉnh sửa">
@@ -89,7 +88,7 @@
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
       </div>
 
-      <!-- Dropdown chọn phòng -->
+      <!-- Dropdown chọn rạp -->
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn phòng</label>
         <select (change)="onCinemaChange($event)"
@@ -108,8 +107,7 @@
         </div>
       </div>
 
-
-      <!-- Dropdown chọn phòng -->
+      <!-- Dropdown chọn phòng chi tiết -->
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn phòng</label>
         <select [(ngModel)]="showtimeForm.roomId" (change)="onRoomChange(showtimeForm.roomId)"
@@ -123,7 +121,6 @@
           <span class="font-medium">Phòng đã chọn:</span> {{ showtimeForm.roomName }}
         </div>
       </div>
-
 
       <!-- Dropdown chọn phim -->
       <div>
@@ -146,14 +143,12 @@
           <input [(ngModel)]="showtimeForm.startTime" (ngModelChange)="onStartTimeInput(showtimeForm.startTime)"
             type="text" placeholder="HH:MM" maxlength="5"
             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
-
         </div>
         <div>
           <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian kết thúc</label>
           <input [(ngModel)]="showtimeForm.endTime" (ngModelChange)="onEndTimeInput(showtimeForm.endTime)" type="text"
             placeholder="HH:MM" maxlength="5"
             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
-
         </div>
       </div>
       <div>
