@@ -56,9 +56,12 @@ export class LichChieuComponent implements OnInit {
     // this.loadAllRooms();
   }
 
+  // Khi chọn rạp, cập nhật cinemaId cho showtimeForm và load danh sách phòng của rạp đó
   onCinemaChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     const selectedCinemaId: string = selectElement.value;
+    // Cập nhật cinemaId vào body của showtime
+    this.showtimeForm.cinemaId = selectedCinemaId;
     if (selectedCinemaId) {
       this.getRoom(selectedCinemaId);
     } else {
@@ -236,7 +239,7 @@ export class LichChieuComponent implements OnInit {
       showtimeId: 'ST' + randomId,
       movieId: '',
       roomId: '',
-      cinemaId: '',
+      cinemaId: '',  // Khởi tạo rỗng
       startTime: defaultStartTime,
       endTime: defaultEndTime,
       showDate: formattedDate
