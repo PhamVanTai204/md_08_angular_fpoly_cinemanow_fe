@@ -177,7 +177,7 @@
             <div class="grid grid-cols-2 gap-3">
               <div *ngFor="let genre of danhSachTheLoai" class="flex items-center">
                 <label class="inline-flex items-center space-x-3">
-                  <input type="checkbox" [value]="genre.id" [checked]="currentPhim.genre_film?.includes(genre.id)"
+                  <input type="checkbox" [value]="genre.id" [checked]="currentPhim.genre_film.includes(genre.id)"
                     (change)="toggleGenre(genre.id, $event)"
                     class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300" />
                   <span class="text-gray-700">{{ genre.genreName }}</span>

@@ -21,9 +21,15 @@ export class LayoutComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Lấy thông tin người dùng đã đăng nhập
+    // Retrieve logged-in user information
     this.currentUser = this.userService.getCurrentUser();
-    console.log(this.currentUser, "chfkujhaskjfhsajk");
+    console.log('Current user:', this.currentUser);
+    
+    // Redirect to login if no user is found
+    if (!this.currentUser) {
+      this.router.navigate(['/login']);
+      return;
+    }
 
     // Track current route for navigation highlighting
     this.router.events
@@ -32,11 +38,31 @@ export class LayoutComponent implements OnInit {
         const url = event.urlAfterRedirects;
         this.currentRoute = url.split('/').pop();
       });
+    
+    // Navigate to theloaiphim by default if we're at the root path
+    if (this.router.url === '/' || this.router.url === '') {
+      this.router.navigate(['theloaiphim']);
+    }
   }
 
-  // Xử lý logout
+  // Get role label based on user role number
+  getUserRoleLabel(): string {
+    if (!this.currentUser) return '';
+    
+    switch (this.currentUser.role) {
+      case 1:
+        return 'Người dùng';
+      case 2:
+        return 'Quản trị viên';
+      case 3:
+        return 'Quản trị viên cấp cao';
+      default:
+        return 'Nhân viên';
+    }
+  }
+
+  // Handle logout
   logout(): void {
-    // Gọi phương thức đăng xuất từ UserService
     this.userService.logout();
   }
 }
