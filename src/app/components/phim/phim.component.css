@@ -1,0 +1,99 @@
+/* Enhanced styling for Films component */
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Smooth transitions */
+  button, a {
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* Loading spinner animation */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  /* Improved pagination buttons */
+  .pagination-button {
+    min-width: 2.5rem;
+    text-align: center;
+  }
+  
+  /* Status badges */
+  .status-badge {
+    border-radius: 9999px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .status-badge.online {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: rgb(16, 185, 129);
+  }
+  
+  .status-badge.offline {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: rgb(107, 114, 128);
+  }
+  
+  /* Form styling */
+  .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
+  
+  /* Modal styling */
+  .modal-container {
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  
+  .modal-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .modal-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .modal-container::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+  }
+  
+  /* Image placeholders */
+  .image-placeholder {
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 0.875rem;
+  }
+  
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    outline: 2px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 2px;
+  }
