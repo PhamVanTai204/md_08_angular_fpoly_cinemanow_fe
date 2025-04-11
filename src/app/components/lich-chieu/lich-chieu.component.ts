@@ -47,7 +47,7 @@ export class LichChieuComponent implements OnInit {
     private http: HttpClient,
     private cinemasService: CinemasService,
     private roomService: RoomService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadShowtimes();
@@ -220,7 +220,7 @@ export class LichChieuComponent implements OnInit {
     this.isEditing = false;
     this.isMainModalOpen = true;
     const currentDate: Date = new Date();
-    const formattedDate: string = currentDate.toISOString().slice(0, 16);
+    const formattedDate: string = currentDate.toISOString().slice(0, 10); // yyyy-MM-dd
     const randomId: string = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     const currentHour: number = currentDate.getHours();
     const roundedMinutes: number = Math.ceil(currentDate.getMinutes() / 15) * 15;
@@ -253,7 +253,7 @@ export class LichChieuComponent implements OnInit {
     if (this.showtimeForm.showDate) {
       const date: Date = new Date(this.showtimeForm.showDate);
       if (!isNaN(date.getTime())) {
-        this.showtimeForm.showDate = date.toISOString().slice(0, 16);
+        this.showtimeForm.showDate = date.toISOString().slice(0, 10);
       }
     }
     console.log('Editing showtime:', this.showtimeForm);
@@ -294,6 +294,14 @@ export class LichChieuComponent implements OnInit {
     if (/^\d{4}$/.test(this.showtimeForm.endTime)) {
       this.onEndTimeInput(this.showtimeForm.endTime);
     }
+    // Format showDate về yyyy-MM-dd
+    const date = new Date(this.showtimeForm.showDate);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    this.showtimeForm.showDate = `${day}/${month}/${year}`;
+
+    // Debug log
     console.log('Dữ liệu gửi đi:', this.showtimeForm.toJSON());
     if (this.isEditing) {
       if (!this.showtimeForm.id) {

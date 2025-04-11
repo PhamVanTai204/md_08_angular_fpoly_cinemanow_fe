@@ -73,7 +73,7 @@ export class ShowtimesDto implements IShowtimesDto {
       cinema_id: this.cinemaId,
       start_time: this.startTime,
       end_time: this.endTime,
-      show_date: new Date(this.showDate).toISOString()
+      show_date: this.showDate
     };
   }
 
