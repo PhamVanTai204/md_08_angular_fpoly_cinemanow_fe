@@ -34,104 +34,155 @@
     </div>
   </div>
 
-  <!-- Films table -->
-  <div *ngIf="!isLoading" class="overflow-x-auto bg-white rounded-lg shadow-sm">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thể loại phim
-          </th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên phim</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đạo diễn</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giới hạn tuổi
-          </th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngôn ngữ</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời lượng</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày phát hành
-          </th>
-          <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <tr *ngFor="let phim of danhSachPhimDaLoc; let i = index" class="hover:bg-gray-50">
-          <td class="px-4 py-3 whitespace-nowrap">{{ getGenreNames(phim.genre_film) }}</td>
-          <td class="px-4 py-3 whitespace-nowrap">
-            <img [src]="phim.image_film" alt="{{ phim.title }}" class="w-16 h-24 object-cover rounded-md"
-              onerror="this.src='assets/images/placeholder.jpg'" />
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap font-medium">{{ phim.title }}</td>
-          <td class="px-4 py-3 whitespace-nowrap">{{ phim.director }}</td>
-          <td class="px-4 py-3 whitespace-nowrap">{{ phim.age_limit }}</td>
-          <td class="px-4 py-3 whitespace-nowrap">{{ phim.language }}</td>
-          <td class="px-4 py-3 whitespace-nowrap">{{ phim.duration }}</td>
-          <td class="px-4 py-3 whitespace-nowrap">
-            <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full" [ngClass]="{
-                'bg-green-100 text-green-600': phim.status_film === 1,
-                'bg-gray-100 text-gray-600': phim.status_film !== 1
-              }">
-              {{ getTrangThaiText(phim.status_film) }}
-            </span>
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap">
-            {{ formatDate(phim.release_date) }}
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap flex items-center justify-center space-x-2">
-            <button class="text-blue-500 hover:text-blue-700 focus:outline-none" (click)="suaPhim(phim, i)">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 00-2 2v14c0 1.1.9 2 2 2h14a2 2 0 002-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </button>
-            <button class="text-red-500 hover:text-red-700 focus:outline-none" (click)="xoaPhim(phim, i)">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m2 0V4a2 2 0 012-2h6a2 2 0 012 2v2" />
-              </svg>
-            </button>
-          </td>
-        </tr>
-        <!-- Show when no data is found -->
-        <tr *ngIf="!isLoading && danhSachPhimDaLoc.length === 0">
-          <td colspan="10" class="px-4 py-6 text-center text-gray-500">
-            Không tìm thấy dữ liệu phim nào.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Pagination - moved to the bottom -->
-  <div *ngIf="!isLoading && danhSachPhimDaLoc.length > 0" class="mt-6 flex justify-between items-center">
-    <div class="text-sm text-gray-600">
-      Hiển thị {{ danhSachPhimDaLoc.length ? (page - 1) * limit + 1 : 0 }} đến
-      {{ Math.min(page * limit, totalPhim) }} trong tổng số {{ totalPhim }} phim
+  <!-- Main content wrapper -->
+  <div *ngIf="!isLoading" class="flex flex-col min-h-[calc(100vh-200px)]">
+    <!-- Films table -->
+    <div class="overflow-x-auto bg-white rounded-lg shadow-sm flex-grow">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thể loại phim
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên phim</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đạo diễn</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giới hạn tuổi
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngôn ngữ</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời lượng</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày phát hành
+            </th>
+            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr *ngFor="let phim of danhSachPhimDaLoc; let i = index" class="hover:bg-gray-50">
+            <td class="px-4 py-3 whitespace-nowrap">{{ getGenreNames(phim.genre_film) }}</td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <img [src]="phim.image_film" alt="{{ phim.title }}" class="w-16 h-24 object-cover rounded-md"
+                onerror="this.src='assets/images/placeholder.jpg'" />
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap font-medium">{{ phim.title }}</td>
+            <td class="px-4 py-3 whitespace-nowrap">{{ phim.director }}</td>
+            <td class="px-4 py-3 whitespace-nowrap">{{ phim.age_limit }}</td>
+            <td class="px-4 py-3 whitespace-nowrap">{{ phim.language }}</td>
+            <td class="px-4 py-3 whitespace-nowrap">{{ phim.duration }}</td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full" [ngClass]="{
+                  'bg-green-100 text-green-600': phim.status_film === 1,
+                  'bg-gray-100 text-gray-600': phim.status_film !== 1
+                }">
+                {{ getTrangThaiText(phim.status_film) }}
+              </span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              {{ formatDate(phim.release_date) }}
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap flex items-center justify-center space-x-2">
+              <button class="text-blue-500 hover:text-blue-700 focus:outline-none" (click)="suaPhim(phim, i)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14c0 1.1.9 2 2 2h14a2 2 0 002-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+              <button class="text-red-500 hover:text-red-700 focus:outline-none" (click)="xoaPhim(phim, i)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m2 0V4a2 2 0 012-2h6a2 2 0 012 2v2" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+          <!-- Show when no data is found -->
+          <tr *ngIf="!isLoading && danhSachPhimDaLoc.length === 0">
+            <td colspan="10" class="px-4 py-6 text-center text-gray-500">
+              Không tìm thấy dữ liệu phim nào.
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="flex space-x-1">
-      <button [disabled]="page === 1" [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
-        class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-        (click)="changePage(page - 1)">
-        Trước
-      </button>
 
+   <!-- Improved pagination - all elements in one row -->
+<div *ngIf="!isLoading && danhSachPhimDaLoc.length > 0" class="mt-6 flex justify-between items-center border-t border-gray-200 pt-5">
+  <!-- Left side: Item count text -->
+  <div class="text-sm text-gray-600">
+    Hiển thị {{ danhSachPhimDaLoc.length ? (page - 1) * limit + 1 : 0 }} đến
+    {{ Math.min(page * limit, totalPhim) }} trong tổng số {{ totalPhim }} phim
+  </div>
+  
+  <!-- Center: Pagination controls -->
+  <div class="flex justify-center">
+    <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+      <!-- First page button -->
+      <button [disabled]="page === 1" [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
+        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+        (click)="changePage(1)">
+        <span class="sr-only">First</span>
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+          <path fill-rule="evenodd" d="M8.707 5.293a1 1 0 010 1.414L5.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      
+      <!-- Previous page button -->
+      <button [disabled]="page === 1" [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
+        class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+        (click)="changePage(page - 1)">
+        <span class="sr-only">Previous</span>
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      
+      <!-- Page numbers -->
       <ng-container *ngFor="let p of getPaginationRange()">
-        <button class="px-3 py-1 rounded transition-colors"
-          [ngClass]="p === page ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+        <button
+          class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium transition-colors duration-150 ease-in-out"
+          [ngClass]="p === page ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 font-semibold' : 'bg-white text-gray-700 hover:bg-gray-50'"
           (click)="changePage(p)">
           {{ p }}
         </button>
       </ng-container>
-
+      
+      <!-- Next page button -->
       <button [disabled]="page >= totalPages" [ngClass]="{'opacity-50 cursor-not-allowed': page >= totalPages}"
-        class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+        class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
         (click)="changePage(page + 1)">
-        Sau
+        <span class="sr-only">Next</span>
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+        </svg>
       </button>
-    </div>
+      
+      <!-- Last page button -->
+      <button [disabled]="page >= totalPages" [ngClass]="{'opacity-50 cursor-not-allowed': page >= totalPages}"
+        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+        (click)="changePage(totalPages)">
+        <span class="sr-only">Last</span>
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.293 5.293a1 1 0 011.414 0L12 8.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+          <path fill-rule="evenodd" d="M11.293 5.293a1 1 0 011.414 0L16 8.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </nav>
   </div>
+  
+  <!-- Right side: Items per page selector -->
+  <div class="flex items-center">
+    <label class="text-sm text-gray-600 mr-2">Hiển thị:</label>
+    <select [(ngModel)]="limit" (change)="onLimitChange()" 
+  class="border border-gray-300 rounded-md text-sm py-1 px-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option [ngValue]="5">5</option>
+  <option [ngValue]="10">10</option>
+  <option [ngValue]="20">20</option>
+  <option [ngValue]="50">50</option>
+</select>
+  </div>
+</div>
 
   <!-- Add/Edit Modal -->
   <div class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50" *ngIf="showModal">

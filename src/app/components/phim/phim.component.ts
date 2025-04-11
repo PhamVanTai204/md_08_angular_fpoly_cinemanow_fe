@@ -16,7 +16,7 @@ export class PhimComponent implements OnInit {
   danhSachPhimDaLoc: PhimDto[] = []; // Separate property for filtered results
   danhSachTheLoai: GenresDto[] = [];
   page: number = 1;
-  limit: number = 10;
+  limit: number = 5;
   totalPhim: number = 0;
   isLoading: boolean = false;
 
@@ -79,20 +79,32 @@ export class PhimComponent implements OnInit {
   loadPhims(): void {
     this.isLoading = true;
     console.log('Loading films for page:', this.page, 'limit:', this.limit);
-
+  
     this.phimService.getPhims(this.page, this.limit).subscribe({
       next: (response: any) => {
         console.log('Films loaded successfully:', response);
-
-        // Handle response data depending on API structure
+  
+        // Check if we received an array directly (common API pattern)
         if (Array.isArray(response)) {
-          // If API returns array directly
           this.danhSachPhim = response;
-          // For client-side pagination, we would set totalPhim = response.length
-          // But for server-side pagination, we need additional info from the response
-        } else if (response && typeof response === 'object') {
-          // Handle various possible API response structures
-          if (response.data && Array.isArray(response.data.films)) {
+          
+          // Since server might not provide total count in this case,
+          // we might need to assume there are more pages if we received a full page
+          if (response.length === this.limit) {
+            // If we received exactly the number of items we requested,
+            // there might be more (this is a simplified approach)
+            this.totalPhim = Math.max((this.page * this.limit) + 1, this.totalPhim);
+          } else if (this.page === 1) {
+            // If we're on the first page and received fewer items than requested,
+            // this is likely all there is
+            this.totalPhim = response.length;
+          }
+        } 
+        // Handle response with data property (your API seems to use this pattern)
+        else if (response && typeof response === 'object') {
+          // Handle various API response structures
+          if (response.data && response.data.films) {
+            // This seems to be your API's structure based on the service code
             this.danhSachPhim = response.data.films;
             this.totalPhim = response.data.totalCount || response.data.total || 0;
           } else if (response.items || response.results) {
@@ -103,9 +115,9 @@ export class PhimComponent implements OnInit {
             this.totalPhim = response.totalCount || response.total || 0;
           }
         }
-
-        // Update filtered list
-        this.updateFilteredList();
+  
+        // Make sure we're using the loaded data directly without additional filtering
+        this.danhSachPhimDaLoc = this.danhSachPhim;
         this.isLoading = false;
       },
       error: (error) => {
@@ -144,18 +156,38 @@ export class PhimComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Create page numbers array for pagination
+  // Handles changing the number of items per page
+  onLimitChange(): void {
+    // Reset to page 1 when changing limit to avoid empty pages
+    this.page = 1;
+    
+    // Load films with new pagination settings
+    this.loadPhims();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Create page numbers array for pagination - improved version
   getPaginationRange(): number[] {
     const maxPagesToShow = 5;
-
+    const totalPages = this.totalPages;
+    
+    // Simple case - show all pages if there are few
+    if (totalPages <= maxPagesToShow) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    // Complex case - decide which pages to show
     let startPage = Math.max(1, this.page - Math.floor(maxPagesToShow / 2));
     let endPage = startPage + maxPagesToShow - 1;
-
-    if (endPage > this.totalPages) {
-      endPage = this.totalPages;
+    
+    // Adjust if we're near the end
+    if (endPage > totalPages) {
+      endPage = totalPages;
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-
+    
     return Array.from({ length: (endPage - startPage) + 1 }, (_, i) => startPage + i);
   }
 
@@ -194,29 +226,29 @@ export class PhimComponent implements OnInit {
       this.loadPhims();
       return;
     }
-
+  
     this.isLoading = true;
     // Reset to page 1 when searching
     this.page = 1;
-
+  
     this.phimService.searchPhims(this.searchTerm).subscribe({
       next: (response: any) => {
-        // Handle response data depending on API structure
+        // Handle response appropriately based on your API's structure
         if (Array.isArray(response)) {
           this.danhSachPhim = response;
           this.totalPhim = response.length;
         } else if (response && typeof response === 'object') {
           if (response.data && Array.isArray(response.data)) {
             this.danhSachPhim = response.data;
-            this.totalPhim = response.totalCount || 0;
+            this.totalPhim = response.totalCount || response.data.length;
           } else {
             this.danhSachPhim = response.items || response.results || [];
-            this.totalPhim = response.total || response.totalItems || response.count || 0;
+            this.totalPhim = response.total || response.totalItems || response.count || this.danhSachPhim.length;
           }
         }
-
-        // Update filtered list
-        this.updateFilteredList();
+  
+        // Use the search results directly rather than filtering again
+        this.danhSachPhimDaLoc = this.danhSachPhim;
         this.isLoading = false;
       },
       error: (error) => {
@@ -226,19 +258,17 @@ export class PhimComponent implements OnInit {
     });
   }
 
-  // Update filtered list based on search term
   updateFilteredList(): void {
-    // If no search term, use the full list
-    if (!this.searchTerm.trim()) {
+    // When searching, we need to apply the filter to the loaded data
+    if (this.searchTerm.trim()) {
+      const lowerSearch = this.searchTerm.toLowerCase();
+      this.danhSachPhimDaLoc = this.danhSachPhim.filter(phim =>
+        phim.title.toLowerCase().includes(lowerSearch)
+      );
+    } else {
+      // When not searching, use the loaded data directly
       this.danhSachPhimDaLoc = this.danhSachPhim;
-      return;
     }
-
-    // Apply client-side filtering
-    const lowerSearch = this.searchTerm.toLowerCase();
-    this.danhSachPhimDaLoc = this.danhSachPhim.filter(phim =>
-      phim.title.toLowerCase().includes(lowerSearch)
-    );
   }
 
   themPhim(): void {
