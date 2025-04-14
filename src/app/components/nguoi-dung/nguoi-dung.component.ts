@@ -1,34 +1,18 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-
-// Định nghĩa interface cho User
-export interface User {
-  _id: string;
-  user_name: string;
-  email: string;
-  url_image?: string;
-  role: number;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
-interface ApiResponse {
-  code: number;
-  error: string | null;
-  data: User[] | User;
-}
+import { Router } from '@angular/router';
+import { PhanQuyenService } from '../../../shared/services/phanquyen.service';
+import { User, UsersByRoleResponse } from '../../../shared/dtos/phanquyenDto.dto';
 
 @Component({
   selector: 'app-nguoi-dung',
+  standalone: false,
   templateUrl: './nguoi-dung.component.html',
   styleUrls: ['./nguoi-dung.component.css'],
-  standalone: false
 })
 export class NguoiDungComponent implements OnInit, OnDestroy {
-  // Danh sách người dùng
+  // Danh sách người dùng thành viên (role 1)
   users: User[] = [];
   filteredUsers: User[] = [];
   pagedUsers: User[] = [];
@@ -50,42 +34,87 @@ export class NguoiDungComponent implements OnInit, OnDestroy {
   showDialog = false;
   selectedUser: User | null = null;
   
-  private baseUrl = 'http://127.0.0.1:3000/users';
+  // Thông tin người dùng hiện tại
+  currentUser: User | null = null;
+  
   private subscriptions: Subscription[] = [];
   
-  constructor(private http: HttpClient) { }
+  constructor(
+    private phanQuyenService: PhanQuyenService,
+    private router: Router
+  ) { }
   
   ngOnInit(): void {
-    this.loadAllUsers();
+    this.checkCurrentUser();
   }
   
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
   
-  // Lấy tất cả người dùng
-  loadAllUsers(): void {
+  // Kiểm tra thông tin người dùng đăng nhập
+  checkCurrentUser(): void {
+    this.isLoading = true;
+    
+    // Kiểm tra localStorage trước
+    const savedUser = this.phanQuyenService.getSavedCurrentUser();
+    if (savedUser) {
+      this.currentUser = savedUser;
+      this.loadUsers();
+      this.isLoading = false;
+      return;
+    }
+    
+    // Nếu không có trong localStorage, gọi API
+    const sub = this.phanQuyenService.getCurrentUser().subscribe({
+      next: (user) => {
+        if (user) {
+          this.currentUser = user;
+          this.phanQuyenService.saveCurrentUser(user);
+          this.loadUsers();
+        } else {
+          this.errorMessage = 'Không thể xác thực người dùng';
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error checking current user:', error);
+        this.errorMessage = 'Lỗi xác thực người dùng';
+        this.isLoading = false;
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      }
+    });
+    
+    this.subscriptions.push(sub);
+  }
+  
+  // Lấy tất cả người dùng thành viên (role 1)
+  loadUsers(): void {
     this.isLoading = true;
     this.errorMessage = '';
     this.searchTerm = ''; // Reset search when reloading
     
-    const sub = this.http.get<ApiResponse>(`${this.baseUrl}/getAll`)
+    const sub = this.phanQuyenService.getUsersByRole(1, { page: this.currentPage, limit: this.pageSize })
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
-        next: (response) => {
-          if (response.code === 200 && Array.isArray(response.data)) {
-            // Lọc người dùng có role=1
-            this.users = response.data.filter(user => user.role === 1);
+        next: (response: UsersByRoleResponse) => {
+          if (response.code === 200) {
+            this.users = response.data.users;
             this.filteredUsers = [...this.users];
-            this.totalItems = this.filteredUsers.length;
-            this.calculateTotalPages();
+            this.totalItems = response.data.totalUsers;
+            this.totalPages = response.data.totalPages;
             this.updatePagedUsers();
             console.log('Loaded users:', this.users.length);
           } else {
             this.errorMessage = 'Không thể tải dữ liệu người dùng.';
           }
         },
-        error: (error: HttpErrorResponse) => {
+        error: (error) => {
           console.error('Error loading users:', error);
           this.errorMessage = 'Lỗi kết nối đến máy chủ. Vui lòng thử lại sau.';
         }
@@ -114,23 +143,20 @@ export class NguoiDungComponent implements OnInit, OnDestroy {
   
   // Thay đổi kích thước trang
   onPageSizeChange(): void {
-    this.calculateTotalPages();
-    this.currentPage = 1; // Reset to first page
-    this.updatePagedUsers();
+    this.loadUsers();
   }
   
   // Cập nhật danh sách người dùng cho trang hiện tại
   updatePagedUsers(): void {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = Math.min(startIndex + this.pageSize, this.filteredUsers.length);
-    this.pagedUsers = this.filteredUsers.slice(startIndex, endIndex);
+    // Không cần cắt mảng vì API đã trả về dữ liệu đã phân trang
+    this.pagedUsers = this.filteredUsers;
   }
   
   // Thay đổi trang
   changePage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage = page;
-    this.updatePagedUsers();
+    this.loadUsers();
   }
   
   // Tính tổng số trang
@@ -145,18 +171,18 @@ export class NguoiDungComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
     
-    const sub = this.http.get<ApiResponse>(`${this.baseUrl}/getById/${userId}`)
+    const sub = this.phanQuyenService.getUserById(userId)
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
-        next: (response) => {
-          if (response.code === 200 && !Array.isArray(response.data)) {
-            this.selectedUser = response.data as User;
+        next: (user) => {
+          if (user) {
+            this.selectedUser = user;
             this.showDialog = true;
           } else {
             this.errorMessage = 'Không thể tải thông tin chi tiết người dùng.';
           }
         },
-        error: (error: HttpErrorResponse) => {
+        error: (error) => {
           console.error('Error loading user details:', error);
           this.errorMessage = 'Không thể tải thông tin chi tiết người dùng. Vui lòng thử lại sau.';
         }
@@ -171,61 +197,9 @@ export class NguoiDungComponent implements OnInit, OnDestroy {
     setTimeout(() => this.selectedUser = null, 300);
   }
   
-  // Tạo mảng phân trang
-  getPaginationArray(): number[] {
-    const pagination: number[] = [];
-    
-    if (this.totalPages <= 7) {
-      // Nếu có ít hơn hoặc bằng 7 trang, hiển thị tất cả
-      for (let i = 1; i <= this.totalPages; i++) {
-        pagination.push(i);
-      }
-    } else {
-      // Luôn hiển thị trang đầu tiên
-      pagination.push(1);
-      
-      // Nếu trang hiện tại > 3, thêm dấu ...
-      if (this.currentPage > 3) {
-        pagination.push(-1); // -1 sẽ được hiển thị dưới dạng ...
-      }
-      
-      // Xác định trang bắt đầu và kết thúc để hiển thị
-      let startPage = Math.max(2, this.currentPage - 1);
-      let endPage = Math.min(this.totalPages - 1, this.currentPage + 1);
-      
-      // Đảm bảo luôn hiển thị 3 trang liên tiếp
-      if (endPage - startPage < 2) {
-        if (this.currentPage < this.totalPages / 2) {
-          endPage = Math.min(this.totalPages - 1, startPage + 2);
-        } else {
-          startPage = Math.max(2, endPage - 2);
-        }
-      }
-      
-      // Thêm các trang ở giữa
-      for (let i = startPage; i <= endPage; i++) {
-        pagination.push(i);
-      }
-      
-      // Nếu trang hiện tại < totalPages - 2, thêm dấu ...
-      if (this.currentPage < this.totalPages - 2) {
-        pagination.push(-1); // -1 sẽ được hiển thị dưới dạng ...
-      }
-      
-      // Luôn hiển thị trang cuối cùng
-      pagination.push(this.totalPages);
-    }
-    
-    return pagination;
-  }
-  
   // Lấy tên hiển thị của vai trò
   getRoleName(role: number): string {
-    switch (role) {
-      case 1: return 'Người dùng';
-      case 2: return 'Admin';
-      default: return 'Không xác định';
-    }
+    return this.phanQuyenService.getRoleName(role);
   }
   
   // Format ngày tạo
