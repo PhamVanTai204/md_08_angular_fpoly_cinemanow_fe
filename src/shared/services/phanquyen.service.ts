@@ -77,13 +77,19 @@ export class PhanQuyenService {
       );
   }
 
-  // Thêm người dùng mới
-  createUser(userData: UserCreateUpdate): Observable<ApiResponse> {
+  // Đăng ký người dùng mới (Admin hoặc Nhân viên)
+  registerUser(userData: UserCreateUpdate): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
-      `${this.baseUrl}/insert`, 
-      userData, 
+      `${this.baseUrl}/reg`,
+      userData,
       { headers: this.getHeaders() }
     );
+  }
+
+  // Thêm người dùng mới
+  createUser(userData: UserCreateUpdate): Observable<ApiResponse> {
+    // Sử dụng API đăng ký người dùng thay vì API insert
+    return this.registerUser(userData);
   }
 
   // Cập nhật thông tin người dùng
@@ -144,4 +150,4 @@ export class PhanQuyenService {
   isUserAdmin(user: User | null): boolean {
     return user ? Number(user.role) === 2 : false;
   }
-}
+}   

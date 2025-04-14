@@ -228,7 +228,7 @@ export class NhanVienComponent implements OnInit, OnDestroy {
     this.newUser = {
       user_name: '',
       email: '',
-      url_image: '',
+      url_image: 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc',
       role: 3,  // Mặc định là nhân viên
       phone: '',
       password: ''
@@ -257,7 +257,7 @@ export class NhanVienComponent implements OnInit, OnDestroy {
     this.newUser = {
       user_name: user.user_name,
       email: user.email,
-      url_image: user.url_image || '',
+      url_image: user.url_image || 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc',
       role: Number(user.role),
       phone: user.phone || (user.phone_number ? user.phone_number.toString() : ''),
       password: ''  // Để trống khi chỉnh sửa
@@ -324,6 +324,7 @@ export class NhanVienComponent implements OnInit, OnDestroy {
       this.subscriptions.push(sub);
     } else {
       // Thêm người dùng mới
+      // Sử dụng API đăng ký thay vì API insert
       const sub = this.phanQuyenService.createUser(this.newUser)
         .pipe(finalize(() => {
           this.isLoading = false;
@@ -345,7 +346,7 @@ export class NhanVienComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Error adding user:', error);
-            this.errorMessage = 'Lỗi kết nối máy chủ';
+            this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || error);
           }
         });
       
