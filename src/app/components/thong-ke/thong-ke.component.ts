@@ -14,9 +14,11 @@ export class ThongKeComponent implements OnInit {
   // Biến dữ liệu cho form
   startDate: string = '';
   endDate: string = '';
-  selectedCinema: string = 'Cinema Hà Nội';
+  selectedCinema: string = 'Tất cả';
   timeFilter: string = 'Lọc theo 1 tháng';
-  selectedMovie: string = '';
+  selectedMovie: string = 'Tất cả';
+  originalMovieRevenueData: any[] = [];
+  originalCinemaRevenueData: any[] = [];
 
   // Dữ liệu thống kê
   summaryData = {
@@ -80,7 +82,8 @@ export class ThongKeComponent implements OnInit {
           tickets: movie.ticketCount,
           revenue: movie.revenue
         }));
-
+        this.originalMovieRevenueData = [...this.movieRevenueData]; // Gán dữ liệu gốc cho filter
+        this.filterMovieData();
         // Xử lý dữ liệu thống kê theo rạp (cần thêm logic từ backend)
         // Giả sử chúng ta có dữ liệu rạp từ API
 
@@ -101,7 +104,8 @@ export class ThongKeComponent implements OnInit {
           tickets: cinema.ticketCount,
           revenue: cinema.revenue
         }));
-
+        this.originalCinemaRevenueData = [...this.cinemaRevenueData]; // Gán dữ liệu gốc cho filt
+        this.filterCinemaData();
         // Cập nhật tổng doanh thu từ API (nếu muốn dùng)
         this.summaryData.totalRevenue = cinemaData.totalRevenue;
 
@@ -113,6 +117,48 @@ export class ThongKeComponent implements OnInit {
         this.isLoading = false;
       }
     });
+
+  }
+  onTimeFilterChange() {
+    const today = new Date();
+
+    if (this.timeFilter === 'Lọc theo 1 ngày') {
+      this.startDate = this.formatDate(today);
+      this.endDate = this.formatDate(today);
+    } else if (this.timeFilter === 'Lọc theo 1 tuần') {
+      const start = new Date(today);
+      start.setDate(today.getDate() - 6); // 7 ngày bao gồm hôm nay
+      this.startDate = this.formatDate(start);
+      this.endDate = this.formatDate(today);
+    } else if (this.timeFilter === 'Lọc theo 1 tháng') {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      this.startDate = this.formatDate(firstDay);
+      this.endDate = this.formatDate(lastDay);
+    } else if (this.timeFilter === 'Lọc theo 1 năm') {
+      const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+      const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
+      this.startDate = this.formatDate(firstDayOfYear);
+      this.endDate = this.formatDate(lastDayOfYear);
+    }
+    this.handleThongKe();
+
+  }
+
+  filterMovieData() {
+    if (this.selectedMovie === 'Tất cả') {
+      this.movieRevenueData = [...this.originalMovieRevenueData];
+    } else {
+      this.movieRevenueData = this.originalMovieRevenueData.filter(m => m.name === this.selectedMovie);
+    }
+  }
+
+  filterCinemaData() {
+    if (this.selectedCinema === 'Tất cả') {
+      this.cinemaRevenueData = [...this.originalCinemaRevenueData];
+    } else {
+      this.cinemaRevenueData = this.originalCinemaRevenueData.filter(c => c.name === this.selectedCinema);
+    }
   }
 
   // Định dạng ngày thành yyyy-MM-dd để sử dụng trong input type="date"

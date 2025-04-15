@@ -60,39 +60,29 @@
 <!-- Bộ lọc thống kê -->
 <div class="bg-white shadow-sm rounded-lg border border-gray-100 p-5 mb-8">
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <!-- Ngày bắt đầu -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu</label>
-      <div class="relative">
-        <input type="date"
-          class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          [(ngModel)]="startDate" />
-        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
-          <span class="material-icons text-sm">calendar_today</span>
-        </span>
-      </div>
+      <input type="date" [(ngModel)]="startDate"
+        class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
     </div>
 
+    <!-- Ngày kết thúc -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Ngày kết thúc</label>
-      <div class="relative">
-        <input type="date"
-          class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          [(ngModel)]="endDate" />
-        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
-          <span class="material-icons text-sm">calendar_today</span>
-        </span>
-      </div>
+      <input type="date" [(ngModel)]="endDate"
+        class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
     </div>
 
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">CHỌN RẠP</label>
       <select
         class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        [(ngModel)]="selectedCinema">
-        <option>Cinema Hà Nội</option>
-        <option>Cinema Đà Nẵng</option>
-        <option>Cinema Hồ Chí Minh</option>
+        [(ngModel)]="selectedCinema" (change)="filterCinemaData()">
+        <option value="Tất cả">Tất cả</option>
+        <option *ngFor="let cinema of cinemaRevenueData">{{ cinema.name }}</option>
       </select>
+
     </div>
 
     <div class="flex items-end">
@@ -109,20 +99,24 @@
       <label class="block text-sm font-medium text-gray-700 mb-1">Lọc theo thời gian</label>
       <select
         class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        [(ngModel)]="timeFilter">
-        <option>Lọc theo 1 tháng</option>
-        <option>Lọc theo 1 tuần</option>
+        [(ngModel)]="timeFilter" (change)="onTimeFilterChange()">
         <option>Lọc theo 1 ngày</option>
+        <option>Lọc theo 1 tuần</option>
+        <option>Lọc theo 1 tháng</option>
+        <option>Lọc theo 1 năm</option>
       </select>
+
     </div>
 
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Chọn phim</label>
       <select
         class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        [(ngModel)]="selectedMovie">
-        <option *ngFor="let movie of movieRevenueData">{{movie.name}}</option>
+        [(ngModel)]="selectedMovie" (change)="filterMovieData()">
+        <option value="Tất cả">Tất cả</option>
+        <option *ngFor="let movie of movieRevenueData">{{ movie.name }}</option>
       </select>
+
     </div>
   </div>
 </div>
@@ -137,13 +131,9 @@
           <span class="material-icons text-blue-500 mr-2 text-sm">movie</span>
           Doanh thu theo phim
         </h3>
-        <a href="#" class="text-sm text-blue-600 hover:underline flex items-center">
-          Xem tất cả
-          <span class="material-icons text-xs ml-1">arrow_forward</span>
-        </a>
       </div>
     </div>
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto max-h-80 overflow-y-auto">
       <table class="w-full">
         <thead class="bg-gray-50">
           <tr>
@@ -168,6 +158,8 @@
     </div>
   </div>
 
+
+
   <!-- Doanh thu theo rạp -->
   <div class="bg-white shadow-sm rounded-lg border border-gray-100 overflow-hidden">
     <div class="p-4 border-b border-gray-100">
@@ -176,13 +168,9 @@
           <span class="material-icons text-purple-500 mr-2 text-sm">theater_comedy</span>
           Doanh thu theo rạp
         </h3>
-        <a href="#" class="text-sm text-blue-600 hover:underline flex items-center">
-          Xem tất cả
-          <span class="material-icons text-xs ml-1">arrow_forward</span>
-        </a>
       </div>
     </div>
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto max-h-192 overflow-y-auto">
       <table class="w-full">
         <thead class="bg-gray-50">
           <tr>
@@ -192,7 +180,6 @@
           </tr>
         </thead>
         <tbody>
-          <!-- Thay đổi ở đây: Sử dụng cinema.cinema.name thay vì cinema.name -->
           <tr *ngFor="let cinema of cinemaRevenueData" class="border-t hover:bg-gray-50">
             <td class="p-3 text-sm">{{cinema.cinema?.name || cinema.name}}</td>
             <td class="p-3 text-sm text-center font-medium text-gray-700">{{cinema.ticketCount || cinema.tickets}}</td>
@@ -207,4 +194,5 @@
       </table>
     </div>
   </div>
+
 </div>
