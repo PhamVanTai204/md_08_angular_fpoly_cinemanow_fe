@@ -55,7 +55,7 @@ export class LayoutComponent implements OnInit {
       case 2:
         return 'Quản trị viên';
       case 3:
-        return 'Quản trị viên cấp cao';
+        return 'Nhân viên rạp';
       default:
         return 'Nhân viên';
     }
