@@ -5,7 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { NhanVienRoutingModule } from './nhan-vien-routing.module';
 import { NhanVienComponent } from './nhan-vien.component';
-
+import { PhanQuyenService } from '../../../shared/services/phanquyen.service';
 @NgModule({
   declarations: [
     NhanVienComponent
@@ -16,6 +16,6 @@ import { NhanVienComponent } from './nhan-vien.component';
     HttpClientModule,   // Cần thiết cho HttpClient
     NhanVienRoutingModule
   ],
-  providers: []
+  providers: [PhanQuyenService]
 })
 export class NhanVienModule { }

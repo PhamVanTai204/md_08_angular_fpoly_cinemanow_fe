@@ -129,7 +129,7 @@ export class UserService {
   }
 
   // Kiểm tra vai trò super admin hoặc manager (role 3)
-  isSuperAdmin(): boolean {
+  isStaff(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 3 : false;
   }
