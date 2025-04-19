@@ -13,9 +13,10 @@ import { GenresDto } from '../../../shared/dtos/genresDto.dto';
 export class PhimComponent implements OnInit {
   searchTerm: string = '';
   danhSachPhim: PhimDto[] = [];
+  danhSachPhimDaLoc: PhimDto[] = []; // Separate property for filtered results
   danhSachTheLoai: GenresDto[] = [];
   page: number = 1;
-  limit: number = 10;
+  limit: number = 5;
   totalPhim: number = 0;
   isLoading: boolean = false;
 
@@ -36,157 +37,91 @@ export class PhimComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Đầu tiên tải thể loại, sau đó mới tải phim
+    // First load genres, then load films
     this.loadGenres();
   }
 
-  // Cung cấp Math cho template
+  // Provide Math for template
   get Math() {
     return Math;
   }
 
-  // Tính tổng số trang
+  // Calculate total pages
   get totalPages(): number {
     return Math.ceil(this.totalPhim / this.limit) || 1;
   }
 
-  // Hàm lấy ID string từ bất kỳ đối tượng nào (ObjectId, object với _id, hoặc string)
+  // Get ID string from any object (ObjectId, object with _id, or string)
   private getIdAsString(idObject: any): string {
     if (!idObject) return '';
 
     if (typeof idObject === 'object' && idObject !== null) {
-      // Nếu là đối tượng thể loại đầy đủ (có _id và name)
+      // If it's a full genre object (with _id and name)
       if (idObject._id) {
         return idObject._id;
       }
-      // Nếu là ObjectId hoặc có thuộc tính id
+      // If it's an ObjectId or has an id property
       if (idObject.id) {
         return idObject.id;
       }
-      // Nếu là ObjectId với toString()
+      // If it's an ObjectId with toString()
       if (idObject.toString && typeof idObject.toString === 'function') {
         const str = idObject.toString();
-        // Kiểm tra xem kết quả toString có phải là "[object Object]" không
+        // Check if toString result is not "[object Object]"
         return str !== '[object Object]' ? str : '';
       }
     }
 
-    // Nếu đã là string hoặc kiểu dữ liệu khác
+    // If already a string or other data type
     return String(idObject);
-  }
-
-  kiemTraTheLoaiPhim(phim: PhimDto): void {
-    console.log('Phim:', phim.title);
-    console.log('ID thể loại:', phim.genre_film);
-
-    // Kiểm tra nếu genre_film chứa các đối tượng thể loại đầy đủ
-    if (phim.genre_film && Array.isArray(phim.genre_film) && phim.genre_film.length > 0) {
-      const firstGenre = phim.genre_film[0];
-      console.log('Kiểm tra đối tượng thể loại đầu tiên:', firstGenre);
-
-      if (typeof firstGenre === 'object' && firstGenre !== null) {
-        // Kiểm tra các thuộc tính
-        console.log('firstGenre._id:', (firstGenre as any)._id);
-        console.log('firstGenre.name:', (firstGenre as any).name);
-
-        // Nếu đây là đối tượng thể loại đầy đủ
-        if ((firstGenre as any).name) {
-          console.log('genre_film chứa các đối tượng thể loại đầy đủ!');
-          return; // Không cần kiểm tra thêm
-        }
-      }
-
-      // Tiếp tục kiểm tra các ID nếu không phải đối tượng thể loại đầy đủ
-      console.log('Danh sách thể loại đã tải:', this.danhSachTheLoai);
-
-      phim.genre_film.forEach((genreObj: any, index) => {
-        console.log(`Genre #${index} gốc:`, genreObj);
-
-        const genreId = this.getIdAsString(genreObj);
-        console.log(`Genre #${index} sau khi chuyển đổi:`, genreId);
-
-        // Tìm thể loại với ID
-        if (genreId) {
-          const foundGenre = this.danhSachTheLoai.find(g => g.id === genreId);
-          console.log(`Thể loại khớp chính xác cho ID ${genreId}:`, foundGenre);
-
-          if (!foundGenre) {
-            // Tìm với so sánh một phần
-            const partialMatches = this.danhSachTheLoai.filter(g =>
-              (genreId.length > 5 && g.id.includes(genreId)) ||
-              (g.id.length > 5 && genreId.includes(g.id))
-            );
-            console.log(`Thể loại khớp một phần cho ID ${genreId}:`, partialMatches);
-          }
-        }
-      });
-    }
-  }
-  suaPhim(phim: PhimDto, index: number): void {
-    this.isEdit = true;
-    this.editIndex = index;
-    this.currentPhim = phim.clone();
-
-    // Chuyển đổi genre_film thành mảng các ID string
-    if (this.currentPhim.genre_film && Array.isArray(this.currentPhim.genre_film)) {
-      this.currentPhim.genre_film = this.currentPhim.genre_film.map(genreObj => this.getIdAsString(genreObj));
-    } else {
-      this.currentPhim.genre_film = [];
-    }
-
-    this.showModal = true;
-  }
-  toggleGenre(genreId: string, event: Event) {
-    const checked = (event.target as HTMLInputElement).checked;
-
-    // Khởi tạo genre_film nếu chưa có
-    if (!this.currentPhim.genre_film) {
-      this.currentPhim.genre_film = [];
-    }
-
-    if (checked) {
-      // Thêm thể loại nếu chưa có
-      if (!this.currentPhim.genre_film.includes(genreId)) {
-        this.currentPhim.genre_film.push(genreId);
-      }
-    } else {
-      // Loại bỏ thể loại khỏi danh sách
-      this.currentPhim.genre_film = this.currentPhim.genre_film.filter(id => id !== genreId);
-    }
   }
 
   loadPhims(): void {
     this.isLoading = true;
-    console.log('Đang tải phim...');
-
+    console.log('Loading films for page:', this.page, 'limit:', this.limit);
+  
     this.phimService.getPhims(this.page, this.limit).subscribe({
       next: (response: any) => {
-        console.log('Tải phim thành công:', response);
-
-        // Xử lý dữ liệu phản hồi tùy thuộc vào cấu trúc API
-        if (response && typeof response === 'object' && response.data) {
-          // Nếu API trả về cấu trúc { data: [...], totalCount: number }
-          this.danhSachPhim = response.data;
-          this.totalPhim = response.totalCount || 0;
-        } else if (Array.isArray(response)) {
-          // Nếu API trả về trực tiếp mảng phim
+        console.log('Films loaded successfully:', response);
+  
+        // Check if we received an array directly (common API pattern)
+        if (Array.isArray(response)) {
           this.danhSachPhim = response;
-          this.totalPhim = response.length; // Có thể cần API riêng để lấy tổng số
-        } else if (response && typeof response === 'object') {
-          // Trường hợp API trả về { items: [...], total: number } hoặc cấu trúc tương tự
-          this.danhSachPhim = response.items || response.results || [];
-          this.totalPhim = response.total || response.totalItems || response.count || 0;
+          
+          // Since server might not provide total count in this case,
+          // we might need to assume there are more pages if we received a full page
+          if (response.length === this.limit) {
+            // If we received exactly the number of items we requested,
+            // there might be more (this is a simplified approach)
+            this.totalPhim = Math.max((this.page * this.limit) + 1, this.totalPhim);
+          } else if (this.page === 1) {
+            // If we're on the first page and received fewer items than requested,
+            // this is likely all there is
+            this.totalPhim = response.length;
+          }
+        } 
+        // Handle response with data property (your API seems to use this pattern)
+        else if (response && typeof response === 'object') {
+          // Handle various API response structures
+          if (response.data && response.data.films) {
+            // This seems to be your API's structure based on the service code
+            this.danhSachPhim = response.data.films;
+            this.totalPhim = response.data.totalCount || response.data.total || 0;
+          } else if (response.items || response.results) {
+            this.danhSachPhim = response.items || response.results;
+            this.totalPhim = response.total || response.totalItems || response.count || 0;
+          } else if (response.data && Array.isArray(response.data)) {
+            this.danhSachPhim = response.data;
+            this.totalPhim = response.totalCount || response.total || 0;
+          }
         }
-
-        // Kiểm tra thể loại của phim đầu tiên nếu có
-        if (this.danhSachPhim.length > 0) {
-          this.kiemTraTheLoaiPhim(this.danhSachPhim[0]);
-        }
-
+  
+        // Make sure we're using the loaded data directly without additional filtering
+        this.danhSachPhimDaLoc = this.danhSachPhim;
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Lỗi khi tải danh sách phim:', error);
+        console.error('Error loading films:', error);
         this.isLoading = false;
       }
     });
@@ -195,27 +130,20 @@ export class PhimComponent implements OnInit {
   loadGenres(): void {
     this.genresService.getGenres().subscribe({
       next: (data: GenresDto[]) => {
-        console.log('Genres received in PhimComponent:', data);
+        console.log('Genres loaded:', data);
         this.danhSachTheLoai = data;
-
-        // Check if genres have valid IDs
-        if (this.danhSachTheLoai.length > 0) {
-          console.log('First genre ID:', this.danhSachTheLoai[0].id);
-          console.log('First genre name:', this.danhSachTheLoai[0].genreName);
-        }
-
-        // Tải phim sau khi đã tải xong thể loại
+        // Load films after genres are loaded
         this.loadPhims();
       },
       error: (error) => {
-        console.error('Lỗi khi tải danh sách thể loại:', error);
-        // Vẫn tải phim ngay cả khi tải thể loại thất bại
+        console.error('Error loading genres:', error);
+        // Still load films even if loading genres fails
         this.loadPhims();
       }
     });
   }
 
-  // Xử lý chuyển trang
+  // Handle page change
   changePage(newPage: number): void {
     if (newPage < 1 || newPage > this.totalPages) {
       return;
@@ -224,44 +152,63 @@ export class PhimComponent implements OnInit {
     this.page = newPage;
     this.loadPhims();
 
-    // Cuộn lên đầu bảng khi chuyển trang
+    // Scroll to top when changing page
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Tạo mảng số trang cho phân trang
+  // Handles changing the number of items per page
+  onLimitChange(): void {
+    // Reset to page 1 when changing limit to avoid empty pages
+    this.page = 1;
+    
+    // Load films with new pagination settings
+    this.loadPhims();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Create page numbers array for pagination - improved version
   getPaginationRange(): number[] {
     const maxPagesToShow = 5;
-
+    const totalPages = this.totalPages;
+    
+    // Simple case - show all pages if there are few
+    if (totalPages <= maxPagesToShow) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    // Complex case - decide which pages to show
     let startPage = Math.max(1, this.page - Math.floor(maxPagesToShow / 2));
     let endPage = startPage + maxPagesToShow - 1;
-
-    if (endPage > this.totalPages) {
-      endPage = this.totalPages;
+    
+    // Adjust if we're near the end
+    if (endPage > totalPages) {
+      endPage = totalPages;
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-
+    
     return Array.from({ length: (endPage - startPage) + 1 }, (_, i) => startPage + i);
   }
 
   getGenreNames(genreItems: any[] | null | undefined): string {
     if (!genreItems || !Array.isArray(genreItems) || !this.danhSachTheLoai.length) return '';
 
-    // Trường hợp đặc biệt: nếu genreItems chứa các đối tượng thể loại đầy đủ (có name và _id)
+    // Special case: if genreItems contains full genre objects (with name and _id)
     if (genreItems.length > 0 && typeof genreItems[0] === 'object' && genreItems[0].name) {
-      // Đây đã là các đối tượng thể loại đầy đủ, chỉ lấy tên
       return genreItems.map(item => item.name || '').filter(name => name).join(', ');
     }
 
-    // Xử lý trường hợp thông thường: genreItems chứa ID hoặc ObjectId
+    // Handle normal case: genreItems contains IDs or ObjectIds
     return genreItems
       .map(genreObj => {
         if (!genreObj) return '';
 
-        // Lấy ID dưới dạng string
+        // Get ID as string
         const genreId = this.getIdAsString(genreObj);
         if (!genreId) return '';
 
-        // Tìm thể loại với ID
+        // Find genre with ID
         const foundGenre = this.danhSachTheLoai.find(genre =>
           genre.id === genreId ||
           (genreId.length > 5 && genre.id.includes(genreId)) ||
@@ -279,56 +226,61 @@ export class PhimComponent implements OnInit {
       this.loadPhims();
       return;
     }
-
+  
     this.isLoading = true;
-    // Reset về trang 1 khi tìm kiếm
+    // Reset to page 1 when searching
     this.page = 1;
-
+  
     this.phimService.searchPhims(this.searchTerm).subscribe({
       next: (response: any) => {
-        // Xử lý dữ liệu phản hồi tùy thuộc vào cấu trúc API
-        if (response && typeof response === 'object' && response.data) {
-          this.danhSachPhim = response.data;
-          this.totalPhim = response.totalCount || 0;
-        } else if (Array.isArray(response)) {
+        // Handle response appropriately based on your API's structure
+        if (Array.isArray(response)) {
           this.danhSachPhim = response;
           this.totalPhim = response.length;
         } else if (response && typeof response === 'object') {
-          this.danhSachPhim = response.items || response.results || [];
-          this.totalPhim = response.total || response.totalItems || response.count || 0;
+          if (response.data && Array.isArray(response.data)) {
+            this.danhSachPhim = response.data;
+            this.totalPhim = response.totalCount || response.data.length;
+          } else {
+            this.danhSachPhim = response.items || response.results || [];
+            this.totalPhim = response.total || response.totalItems || response.count || this.danhSachPhim.length;
+          }
         }
-
+  
+        // Use the search results directly rather than filtering again
+        this.danhSachPhimDaLoc = this.danhSachPhim;
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Lỗi khi tìm kiếm phim:', error);
+        console.error('Error searching films:', error);
         this.isLoading = false;
       }
     });
   }
 
-  get danhSachPhimDaLoc(): PhimDto[] {
-    // Áp dụng bộ lọc client-side nếu không có phân trang server-side
-    if (!this.searchTerm.trim()) {
-      return this.danhSachPhim;
+  updateFilteredList(): void {
+    // When searching, we need to apply the filter to the loaded data
+    if (this.searchTerm.trim()) {
+      const lowerSearch = this.searchTerm.toLowerCase();
+      this.danhSachPhimDaLoc = this.danhSachPhim.filter(phim =>
+        phim.title.toLowerCase().includes(lowerSearch)
+      );
+    } else {
+      // When not searching, use the loaded data directly
+      this.danhSachPhimDaLoc = this.danhSachPhim;
     }
-
-    const lowerSearch = this.searchTerm.toLowerCase();
-    return this.danhSachPhim.filter(phim =>
-      phim.title.toLowerCase().includes(lowerSearch)
-    );
   }
 
   themPhim(): void {
     this.isEdit = false;
     this.editIndex = null;
     this.currentPhim = new PhimDto();
-    // Sử dụng các thuộc tính snake_case theo DTO
+    // Use snake_case properties according to DTO
     this.currentPhim.status_film = 1;
     this.currentPhim.genre_film = [];
     this.currentPhim.release_date = new Date().toISOString().split('T')[0];
     this.currentPhim.end_date = new Date().toISOString().split('T')[0];
-    // Khởi tạo các thuộc tính
+    // Initialize properties
     this.currentPhim.director = '';
     this.currentPhim.age_limit = 0;
     this.currentPhim.language = '';
@@ -337,27 +289,60 @@ export class PhimComponent implements OnInit {
     this.currentPhim.duration = '';
     this.currentPhim.title = '';
     this.currentPhim.describe = '';
-    // Khởi tạo các trường bắt buộc mới
+    // Initialize new required fields
     this.currentPhim.cast = '';
     this.currentPhim.ratings = 0;
     this.currentPhim.box_office = 0;
     this.showModal = true;
   }
 
+  suaPhim(phim: PhimDto, index: number): void {
+    this.isEdit = true;
+    this.editIndex = index;
+    this.currentPhim = phim.clone();
+
+    // Convert genre_film to array of string IDs
+    if (this.currentPhim.genre_film && Array.isArray(this.currentPhim.genre_film)) {
+      this.currentPhim.genre_film = this.currentPhim.genre_film.map(genreObj => this.getIdAsString(genreObj));
+    } else {
+      this.currentPhim.genre_film = [];
+    }
+
+    this.showModal = true;
+  }
+
+  toggleGenre(genreId: string, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+
+    // Initialize genre_film if not exists
+    if (!this.currentPhim.genre_film) {
+      this.currentPhim.genre_film = [];
+    }
+
+    if (checked) {
+      // Add genre if not already included
+      if (!this.currentPhim.genre_film.includes(genreId)) {
+        this.currentPhim.genre_film.push(genreId);
+      }
+    } else {
+      // Remove genre from the list
+      this.currentPhim.genre_film = this.currentPhim.genre_film.filter(id => id !== genreId);
+    }
+  }
 
   savePhim(): void {
     console.log('Saving film data:', this.currentPhim);
 
-    // Đảm bảo genre_film là mảng các ID string
+    // Ensure genre_film is array of string IDs
     if (this.currentPhim.genre_film && Array.isArray(this.currentPhim.genre_film)) {
-      // Chuyển đổi genre_film nếu cần
+      // Convert genre_film if needed
       this.currentPhim.genre_film = this.currentPhim.genre_film
         .map(genreObj => this.getIdAsString(genreObj))
-        .filter(id => id); // Lọc bỏ các giá trị rỗng
+        .filter(id => id); // Filter out empty values
     }
 
     if (!this.validatePhimForm()) {
-      alert('Vui lòng điền đầy đủ thông tin phim!');
+      alert('Please fill in all film information!');
       return;
     }
 
@@ -371,8 +356,8 @@ export class PhimComponent implements OnInit {
           this.closeModal();
         },
         error: (error) => {
-          console.error('Lỗi khi cập nhật phim:', error);
-          alert('Cập nhật phim thất bại! ' + (error.message || 'Lỗi không xác định'));
+          console.error('Error updating film:', error);
+          alert('Failed to update film! ' + (error.message || 'Unknown error'));
         }
       });
     } else {
@@ -383,8 +368,8 @@ export class PhimComponent implements OnInit {
           this.closeModal();
         },
         error: (error) => {
-          console.error('Lỗi khi thêm phim:', error);
-          alert('Thêm phim thất bại! ' + (error.message || 'Lỗi không xác định'));
+          console.error('Error adding film:', error);
+          alert('Failed to add film! ' + (error.message || 'Unknown error'));
         }
       });
     }
@@ -421,13 +406,13 @@ export class PhimComponent implements OnInit {
     if (!this.deletePhim) return;
 
     if (this.deletePassword !== 'hiendz') {
-      alert('Mật khẩu sai!');
+      alert('Incorrect password!');
       return;
     }
 
     const phimId = this.deletePhim.id ? this.getIdAsString(this.deletePhim.id) : null;
     if (!phimId) {
-      alert('Không thể xóa phim: ID không tồn tại!');
+      alert('Cannot delete film: ID does not exist!');
       return;
     }
 
@@ -437,8 +422,8 @@ export class PhimComponent implements OnInit {
         this.closeDeleteModal();
       },
       error: (error) => {
-        console.error('Lỗi khi xóa phim:', error);
-        alert('Xóa phim thất bại!');
+        console.error('Error deleting film:', error);
+        alert('Failed to delete film!');
       }
     });
   }

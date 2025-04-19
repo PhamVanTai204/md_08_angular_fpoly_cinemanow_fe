@@ -84,7 +84,8 @@
             <tr *ngFor="let user of adminUsers">
               <td class="px-6 py-4 whitespace-nowrap">
                 <img [src]="user.url_image" alt="Avatar"
-                  class="h-10 w-10 rounded-full object-cover border border-gray-200" />
+                  class="h-10 w-10 rounded-full object-cover border border-gray-200"
+                  onerror="this.src='https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc'" />
               </td>
               <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
                 {{ user.user_name }}
@@ -102,9 +103,9 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                <span [ngClass]="user.isActive === false ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
                   class="px-2 py-1 rounded-full text-xs font-medium">
-                  {{ user.isActive ? 'Đang hoạt động' : 'Đã khóa' }}
+                  {{ user.isActive === false ? 'Đã khóa' : 'Đang hoạt động' }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -114,9 +115,9 @@
                     <span class="material-icons text-sm">edit</span>
                   </button>
                   <button (click)="toggleUserStatus(user)"
-                    [ngClass]="user.isActive ? 'text-red-600 hover:bg-red-100' : 'text-green-600 hover:bg-green-100'"
+                    [ngClass]="user.isActive === false ? 'text-green-600 hover:bg-green-100' : 'text-red-600 hover:bg-red-100'"
                     class="p-1 rounded-full transition-colors duration-200">
-                    <span class="material-icons text-sm">{{ user.isActive ? 'lock' : 'lock_open' }}</span>
+                    <span class="material-icons text-sm">{{ user.isActive === false ? 'lock_open' : 'lock' }}</span>
                   </button>
                   <button *ngIf="currentUser?._id !== user._id" (click)="deleteUser(user)"
                     class="text-red-600 hover:bg-red-100 p-1 rounded-full transition-colors duration-200">
@@ -141,7 +142,7 @@
     <div>
       <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
         <span class="material-icons text-green-700 mr-2">badge</span>
-        Nhân viên
+        Nhân viên rạp
       </h3>
 
       <div class="overflow-x-auto rounded-lg shadow">
@@ -166,7 +167,8 @@
             <tr *ngFor="let user of staffUsers">
               <td class="px-6 py-4 whitespace-nowrap">
                 <img [src]="user.url_image" alt="Avatar"
-                  class="h-10 w-10 rounded-full object-cover border border-gray-200" />
+                  class="h-10 w-10 rounded-full object-cover border border-gray-200"
+                  onerror="this.src='https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc'" />
               </td>
               <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
                 {{ user.user_name }}
@@ -175,7 +177,7 @@
                 {{ user.email }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-600">
-                {{ user.phone || 'Chưa cập nhật' }}
+                {{ user.phone || user.phone_number || 'Chưa cập nhật' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -183,9 +185,9 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                <span [ngClass]="user.isActive === false ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
                   class="px-2 py-1 rounded-full text-xs font-medium">
-                  {{ user.isActive ? 'Đang hoạt động' : 'Đã khóa' }}
+                  {{ user.isActive === false ? 'Đã khóa' : 'Đang hoạt động' }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -195,9 +197,9 @@
                     <span class="material-icons text-sm">edit</span>
                   </button>
                   <button (click)="toggleUserStatus(user)"
-                    [ngClass]="user.isActive ? 'text-red-600 hover:bg-red-100' : 'text-green-600 hover:bg-green-100'"
+                    [ngClass]="user.isActive === false ? 'text-green-600 hover:bg-green-100' : 'text-red-600 hover:bg-red-100'"
                     class="p-1 rounded-full transition-colors duration-200">
-                    <span class="material-icons text-sm">{{ user.isActive ? 'lock' : 'lock_open' }}</span>
+                    <span class="material-icons text-sm">{{ user.isActive === false ? 'lock_open' : 'lock' }}</span>
                   </button>
                   <button (click)="deleteUser(user)"
                     class="text-red-600 hover:bg-red-100 p-1 rounded-full transition-colors duration-200">
