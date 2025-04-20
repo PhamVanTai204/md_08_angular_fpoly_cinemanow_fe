@@ -213,7 +213,7 @@
 
 .create-ticket-button {
     padding: 12px 20px;
-    background-color: #4CAF50;
+    background-color: #3b82f6;
     color: white;
     border: none;
     border-radius: 4px;
@@ -223,7 +223,7 @@
 }
 
 .create-ticket-button:hover {
-    background-color: #45a049;
+    background-color: #3b82f6;
 }
 
 /* Phần combo */
@@ -301,7 +301,7 @@
 }
 
 .add-button {
-    background-color: #28a745;
+    background-color: #3b82f6;
     color: white;
     border: none;
     padding: 5px 10px;
@@ -310,5 +310,5 @@
 }
 
 .add-button:hover {
-    background-color: #218838;
+    background-color: #3b82f6;
 }

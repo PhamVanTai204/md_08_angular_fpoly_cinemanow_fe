@@ -8,6 +8,7 @@ export interface ITicketDto {
     id: string;
     user_id: string;
     showtime_id: string;
+    ticket_id: string;
     seats: SeatDto[];
     combos: ComboDto[];
     voucher_id?: string | null;
@@ -21,6 +22,7 @@ export class TicketDto implements ITicketDto {
     id!: string;
     user_id!: string;
     showtime_id!: string;
+    ticket_id: string = '';
     seats: SeatDto[] = [];
     combos: ComboDto[] = [];
     voucher_id?: string | null;
@@ -36,6 +38,7 @@ export class TicketDto implements ITicketDto {
     init(_data?: any) {
         if (_data) {
             this.id = _data["_id"];
+            this.ticket_id = _data["ticket_id"];
             this.user_id = _data["user_id"];
             this.showtime_id = _data["showtime_id"];
             this.voucher_id = _data["voucher_id"] ?? null;
@@ -64,6 +67,7 @@ export class TicketDto implements ITicketDto {
         return {
             _id: this.id,
             user_id: this.user_id,
+            ticket_id: this.ticket_id,
             showtime_id: this.showtime_id,
             seats: this.seats.map(s => s.toJSON()),
             combos: this.combos.map(c => c.toJSON()),

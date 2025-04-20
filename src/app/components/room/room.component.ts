@@ -7,6 +7,9 @@ import { TicketService } from '../../../shared/services/ticket.service';
 import { ComboService } from '../../../shared/services/combo.service';
 import { TicketDto } from '../../../shared/dtos/ticketDto.dto';
 import { ComboDto } from '../../../shared/dtos/ComboDto.dto';
+import { VNPaymentDto } from '../../../shared/dtos/vnpaymentDto.dto';
+import { VNPaymentResponseDto } from '../../../shared/dtos/VNPaymentResponseDto.dto';
+import { VNPaymentService } from '../../../shared/services/vnpayment.service';
 
 @Component({
   selector: 'app-room',
@@ -23,13 +26,20 @@ export class RoomComponent implements OnInit {
   errorMessage = '';
   selectedSeats: SeatDto[] = []; // Mảng lưu các ghế đã chọn
   selectedCombos: ComboDto[] = [];  // Mảng lưu các combo đã chọn
-
+  paymentData: VNPaymentDto = new VNPaymentDto();
+  vnPayUrl: string = '';  // Biến để lưu URL VNPay
+  amount: number = 0;
+  orderId: string = '';
+  orderInfo: string = '';
+  paymentUrl: string = '';
+  showtime_id: string = '';
   constructor(
     public bsModalRef: BsModalRef,
     private seatService: SeatService,
     private route: ActivatedRoute,
     private ticketService: TicketService,
     private comboService: ComboService,
+    private vnPaymentService: VNPaymentService
   ) { }
   addToCart(combo: ComboDto): void {
     // Kiểm tra xem combo đã có trong selectedCombos chưa
@@ -50,14 +60,26 @@ export class RoomComponent implements OnInit {
     console.log('Selected Combos:', this.selectedCombos);
   }
 
+  updateSeat(seatId: string) {
+    const seatStatus = "booked"; // Trạng thái ghế muốn cập nhật
 
+    this.seatService.updateSeatStatus(seatId, seatStatus).subscribe(
+      response => {
+        console.log('Cập nhật ghế thành công', response);
+      },
+      error => {
+        console.error('Lỗi khi cập nhật ghế', error);
+      }
+    );
+  }
 
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const idRoomParam = params.get('idRoom');
+      const showtimeId = params.get('showtimeId');
       this.idRoom = idRoomParam || '';
-
+      this.showtime_id = showtimeId ?? '';
       if (this.idRoom) {
         this.list();
       } else {
@@ -129,8 +151,8 @@ export class RoomComponent implements OnInit {
 
   createTicket(): void {
     // Kiểm tra xem có ghế và combo đã chọn hay không
-    if (this.selectedSeats.length === 0 || this.selectedCombos.length === 0) {
-      this.errorMessage = "Bạn chưa chọn ghế hoặc combo.";
+    if (this.selectedSeats.length === 0) {
+      this.errorMessage = "Bạn chưa chọn ghế";
       console.error(this.errorMessage);
       return;
     }
@@ -142,7 +164,26 @@ export class RoomComponent implements OnInit {
     // Gọi dịch vụ để tạo vé
     this.ticketService.createTicket(ticket).subscribe({
       next: (res) => {
+        //tạo link 
+        this.vnPaymentService.createVNPayUrl(res.total_amount, res.ticket_id, "thanh toán cho vé " + res.id)
+          .subscribe({
+            next: (response: any) => {  // Kiểu trả về là raw response
+              if (response && response.success) {
+                this.paymentUrl = response.paymentUrl || '';  // Lấy URL thanh toán
+                console.log(this.paymentUrl);
+                window.open(this.paymentUrl, '_blank');
+              } else {
+                this.errorMessage = 'Có lỗi xảy ra trong quá trình tạo liên kết thanh toán.';
+              }
+            },
+            error: (err) => {
+              this.errorMessage = err.message || 'Lỗi không xác định';
+            }
+          });
         console.log("Ticket created:", res);
+
+        this.selectedSeats = [];
+        this.selectedCombos = []
         // Sau khi tạo vé thành công, bạn có thể làm gì đó (chuyển hướng, thông báo, v.v...)
       },
       error: (err) => {
@@ -157,7 +198,8 @@ export class RoomComponent implements OnInit {
     return new TicketDto({
       id: "", // Nếu cần, có thể điền giá trị mặc định hoặc gán giá trị sau khi tạo ticket
       user_id: "67ea1c5108d4e0d7db8e5d16", // User ID
-      showtime_id: "67ea64f835e3725cd9edd1f1", // Showtime ID
+      ticket_id: '',
+      showtime_id: this.showtime_id, // Showtime ID
       seats: this.selectedSeats.map(seat => new SeatDto({
         seat_id: seat._id,
         price_seat: seat.price_seat,
@@ -181,8 +223,22 @@ export class RoomComponent implements OnInit {
     });
   }
 
-
-
+  // Phương thức gọi dịch vụ để tạo URL VNPay
+  createVNPayUrl(amount: number, orderId: string, orderInfo: string): void {
+    this.vnPaymentService.createVNPayUrl(amount, orderId, orderInfo)
+      .subscribe({
+        next: (response: any) => {  // Kiểu trả về là raw response
+          if (response && response.success) {
+            this.paymentUrl = response.paymentUrl || '';  // Lấy URL thanh toán
+          } else {
+            this.errorMessage = 'Có lỗi xảy ra trong quá trình tạo liên kết thanh toán.';
+          }
+        },
+        error: (err) => {
+          this.errorMessage = err.message || 'Lỗi không xác định';
+        }
+      });
+  }
 
 
   // Hàm tính tổng tiền của vé

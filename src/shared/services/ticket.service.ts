@@ -33,7 +33,18 @@ export class TicketService {
         const seats = ticket.seats.map(seat => SeatDto.fromJS(seat));
 
         return this.http.post<any>(this.apiUrlCreateTicket, payload).pipe(
-            map(res => TicketDto.fromJS(res)),
+            map(res => {
+                // Ánh xạ dữ liệu trả về từ API vào TicketDto
+                return new TicketDto({
+                    ...res.data,  // Giả sử 'data' chứa thông tin vé
+                    user_id: res.data.user_id,
+                    showtime_id: res.data.showtime_id,
+                    ticket_id: res.data.ticket_id
+                    // Thêm các trường dữ liệu cần thiết từ API vào đây
+                });
+                console.log();
+
+            }),
             catchError(this.handleError)
         );
     }

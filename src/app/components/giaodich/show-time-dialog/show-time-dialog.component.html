@@ -34,7 +34,7 @@
                             <div class="showtimes-section" *ngIf="rap.showtimes && rap.showtimes.length > 0">
                                 <p class="showtimes-title">Suất chiếu:</p>
                                 <div class="showtime-button-group" *ngFor="let st of rap.showtimes">
-                                    <button (click)="showRomDialog(st.roomId)" class="showtime-button">
+                                    <button (click)="showRomDialog(st.roomId,st.id)" class="showtime-button">
                                         {{ st.startTime }} - {{ st.endTime }}
                                     </button>
                                 </div>

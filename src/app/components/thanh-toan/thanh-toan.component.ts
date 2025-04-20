@@ -1,91 +1,100 @@
-import { Component, OnInit } from '@angular/core';
-
-interface ThanhToanItem {
-  maGD: string;
-  tenPhim: string;
-  suatChieu: string;
-  phongChieu: string;
-  trangThai: string;
-  tongTien: number;
-  ngayDat: string;
-}
+import { Component, OnInit } from "@angular/core";
+import { PaymentService, PaymentDto } from "../../../shared/services/payment.service";
 
 @Component({
   selector: 'app-thanh-toan',
-  standalone: false,
   templateUrl: './thanh-toan.component.html',
-  styleUrls: ['./thanh-toan.component.css']
+  styleUrls: ['./thanh-toan.component.css'],
+  standalone: false
 })
 export class ThanhToanComponent implements OnInit {
-  // Trường lưu giá trị tìm kiếm tên phim
   searchTerm: string = '';
-  
-  // Danh sách giao dịch
-  thanhToanList: ThanhToanItem[] = [];
-  
+  thanhToanList: PaymentDto[] = [];
+
+  // Pagination
+  totalRecords: number = 0;
+  currentPage: number = 0; // PrimeNG dùng chỉ số trang bắt đầu từ 0
+  rows: number = 10;
+
+  constructor(private paymentService: PaymentService) { }
+
   ngOnInit(): void {
-    // Khởi tạo dữ liệu mẫu
     this.loadThanhToanData();
   }
-  
-  // Phương thức tải dữ liệu (có thể thay thế bằng API call trong thực tế)
-  loadThanhToanData(): void {
-    this.thanhToanList = [
-      {
-        maGD: 'HD 1234',
-        tenPhim: 'Trạng Quỳnh',
-        suatChieu: '12:00 - 14:00 12/03/2025',
-        phongChieu: 'Cinema 1 - Cinema HN',
-        trangThai: 'Đã thanh toán',
-        tongTien: 140000,
-        ngayDat: '11/03/2025'
-      },
-      {
-        maGD: 'HD 1235',
-        tenPhim: 'Trạng Quỳnh',
-        suatChieu: '12:00 - 14:00 12/03/2025',
-        phongChieu: 'Cinema 1 - Cinema HN',
-        trangThai: 'Đã hủy',
-        tongTien: 140000,
-        ngayDat: '11/03/2025'
-      },
-      {
-        maGD: 'HD 1236',
-        tenPhim: 'Trạng Quỳnh',
-        suatChieu: '12:00 - 14:00 12/03/2025',
-        phongChieu: 'Cinema 1 - Cinema HN',
-        trangThai: 'Đã thanh toán',
-        tongTien: 140000,
-        ngayDat: '11/03/2025'
-      },
-      {
-        maGD: 'HD 1237',
-        tenPhim: 'Godzilla x Kong',
-        suatChieu: '18:30 - 20:30 15/03/2025',
-        phongChieu: 'Cinema 3 - Cinema HN',
-        trangThai: 'Đã thanh toán',
-        tongTien: 180000,
-        ngayDat: '14/03/2025'
-      }
-    ];
+
+  // Thêm vào class ThanhToanComponent
+  getPageNumbers(): number[] {
+    const totalPages = Math.ceil(this.totalRecords / this.rows);
+    const current = this.currentPage + 1;
+    const range = 2; // Số trang hiển thị mỗi bên của trang hiện tại
+    const start = Math.max(1, current - range);
+    const end = Math.min(totalPages, current + range);
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
-  // Lọc theo tên phim
-  get filteredThanhToanList(): ThanhToanItem[] {
+  goToPage(pageNumber: number): void {
+    this.currentPage = pageNumber - 1;
+    this.loadThanhToanData();
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadThanhToanData();
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.currentPage < Math.ceil(this.totalRecords / this.rows) - 1) {
+      this.currentPage++;
+      this.loadThanhToanData();
+    }
+  }
+
+  onRowsPerPageChange(): void {
+    this.currentPage = 0; // Reset về trang đầu tiên khi thay đổi số items/trang
+    this.loadThanhToanData();
+  }
+  isLastPage(): boolean {
+    return this.currentPage >= Math.ceil(this.totalRecords / this.rows) - 1;
+  }
+  loadThanhToanData(): void {
+    const page = this.currentPage + 1; // API backend dùng chỉ số trang từ 1
+    this.paymentService.getAllPayments(page, this.rows).subscribe({
+      next: (data) => {
+        this.thanhToanList = data.payments;
+        this.totalRecords = data.totalPayments;
+      },
+      error: (err) => {
+        console.error('Lỗi tải dữ liệu thanh toán:', err);
+      }
+    });
+  }
+
+  onPageChange(event: any): void {
+    this.currentPage = event.page;
+    this.rows = event.rows;
+    this.loadThanhToanData();
+  }
+
+  get filteredThanhToanList(): PaymentDto[] {
     if (!this.searchTerm.trim()) {
       return this.thanhToanList;
     }
-    
+
     const lowerSearch = this.searchTerm.toLowerCase().trim();
     return this.thanhToanList.filter(item =>
-      item.tenPhim.toLowerCase().includes(lowerSearch)
+      item.ticket_id?.showtime_id?.movie_id?.title?.toLowerCase().includes(lowerSearch)
     );
   }
 
-  // Nút "Tra cứu GD"
   traCuuGD(): void {
-    console.log('Tra cứu giao dịch...');
-    // Thực hiện tìm kiếm nâng cao hoặc điều hướng đến trang tìm kiếm chi tiết
     alert('Đang chuyển đến trang tra cứu giao dịch chi tiết');
   }
+
+  formatDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('vi-VN');
+  }
 }
+
