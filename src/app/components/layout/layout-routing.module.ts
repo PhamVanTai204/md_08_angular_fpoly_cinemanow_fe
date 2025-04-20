@@ -1,4 +1,3 @@
-// layout-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LayoutComponent } from './layout.component';
@@ -20,8 +19,14 @@ const routes: Routes = [
       { path: 'banner', loadChildren: () => import('../banner/banner.module').then(m => m.BannerModule) },
       { path: 'combo', loadChildren: () => import('../combo/combo.module').then(m => m.ComboModule) },
       { path: 'voucher', loadChildren: () => import('../voucher/voucher.module').then(m => m.VoucherModule) },
+
       { path: 'room/:idRoom/:showtimeId', loadChildren: () => import('../room/room.module').then(m => m.RoomModule) },
 
+
+
+      { path: 'dondat', loadChildren: () => import('../don-dat-ve/don-dat-ve.module').then(m => m.DonDatVeModule) },
+      { path: 'khuyenmai', loadChildren: () => import('../khuyen-mai/khuyen-mai.module').then(m => m.KhuyenMaiModule) },
+      { path: 'room/:idRoom', loadChildren: () => import('../room/room.module').then(m => m.RoomModule) },
 
       { path: '', redirectTo: 'theloaiphim', pathMatch: 'full' }
     ]

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { NguoiDungComponent } from './nguoi-dung.component';
 import { NguoiDungRoutingModule } from './nguoi-dung-routing.module';
-
+import { PhanQuyenService } from '../../../shared/services/phanquyen.service';
 @NgModule({
   declarations: [
     NguoiDungComponent
@@ -16,7 +16,8 @@ import { NguoiDungRoutingModule } from './nguoi-dung-routing.module';
     NguoiDungRoutingModule
   ],
   providers: [
-    DatePipe
+    DatePipe,
+    PhanQuyenService
   ]
 })
 export class NguoiDungModule { }
