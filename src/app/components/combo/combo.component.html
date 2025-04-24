@@ -1,12 +1,13 @@
 <!-- Main content container -->
 <div class="flex flex-col">
-  <!-- Header -->
+  <!-- Header with proper permission checks -->
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-lg font-bold text-gray-800 flex items-center">
       <span class="material-icons text-blue-500 mr-2">fastfood</span>
       {{ isAdminView ? 'Quản Lý Combo' : 'Combo Của Bạn' }}
     </h1>
     
+    <!-- Only show Add button if user is admin, staff or regular user -->
     <button 
       (click)="openDialog()" 
       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -91,19 +92,26 @@
             
             <!-- Actions -->
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+              <!-- View Details - Always available -->
               <button 
                 (click)="loadComboDetails(combo._id)" 
                 class="text-blue-600 hover:text-blue-900 mx-1"
                 title="Chi tiết">
                 <span class="material-icons text-sm">visibility</span>
               </button>
+              
+              <!-- Edit - Only for admin, staff or owner -->
               <button 
+                *ngIf="canEditCombo(combo)"
                 (click)="openDialog(combo)" 
                 class="text-yellow-600 hover:text-yellow-900 mx-1"
                 title="Sửa">
                 <span class="material-icons text-sm">edit</span>
               </button>
+              
+              <!-- Delete - Only for admin, staff or owner -->
               <button 
+                *ngIf="canDeleteCombo(combo)"
                 (click)="confirmDelete(combo._id, combo.name_combo)" 
                 class="text-red-600 hover:text-red-900 mx-1"
                 title="Xóa">
@@ -243,7 +251,7 @@
   </div>
 </div>
 
-<!-- Combo details dialog -->
+  <!-- Combo details dialog -->
 <div *ngIf="showDetailsDialog" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
     <!-- Background overlay -->

@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ComboService, Combo } from '../../../shared/services/combo.service';
 import { UserService } from '../../../shared/services/user.service';
+import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-combo',
@@ -8,7 +10,7 @@ import { UserService } from '../../../shared/services/user.service';
   styleUrls: ['./combo.component.css'],
   standalone: false
 })
-export class ComboComponent implements OnInit {
+export class ComboComponent implements OnInit, OnDestroy {
   // Danh sách combo
   combos: Combo[] = [];
   selectedCombo: Combo | null = null;
@@ -20,6 +22,7 @@ export class ComboComponent implements OnInit {
   // User info
   currentUserId: string | null = null;
   isAdminView = false;
+  isStaffView = false;
 
   // Dialog control
   showDialog = false;
@@ -51,6 +54,9 @@ export class ComboComponent implements OnInit {
   // Make Math available in the template
   Math = Math;
 
+  // Subscription management to prevent memory leaks
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private comboService: ComboService,
     private userService: UserService
@@ -60,9 +66,12 @@ export class ComboComponent implements OnInit {
     // Get current user ID
     this.currentUserId = this.userService.getCurrentUserId();
 
-    // Check if admin
+    // Check user roles
     const currentUser = this.userService.getCurrentUser();
-    this.isAdminView = currentUser && currentUser.role === 2;
+    if (currentUser) {
+      this.isAdminView = currentUser.role === 2;
+      this.isStaffView = currentUser.role === 3;
+    }
 
     // Verify login
     if (!this.userService.isLoggedIn()) {
@@ -72,6 +81,11 @@ export class ComboComponent implements OnInit {
 
     // Load combo list
     this.loadAllCombos();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscriptions to prevent memory leaks
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   // Check if combos is a valid array with items
@@ -84,7 +98,7 @@ export class ComboComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.comboService.getAllCombos().subscribe({
+    const sub = this.comboService.getAllCombos().subscribe({
       next: (response) => {
         // Ensure response is an array
         if (Array.isArray(response)) {
@@ -107,6 +121,8 @@ export class ComboComponent implements OnInit {
         this.totalItems = 0;
       }
     });
+    
+    this.subscriptions.push(sub);
   }
 
   // Get current page data
@@ -176,10 +192,30 @@ export class ComboComponent implements OnInit {
     }
   }
 
+  // Check if user can edit a combo (admin or owner)
+  canEditCombo(combo: Combo): boolean {
+    if (this.isAdminView || this.isStaffView) return true; // Admin and staff can edit any combo
+    
+    // Check if current user is the creator
+    if (!combo.user_id) return false;
+    
+    const comboUserId = typeof combo.user_id === 'object' 
+      ? (combo.user_id._id || combo.user_id.userId || combo.user_id.id) 
+      : combo.user_id;
+      
+    return comboUserId === this.currentUserId;
+  }
+
+  // Check if user can delete a combo (admin or owner)
+  canDeleteCombo(combo: Combo): boolean {
+    return this.canEditCombo(combo); // Same rules as edit
+  }
+
   // Load combo details
   loadComboDetails(id: string): void {
     this.isLoading = true;
-    this.comboService.getComboById(id).subscribe({
+    
+    const sub = this.comboService.getComboById(id).subscribe({
       next: (data) => {
         this.selectedCombo = data;
         this.showDetailsDialog = true;
@@ -191,6 +227,8 @@ export class ComboComponent implements OnInit {
         console.error('Error loading combo details:', error);
       }
     });
+    
+    this.subscriptions.push(sub);
   }
 
   // Close details dialog
@@ -201,6 +239,12 @@ export class ComboComponent implements OnInit {
 
   // Open dialog for add/edit
   openDialog(combo?: Combo): void {
+    // Check if user has permission to edit (admin, staff or owner)
+    if (combo && !this.canEditCombo(combo)) {
+      this.errorMessage = 'Bạn không có quyền chỉnh sửa combo này.';
+      return;
+    }
+
     if (combo) {
       // Edit mode
       this.isEditing = true;
@@ -287,7 +331,7 @@ export class ComboComponent implements OnInit {
       user_id: this.newCombo.user_id || this.currentUserId || ''
     };
 
-    this.comboService.createCombo(comboToCreate).subscribe({
+    const sub = this.comboService.createCombo(comboToCreate).subscribe({
       next: () => {
         this.loadAllCombos();
         this.closeDialog();
@@ -298,11 +342,20 @@ export class ComboComponent implements OnInit {
         console.error('Error creating combo:', error);
       }
     });
+    
+    this.subscriptions.push(sub);
   }
 
   // Update existing combo
   updateCombo(): void {
     if (!this.editId) return;
+
+    // Check permission again as a safeguard
+    const comboToEdit = this.combos.find(combo => combo._id === this.editId);
+    if (comboToEdit && !this.canEditCombo(comboToEdit)) {
+      this.errorMessage = 'Bạn không có quyền cập nhật combo này.';
+      return;
+    }
 
     this.isLoading = true;
 
@@ -316,7 +369,7 @@ export class ComboComponent implements OnInit {
       user_id: this.newCombo.user_id || this.currentUserId || ''
     };
 
-    this.comboService.updateCombo(this.editId, comboToUpdate).subscribe({
+    const sub = this.comboService.updateCombo(this.editId, comboToUpdate).subscribe({
       next: () => {
         this.loadAllCombos();
         this.closeDialog();
@@ -327,10 +380,20 @@ export class ComboComponent implements OnInit {
         console.error('Error updating combo:', error);
       }
     });
+    
+    this.subscriptions.push(sub);
   }
 
   // Open delete confirmation dialog
   confirmDelete(id: string, name: string): void {
+    // Find the combo to check permissions
+    const comboToDelete = this.combos.find(combo => combo._id === id);
+    
+    if (comboToDelete && !this.canDeleteCombo(comboToDelete)) {
+      this.errorMessage = 'Bạn không có quyền xóa combo này.';
+      return;
+    }
+    
     this.comboToDelete = {
       id: id,
       name: name
@@ -348,7 +411,7 @@ export class ComboComponent implements OnInit {
   deleteCombo(id: string): void {
     this.isLoading = true;
 
-    this.comboService.deleteCombo(id).subscribe({
+    const sub = this.comboService.deleteCombo(id).subscribe({
       next: () => {
         // If deleted combo was selected, deselect it
         if (this.selectedCombo && this.selectedCombo._id === id) {
@@ -364,6 +427,8 @@ export class ComboComponent implements OnInit {
         console.error('Error deleting combo:', error);
       }
     });
+    
+    this.subscriptions.push(sub);
   }
 
   // Reset form to defaults
