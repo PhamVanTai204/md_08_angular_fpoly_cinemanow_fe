@@ -2,145 +2,94 @@
 <div class="flex flex-col h-screen overflow-hidden bg-blue-600">
   <!-- Header cố định -->
   <!-- Header Component with Dynamic User Info -->
-<header class="w-full h-16 bg-blue-600 shadow-lg z-20">
-  <div class="container mx-auto px-6 h-full flex items-center justify-between">
-    <div class="flex items-center space-x-4">
-      <span class="font-['Inter'] font-extrabold text-xl text-white">ADMIN ACCOUNT</span>
-    </div>
-
-    <div class="flex items-center space-x-6">
-      <!-- User Profile Section -->
-      <div class="flex items-center space-x-2 text-white">
-        <div class="bg-white rounded-full h-8 w-8 flex items-center justify-center overflow-hidden">
-          <img [src]="currentUser?.url_image" alt="Avatar"
-            class="h-full w-full object-cover"
-            onerror="this.src='https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc'" />
-        </div>
-        <div class="flex flex-col">
-          <span class="text-sm font-medium">{{ currentUser?.email || 'Admin' }}</span>
-          <span class="text-xs opacity-80">{{ getUserRoleLabel() }}</span>
-        </div>
+  <header class="w-full h-16 bg-blue-600 shadow-lg z-20">
+    <div class="container mx-auto px-6 h-full flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <span class="font-['Inter'] font-extrabold text-xl text-white">ADMIN ACCOUNT</span>
       </div>
-      
-      <!-- Logout Button -->
-      <button (click)="logout()"
-        class="px-5 py-2 bg-white text-blue-600 rounded-md hover:bg-gray-100 transition font-medium shadow-sm flex items-center">
-        <span>ĐĂNG XUẤT</span>
-      </button>
+
+      <div class="flex items-center space-x-6">
+        <!-- User Profile Section -->
+        <div class="flex items-center space-x-2 text-white">
+          <div class="bg-white rounded-full h-8 w-8 flex items-center justify-center overflow-hidden">
+            <img [src]="currentUser?.url_image" alt="Avatar"
+              class="h-full w-full object-cover"
+              onerror="this.src='https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc'" />
+          </div>
+          <div class="flex flex-col">
+            <span class="text-sm font-medium">{{ currentUser?.email || 'Admin' }}</span>
+            <span class="text-xs opacity-80">{{ getUserRoleLabel() }}</span>
+          </div>
+        </div>
+        
+        <!-- Logout Button -->
+        <button (click)="logout()"
+          class="px-5 py-2 bg-white text-blue-600 rounded-md hover:bg-gray-100 transition font-medium shadow-sm flex items-center">
+          <span>ĐĂNG XUẤT</span>
+        </button>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
 
   <div class="flex flex-1 overflow-hidden">
     <!-- Sidebar - always visible on desktop -->
     <div class="w-64 bg-white shadow-md overflow-y-auto overflow-x-hidden h-full">
       <div class="py-2">
-        <div class="uppercase text-sm text-gray-500 px-4 py-2">QUẢN LÝ NỘI DUNG</div>
-        <ul>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['theloaiphim']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">category</span>
-              <span>Thể loại phim</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['phim']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">movie</span>
-              <span>Phim</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['rap']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">store</span>
-              <span>Rạp</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['lichchieu']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">event</span>
-              <span>Lịch chiếu</span>
-            </a>
-          </li>
-        </ul>
+        <!-- Only display content menu section if there are viewable items -->
+        <ng-container *ngIf="hasViewableItems(contentMenuItems)">
+          <div class="uppercase text-sm text-gray-500 px-4 py-2">QUẢN LÝ NỘI DUNG</div>
+          <ul>
+            <li *ngFor="let item of contentMenuItems">
+              <a *ngIf="canShowMenuItem(item)" class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
+                [routerLink]="[item.path]" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
+                <span class="material-icons text-current mr-3">{{item.icon}}</span>
+                <span>{{item.title}}</span>
+              </a>
+            </li>
+          </ul>
+        </ng-container>
 
-        <div class="uppercase text-sm text-gray-500 px-4 py-2 mt-4">QUẢN LÝ KINH DOANH</div>
-        <ul>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['dondat']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">receipt</span>
-              <span>Đơn đặt vé</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['thanhtoan']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">credit_card</span>
-              <span>Thanh toán</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['khuyenmai']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">local_offer</span>
-              <span>Khuyến mãi</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['thongke']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">bar_chart</span>
-              <span>Thống kê</span>
-            </a>
-          </li>
-        </ul>
+        <!-- Only display business menu section if there are viewable items -->
+        <ng-container *ngIf="hasViewableItems(businessMenuItems)">
+          <div class="uppercase text-sm text-gray-500 px-4 py-2 mt-4">QUẢN LÝ KINH DOANH</div>
+          <ul>
+            <li *ngFor="let item of businessMenuItems">
+              <a *ngIf="canShowMenuItem(item)" class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
+                [routerLink]="[item.path]" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
+                <span class="material-icons text-current mr-3">{{item.icon}}</span>
+                <span>{{item.title}}</span>
+              </a>
+            </li>
+          </ul>
+        </ng-container>
 
-        <div class="uppercase text-sm text-gray-500 px-4 py-2 mt-4">NGƯỜI DÙNG</div>
-        <ul>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['nhanvien']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">badge</span>
-              <span>Nhân viên</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['nguoidung']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">person</span>
-              <span>Người dùng</span>
-            </a>
-          </li>
-        </ul>
+        <!-- Only display user menu section if there are viewable items -->
+        <ng-container *ngIf="hasViewableItems(userMenuItems)">
+          <div class="uppercase text-sm text-gray-500 px-4 py-2 mt-4">NGƯỜI DÙNG</div>
+          <ul>
+            <li *ngFor="let item of userMenuItems">
+              <a *ngIf="canShowMenuItem(item)" class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
+                [routerLink]="[item.path]" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
+                <span class="material-icons text-current mr-3">{{item.icon}}</span>
+                <span>{{item.title}}</span>
+              </a>
+            </li>
+          </ul>
+        </ng-container>
 
-        <div class="uppercase text-sm text-gray-500 px-4 py-2 mt-4">MARKETING</div>
-        <ul>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['banner']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">image</span>
-              <span>Banner</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['voucher']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">card_giftcard</span>
-              <span>Voucher</span>
-            </a>
-          </li>
-          <li>
-            <a class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
-              [routerLink]="['combo']" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-              <span class="material-icons text-current mr-3">fastfood</span>
-              <span>Combo</span>
-            </a>
-          </li>
-        </ul>
+        <!-- Only display marketing menu section if there are viewable items -->
+        <ng-container *ngIf="hasViewableItems(marketingMenuItems)">
+          <div class="uppercase text-sm text-gray-500 px-4 py-2 mt-4">MARKETING</div>
+          <ul>
+            <li *ngFor="let item of marketingMenuItems">
+              <a *ngIf="canShowMenuItem(item)" class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-700"
+                [routerLink]="[item.path]" routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-600">
+                <span class="material-icons text-current mr-3">{{item.icon}}</span>
+                <span>{{item.title}}</span>
+              </a>
+            </li>
+          </ul>
+        </ng-container>
       </div>
     </div>
 

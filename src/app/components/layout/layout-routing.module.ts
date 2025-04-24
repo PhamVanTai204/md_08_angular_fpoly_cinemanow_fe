@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { LayoutComponent } from './layout.component';
 import { AuthGuard } from '../../../shared/guards/auth.guard';
 import { RoleGuard } from '../../../shared/guards/role.guard';
+
 const routes: Routes = [
   {
     path: '',
@@ -137,11 +138,11 @@ const routes: Routes = [
           allowedRoles: [2, 3] // Both admin and staff can access
         }
       },
-      { path: '', redirectTo: 'theloaiphim', pathMatch: 'full' }
+      // Route matcher fallback - redirects to the first accessible route
+      { path: '', pathMatch: 'full', redirectTo: 'theloaiphim' }
     ]
   }
 ];
-
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
