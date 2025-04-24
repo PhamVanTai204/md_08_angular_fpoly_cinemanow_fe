@@ -1,13 +1,11 @@
 export interface IVNPaymentDto {
+    ticket_id: string;
     amount: number;
-    orderId: string;
-    orderInfo: string;
 }
 
 export class VNPaymentDto implements IVNPaymentDto {
+    ticket_id: string = '';
     amount: number = 0;
-    orderId: string = '';
-    orderInfo: string = '';
 
     constructor(data?: IVNPaymentDto) {
         if (data) {
@@ -21,9 +19,8 @@ export class VNPaymentDto implements IVNPaymentDto {
 
     init(_data?: any) {
         if (_data) {
+            this.ticket_id = _data["ticket_id"];
             this.amount = _data["amount"];
-            this.orderId = _data["orderId"];
-            this.orderInfo = _data["orderInfo"];
         }
     }
 
@@ -36,9 +33,8 @@ export class VNPaymentDto implements IVNPaymentDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["ticket_id"] = this.ticket_id;
         data["amount"] = this.amount;
-        data["orderId"] = this.orderId;
-        data["orderInfo"] = this.orderInfo;
         return data;
     }
 

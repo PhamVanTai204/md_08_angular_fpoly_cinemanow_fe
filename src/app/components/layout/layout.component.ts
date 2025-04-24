@@ -14,7 +14,7 @@ import { filter } from 'rxjs/operators';
 export class LayoutComponent implements OnInit {
   currentUser: any;
   currentRoute: string = '';
-
+  role: number = 2;
   constructor(
     private userService: UserService,
     private router: Router
@@ -24,7 +24,7 @@ export class LayoutComponent implements OnInit {
     // Retrieve logged-in user information
     this.currentUser = this.userService.getCurrentUser();
     console.log('Current user:', this.currentUser);
-    
+
     // Redirect to login if no user is found
     if (!this.currentUser) {
       this.router.navigate(['/login']);
@@ -38,7 +38,7 @@ export class LayoutComponent implements OnInit {
         const url = event.urlAfterRedirects;
         this.currentRoute = url.split('/').pop();
       });
-    
+
     // Navigate to theloaiphim by default if we're at the root path
     if (this.router.url === '/' || this.router.url === '') {
       this.router.navigate(['theloaiphim']);
@@ -48,7 +48,7 @@ export class LayoutComponent implements OnInit {
   // Get role label based on user role number
   getUserRoleLabel(): string {
     if (!this.currentUser) return '';
-    
+
     switch (this.currentUser.role) {
       case 1:
         return 'Người dùng';

@@ -1,10 +1,28 @@
 <div class="success-container">
-    <div class="success-box">
+    <div class="success-box" [ngClass]="{ 'error': !isSuccess }">
         <div class="checkmark-circle">
-            <span class="checkmark">✓</span>
+            <span class="checkmark">{{ isSuccess ? '✓' : '✕' }}</span>
         </div>
-        <h2 class="title">Thành công!</h2>
-        <p class="message">Bạn đã thực hiện thao tác thành công.</p>
-        <button class="back-button">Quay lại trang chính</button>
+        <h2 class="title">
+            {{ isSuccess ? 'Thành công!' : 'Thanh toán thất bại!' }}
+        </h2>
+        <p class="message">
+            {{ isSuccess ? 'Bạn đã thực hiện thanh toán thành công.' : 'Giao dịch không thành công. Vui lòng thử lại.'
+            }}
+        </p>
+        <div class="payment-info">
+            <h2>Thông tin thanh toán</h2>
+            <p><strong>Số tiền:</strong> {{ paymentInfo.vnp_Amount/100| currency:'VND' }}</p>
+            <p><strong>Ngân hàng:</strong> {{ paymentInfo.vnp_BankCode }}</p>
+            <p><strong>Mã giao dịch:</strong> {{ paymentInfo.vnp_TransactionNo }}</p>
+            <p><strong>Mã giao dịch:</strong> {{ paymentInfo.vnp_OrderInfo }}</p>
+
+        </div>
+
+        <!-- ... -->
+
+        <p class="back-message">
+            Thanh toán thành công, hãy quay lại app của bạn để kiểm tra vé.
+        </p>
     </div>
 </div>
