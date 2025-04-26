@@ -121,20 +121,9 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex space-x-2">
-                  <button (click)="editUser(user)"
-                    class="text-blue-600 hover:bg-blue-100 p-1 rounded-full transition-colors duration-200">
-                    <span class="material-icons text-sm">edit</span>
-                  </button>
-                  <button (click)="toggleUserStatus(user)"
-                    [ngClass]="user.isActive === false ? 'text-green-600 hover:bg-green-100' : 'text-red-600 hover:bg-red-100'"
-                    class="p-1 rounded-full transition-colors duration-200">
-                    <span class="material-icons text-sm">{{ user.isActive === false ? 'lock_open' : 'lock' }}</span>
-                  </button>
-                  <button *ngIf="currentUser?._id !== user._id" (click)="deleteUser(user)"
-                    class="text-red-600 hover:bg-red-100 p-1 rounded-full transition-colors duration-200">
-                    <span class="material-icons text-sm">delete</span>
-                  </button>
+                <!-- Removed action buttons for admin users -->
+                <div class="text-gray-400 italic text-xs">
+                  Không có hành động khả dụng
                 </div>
               </td>
             </tr>
@@ -202,11 +191,6 @@
                   <button (click)="editUser(user)"
                     class="text-blue-600 hover:bg-blue-100 p-1 rounded-full transition-colors duration-200">
                     <span class="material-icons text-sm">edit</span>
-                  </button>
-                  <button (click)="toggleUserStatus(user)"
-                    [ngClass]="user.isActive === false ? 'text-green-600 hover:bg-green-100' : 'text-red-600 hover:bg-red-100'"
-                    class="p-1 rounded-full transition-colors duration-200">
-                    <span class="material-icons text-sm">{{ user.isActive === false ? 'lock_open' : 'lock' }}</span>
                   </button>
                   <button (click)="deleteUser(user)"
                     class="text-red-600 hover:bg-red-100 p-1 rounded-full transition-colors duration-200">
