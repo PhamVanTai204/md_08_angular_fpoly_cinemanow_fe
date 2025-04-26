@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { 
-  CanActivate, 
-  ActivatedRouteSnapshot, 
-  RouterStateSnapshot, 
-  Router 
+import {
+  CanActivate,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+  Router
 } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -38,6 +38,21 @@ export class RoleGuard implements CanActivate {
     
     // Get current user synchronously first (for faster response)
     const currentUser = this.userService.getCurrentUser();
+    
+    // Special handling for staff role (3)
+    if (currentUser && currentUser.role === 3) {
+      // Check if this is the 'rap' route or a route that starts with 'room'
+      const path = route.routeConfig?.path || '';
+      const isRapRoute = path === 'rap';
+      const isRoomRoute = path.startsWith('room');
+      
+      // If staff is trying to access anything other than 'rap' or 'room'
+      if (!isRapRoute && !isRoomRoute) {
+        console.log('Staff attempting to access restricted route:', path);
+        this.router.navigate(['/rap']);
+        return of(false);
+      }
+    }
     
     // If we have the user data cached and can make a quick decision
     if (currentUser) {
@@ -94,8 +109,8 @@ export class RoleGuard implements CanActivate {
         this.router.navigate(['/theloaiphim']);
         break;
       case 3: // Staff
-        // Staff can go to the phim as default
-        this.router.navigate(['/phim']);
+        // Staff can only go to rap as default (changed from phim)
+        this.router.navigate(['/rap']);
         break;
       case 1: // Regular user
       default:

@@ -27,16 +27,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
   
   // Danh sách menu được nhóm theo danh mục
   contentMenuItems: MenuItem[] = [
-    { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2, 3] },
-    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2, 3] },
-    { path: 'rap', title: 'Rạp', icon: 'store', roles: [2, 3] },
-    { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2, 3] }
+    { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2] },
+    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2] },
+    { path: 'rap', title: 'Rạp', icon: 'store', roles: [2, 3] }, // Only Rap is visible to staff
+    { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] }
   ];
   
   businessMenuItems: MenuItem[] = [
-    { path: 'dondat', title: 'Đơn đặt vé', icon: 'receipt', roles: [2, 3] },
-    { path: 'thanhtoan', title: 'Thanh toán', icon: 'credit_card', roles: [2, 3] },
-    { path: 'khuyenmai', title: 'Khuyến mãi', icon: 'local_offer', roles: [2, 3] },
+    { path: 'dondat', title: 'Đơn đặt vé', icon: 'receipt', roles: [2] },
+    { path: 'thanhtoan', title: 'Thanh toán', icon: 'credit_card', roles: [2] },
+    { path: 'khuyenmai', title: 'Khuyến mãi', icon: 'local_offer', roles: [2] },
     { path: 'thongke', title: 'Thống kê', icon: 'bar_chart', roles: [2] }
   ];
   
@@ -48,7 +48,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   marketingMenuItems: MenuItem[] = [
     { path: 'banner', title: 'Banner', icon: 'image', roles: [2] },
     { path: 'voucher', title: 'Voucher', icon: 'card_giftcard', roles: [2] },
-    { path: 'combo', title: 'Combo', icon: 'fastfood', roles: [2, 3] }
+    { path: 'combo', title: 'Combo', icon: 'fastfood', roles: [2] }
   ];
   
   constructor(
@@ -103,6 +103,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   // Navigate to the first accessible route for the current user
   navigateToFirstAccessibleRoute(): void {
+    // Special handling for staff role
+    if (this.currentUser?.role === 3) {
+      // Only navigate if we're at the root path
+      if (this.router.url === '/' || this.router.url === '' || this.router.url === '/admin') {
+        this.router.navigate(['rap']);
+      }
+      return;
+    }
+    
     // Combine all menu items
     const allMenuItems = [
       ...this.contentMenuItems,
@@ -116,7 +125,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     
     if (firstAccessibleItem) {
       // Only navigate if we're at the root path
-      if (this.router.url === '/' || this.router.url === '') {
+      if (this.router.url === '/' || this.router.url === '' || this.router.url === '/admin') {
         this.router.navigate([firstAccessibleItem.path]);
       }
     } else {
