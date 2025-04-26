@@ -25,6 +25,9 @@ export class NhanVienComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   isAdmin: boolean = false;  // Xác định người dùng hiện tại có phải admin không
   
+  // Toggle view state
+  showAdminView: boolean = true; // Default to showing admin view
+  
   // Form properties
   showForm: boolean = false;
   editMode: boolean = false;
@@ -36,7 +39,6 @@ export class NhanVienComponent implements OnInit, OnDestroy {
     email: '',
     url_image: '',
     role: 3,  // Mặc định là nhân viên
-    phone: '',
     password: ''
   };
   
@@ -55,6 +57,11 @@ export class NhanVienComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Hủy các subscription khi component bị hủy để tránh memory leak
     this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  // Toggle between admin and staff view
+  toggleView(): void {
+    this.showAdminView = !this.showAdminView;
   }
 
   // Kiểm tra thông tin người dùng đăng nhập
@@ -230,7 +237,6 @@ export class NhanVienComponent implements OnInit, OnDestroy {
       email: '',
       url_image: 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc',
       role: 3,  // Mặc định là nhân viên
-      phone: '',
       password: ''
     };
     this.showForm = true;  // Hiển thị form
@@ -259,12 +265,62 @@ export class NhanVienComponent implements OnInit, OnDestroy {
       email: user.email,
       url_image: user.url_image || 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc',
       role: Number(user.role),
-      phone: user.phone || (user.phone_number ? user.phone_number.toString() : ''),
       password: ''  // Để trống khi chỉnh sửa
     };
     this.showForm = true;  // Hiển thị form
   }
 
+  // Xóa người dùng
+  deleteUser(user: User): void {
+    // Kiểm tra quyền admin trước khi thực hiện hành động
+    if (!this.isAdmin) {
+      this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
+      return;
+    }
+    
+    // Không cho phép xóa admin hiện tại
+    if (this.currentUser && user._id === this.currentUser._id) {
+      this.errorMessage = 'Không thể xóa tài khoản đang đăng nhập';
+      return;
+    }
+    
+    // Xác nhận trước khi xóa
+    if (confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.user_name}?`)) {
+      this.isLoading = true;
+      
+      const sub = this.phanQuyenService.deleteUser(user._id)
+        .pipe(finalize(() => this.isLoading = false))
+        .subscribe({
+          next: (response) => {
+            if (response.code === 200) {
+              this.successMessage = `Đã xóa người dùng ${user.user_name}`;
+              this.loadUsers();  // Tải lại danh sách để cập nhật UI
+              
+              // Tự động ẩn thông báo thành công sau 3 giây
+              setTimeout(() => {
+                this.successMessage = '';
+              }, 3000);
+            } else {
+              this.errorMessage = response.error || 'Có lỗi xảy ra khi xóa';
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting user:', error);
+            this.errorMessage = 'Lỗi kết nối máy chủ';
+          }
+        });
+      
+      this.subscriptions.push(sub);
+    }
+  }
+
+  // Format ngày tạo
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+  }
+  
   // Xử lý form submit
   onSubmitForm(): void {
     // Kiểm tra quyền admin trước khi thực hiện hành động
@@ -323,85 +379,66 @@ export class NhanVienComponent implements OnInit, OnDestroy {
       
       this.subscriptions.push(sub);
     } else {
-      // Thêm người dùng mới
-      // Sử dụng API đăng ký thay vì API insert
-      const sub = this.phanQuyenService.createUser(this.newUser)
-        .pipe(finalize(() => {
-          this.isLoading = false;
-          this.showForm = false;
-        }))
-        .subscribe({
-          next: (response) => {
-            if (response.code === 200) {
-              this.successMessage = `Đã thêm ${this.newUser.user_name} vào hệ thống`;
-              this.loadUsers();  // Tải lại danh sách để cập nhật UI
-              
-              // Tự động ẩn thông báo thành công sau 3 giây
-              setTimeout(() => {
-                this.successMessage = '';
-              }, 3000);
-            } else {
-              this.errorMessage = response.error || 'Có lỗi xảy ra khi thêm mới';
-            }
-          },
-          error: (error) => {
-            console.error('Error adding user:', error);
-            this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || error);
-          }
-        });
+      // Inside your onSubmitForm() method
+// Thêm người dùng mới - Chỉ gửi các trường cần thiết
+const newUserData = {
+  user_name: this.newUser.user_name,
+  email: this.newUser.email,
+  password: this.newUser.password,
+  url_image: this.newUser.url_image,
+  role: this.newUser.role
+};
+
+const sub = this.phanQuyenService.createUser(newUserData)
+  .pipe(finalize(() => {
+    this.isLoading = false;
+    this.showForm = false;
+  }))
+  .subscribe({
+    next: (response) => {
+      // Check response status - sometimes APIs return success with a non-200 code
+      // or include both data and error fields
+      console.log('Create user response:', response); // Debug log
+      
+      // More permissive success condition
+      if (response && (response.code === 200 || response.data)) {
+        this.successMessage = `Đã thêm ${this.newUser.user_name} vào hệ thống`;
+        this.loadUsers();  // Tải lại danh sách để cập nhật UI
+        
+        // Tự động ẩn thông báo thành công sau 3 giây
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 3000);
+      } else {
+        // If error message exists in response, show it, otherwise show generic error
+        this.errorMessage = (response && response.error) 
+          ? response.error 
+          : 'Có lỗi xảy ra khi thêm mới';
+        
+        // Still load users to check if the user was actually created
+        this.loadUsers();
+        
+        // Automatically clear error message after 3 seconds
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 3000);
+      }
+    },
+    error: (error) => {
+      console.error('Error adding user:', error);
+      this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || error);
+      
+      // Still try to load users to check if user was created despite error
+      this.loadUsers();
+      
+      // Automatically clear error message after 3 seconds
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 3000);
+    }
+  });
       
       this.subscriptions.push(sub);
     }
-  }
-
-  // Xóa người dùng
-  deleteUser(user: User): void {
-    // Kiểm tra quyền admin trước khi thực hiện hành động
-    if (!this.isAdmin) {
-      this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
-      return;
-    }
-    
-    // Không cho phép xóa admin hiện tại
-    if (this.currentUser && user._id === this.currentUser._id) {
-      this.errorMessage = 'Không thể xóa tài khoản đang đăng nhập';
-      return;
-    }
-    
-    // Xác nhận trước khi xóa
-    if (confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.user_name}?`)) {
-      this.isLoading = true;
-      
-      const sub = this.phanQuyenService.deleteUser(user._id)
-        .pipe(finalize(() => this.isLoading = false))
-        .subscribe({
-          next: (response) => {
-            if (response.code === 200) {
-              this.successMessage = `Đã xóa người dùng ${user.user_name}`;
-              this.loadUsers();  // Tải lại danh sách để cập nhật UI
-              
-              // Tự động ẩn thông báo thành công sau 3 giây
-              setTimeout(() => {
-                this.successMessage = '';
-              }, 3000);
-            } else {
-              this.errorMessage = response.error || 'Có lỗi xảy ra khi xóa';
-            }
-          },
-          error: (error) => {
-            console.error('Error deleting user:', error);
-            this.errorMessage = 'Lỗi kết nối máy chủ';
-          }
-        });
-      
-      this.subscriptions.push(sub);
-    }
-  }
-
-  // Format ngày tạo
-  formatDate(dateString: string): string {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN');
   }
 }
