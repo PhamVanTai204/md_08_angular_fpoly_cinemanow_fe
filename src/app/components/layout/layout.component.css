@@ -55,6 +55,19 @@ header {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* New styles for content scrolling */
+.overflow-auto {
+  overflow: auto !important;
+}
+
+.min-h-full {
+  min-height: 100%;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
 /* Ensures the router-outlet content takes full size */
 router-outlet + * {
   display: block;

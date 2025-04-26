@@ -93,10 +93,10 @@
       </div>
     </div>
 
-    <!-- Main content area with proper spacing -->
-    <div class="flex-1 bg-gray-200 py-4 px-4">
+    <!-- Main content area with proper spacing - MODIFIED FOR SCROLLING -->
+    <div class="flex-1 bg-gray-200 py-4 px-4 overflow-auto">
       <!-- Content container with white background and proper spacing -->
-      <div class="bg-white rounded-lg shadow-sm w-full h-full">
+      <div class="bg-white rounded-lg shadow-sm w-full min-h-full p-4 overflow-auto">
         <!-- Router outlet container -->
         <router-outlet></router-outlet>
       </div>
