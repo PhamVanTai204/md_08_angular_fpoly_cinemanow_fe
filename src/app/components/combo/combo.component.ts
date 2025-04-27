@@ -45,7 +45,7 @@ export class ComboComponent implements OnInit, OnDestroy {
   comboToDelete = { id: '', name: '' };
 
   // Pagination variables
-  pageSize = 5; // Number of items per page
+  pageSize = 10; // Changed from 5 to 10 as requested
   currentPage = 1; // Current page
   totalItems = 0; // Total number of items
   totalPages = 0; // Total number of pages
