@@ -13,8 +13,9 @@ export class ThanhToanComponent implements OnInit {
 
   // Pagination
   totalRecords: number = 0;
-  currentPage: number = 0; // PrimeNG dùng chỉ số trang bắt đầu từ 0
+  currentPage: number = 0;
   rows: number = 10;
+  totalPages: number = 1;
 
   constructor(private paymentService: PaymentService) { }
 
@@ -22,13 +23,11 @@ export class ThanhToanComponent implements OnInit {
     this.loadThanhToanData();
   }
 
-  // Thêm vào class ThanhToanComponent
   getPageNumbers(): number[] {
-    const totalPages = Math.ceil(this.totalRecords / this.rows);
     const current = this.currentPage + 1;
-    const range = 2; // Số trang hiển thị mỗi bên của trang hiện tại
+    const range = 2;
     const start = Math.max(1, current - range);
-    const end = Math.min(totalPages, current + range);
+    const end = Math.min(this.totalPages, current + range);
 
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
@@ -46,30 +45,38 @@ export class ThanhToanComponent implements OnInit {
   }
 
   goToNextPage(): void {
-    if (this.currentPage < Math.ceil(this.totalRecords / this.rows) - 1) {
+    if (this.currentPage < this.totalPages - 1) {
       this.currentPage++;
       this.loadThanhToanData();
     }
   }
 
   onRowsPerPageChange(): void {
-    this.currentPage = 0; // Reset về trang đầu tiên khi thay đổi số items/trang
+    this.currentPage = 0;
     this.loadThanhToanData();
   }
+
   isLastPage(): boolean {
-    return this.currentPage >= Math.ceil(this.totalRecords / this.rows) - 1;
+    return this.currentPage >= this.totalPages - 1;
   }
+
   loadThanhToanData(): void {
-    const page = this.currentPage + 1; // API backend dùng chỉ số trang từ 1
-    this.paymentService.getAllPayments(page, this.rows).subscribe({
+    const page = this.currentPage + 1;
+    this.paymentService.getAllPayments(page, this.rows, this.searchTerm).subscribe({
       next: (data) => {
         this.thanhToanList = data.payments;
         this.totalRecords = data.totalPayments;
+        this.totalPages = data.totalPages;
       },
       error: (err) => {
         console.error('Lỗi tải dữ liệu thanh toán:', err);
       }
     });
+  }
+
+  onSearch(): void {
+    this.currentPage = 0;
+    this.loadThanhToanData();
   }
 
   onPageChange(event: any): void {
@@ -78,15 +85,33 @@ export class ThanhToanComponent implements OnInit {
     this.loadThanhToanData();
   }
 
-  get filteredThanhToanList(): PaymentDto[] {
-    if (!this.searchTerm.trim()) {
-      return this.thanhToanList;
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'failed':
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
+  }
 
-    const lowerSearch = this.searchTerm.toLowerCase().trim();
-    return this.thanhToanList.filter(item =>
-      item.ticket_id?.showtime_id?.movie_id?.title?.toLowerCase().includes(lowerSearch)
-    );
+  getStatusText(status: string): string {
+    switch (status) {
+      case 'completed':
+        return 'Hoàn thành';
+      case 'pending':
+        return 'Đang chờ';
+      case 'failed':
+        return 'Thất bại';
+      case 'cancelled':
+        return 'Đã hủy';
+      default:
+        return status;
+    }
   }
 
   traCuuGD(): void {
@@ -94,7 +119,7 @@ export class ThanhToanComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
+    if (!dateStr) return '';
     return new Date(dateStr).toLocaleDateString('vi-VN');
   }
 }
-
