@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ComboService, Combo } from '../../../shared/services/combo.service';
+import { ComboService } from '../../../shared/services/combo.service';
 import { UserService } from '../../../shared/services/user.service';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { ComboDto } from '../../../shared/dtos/ComboDto.dto';
 
 @Component({
   selector: 'app-combo',
@@ -12,8 +13,8 @@ import { finalize } from 'rxjs/operators';
 })
 export class ComboComponent implements OnInit, OnDestroy {
   // Danh sách combo
-  combos: Combo[] = [];
-  selectedCombo: Combo | null = null;
+  combos: ComboDto[] = [];
+  selectedCombo: ComboDto | null = null;
 
   // Loading state
   isLoading = false;
@@ -30,14 +31,7 @@ export class ComboComponent implements OnInit, OnDestroy {
   showDetailsDialog = false;
 
   // Form data
-  newCombo: Partial<Combo> = {
-    combo_id: '',
-    name_combo: '',
-    price_combo: 0,
-    description_combo: '',
-    image_combo: '',
-    user_id: ''
-  };
+  newCombo: ComboDto = new ComboDto();
 
   // Edit/Delete tracking
   isEditing = false;
@@ -45,7 +39,7 @@ export class ComboComponent implements OnInit, OnDestroy {
   comboToDelete = { id: '', name: '' };
 
   // Pagination variables
-  pageSize = 10; // Changed from 5 to 10 as requested
+  pageSize = 10; // 10 items per page
   currentPage = 1; // Current page
   totalItems = 0; // Total number of items
   totalPages = 0; // Total number of pages
@@ -126,7 +120,7 @@ export class ComboComponent implements OnInit, OnDestroy {
   }
 
   // Get current page data
-  get paginatedCombos(): Combo[] {
+  get paginatedCombos(): ComboDto[] {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = Math.min(startIndex + this.pageSize, this.totalItems);
     return this.combos.slice(startIndex, endIndex);
@@ -193,21 +187,17 @@ export class ComboComponent implements OnInit, OnDestroy {
   }
 
   // Check if user can edit a combo (admin or owner)
-  canEditCombo(combo: Combo): boolean {
+  canEditCombo(combo: ComboDto): boolean {
     if (this.isAdminView || this.isStaffView) return true; // Admin and staff can edit any combo
     
     // Check if current user is the creator
     if (!combo.user_id) return false;
     
-    const comboUserId = typeof combo.user_id === 'object' 
-      ? (combo.user_id._id || combo.user_id.userId || combo.user_id.id) 
-      : combo.user_id;
-      
-    return comboUserId === this.currentUserId;
+    return combo.user_id === this.currentUserId;
   }
 
   // Check if user can delete a combo (admin or owner)
-  canDeleteCombo(combo: Combo): boolean {
+  canDeleteCombo(combo: ComboDto): boolean {
     return this.canEditCombo(combo); // Same rules as edit
   }
 
@@ -238,7 +228,7 @@ export class ComboComponent implements OnInit, OnDestroy {
   }
 
   // Open dialog for add/edit
-  openDialog(combo?: Combo): void {
+  openDialog(combo?: ComboDto): void {
     // Check if user has permission to edit (admin, staff or owner)
     if (combo && !this.canEditCombo(combo)) {
       this.errorMessage = 'Bạn không có quyền chỉnh sửa combo này.';
@@ -248,17 +238,8 @@ export class ComboComponent implements OnInit, OnDestroy {
     if (combo) {
       // Edit mode
       this.isEditing = true;
-      this.editId = combo._id;
-      this.newCombo = { ...combo };
-
-      // Ensure user_id is a string, not an object
-      if (this.newCombo.user_id && typeof this.newCombo.user_id === 'object') {
-        if (this.newCombo.user_id._id) {
-          this.newCombo.user_id = this.newCombo.user_id._id;
-        } else if (this.newCombo.user_id.userId) {
-          this.newCombo.user_id = this.newCombo.user_id.userId;
-        }
-      }
+      this.editId = combo.id;
+      this.newCombo = combo.clone(); // Use the clone method
     } else {
       // Add mode
       this.resetForm();
@@ -321,17 +302,7 @@ export class ComboComponent implements OnInit, OnDestroy {
   createCombo(): void {
     this.isLoading = true;
 
-    // Prepare data for API
-    const comboToCreate: Omit<Combo, '_id'> = {
-      combo_id: this.newCombo.combo_id || '',
-      name_combo: this.newCombo.name_combo || '',
-      price_combo: Number(this.newCombo.price_combo) || 0,
-      description_combo: this.newCombo.description_combo || '',
-      image_combo: this.newCombo.image_combo || '',
-      user_id: this.newCombo.user_id || this.currentUserId || ''
-    };
-
-    const sub = this.comboService.createCombo(comboToCreate).subscribe({
+    const sub = this.comboService.createCombo(this.newCombo).subscribe({
       next: () => {
         this.loadAllCombos();
         this.closeDialog();
@@ -351,7 +322,7 @@ export class ComboComponent implements OnInit, OnDestroy {
     if (!this.editId) return;
 
     // Check permission again as a safeguard
-    const comboToEdit = this.combos.find(combo => combo._id === this.editId);
+    const comboToEdit = this.combos.find(combo => combo.id === this.editId);
     if (comboToEdit && !this.canEditCombo(comboToEdit)) {
       this.errorMessage = 'Bạn không có quyền cập nhật combo này.';
       return;
@@ -359,17 +330,7 @@ export class ComboComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    // Prepare update data
-    const comboToUpdate: Partial<Combo> = {
-      combo_id: this.newCombo.combo_id,
-      name_combo: this.newCombo.name_combo,
-      price_combo: Number(this.newCombo.price_combo),
-      description_combo: this.newCombo.description_combo,
-      image_combo: this.newCombo.image_combo,
-      user_id: this.newCombo.user_id || this.currentUserId || ''
-    };
-
-    const sub = this.comboService.updateCombo(this.editId, comboToUpdate).subscribe({
+    const sub = this.comboService.updateCombo(this.editId, this.newCombo).subscribe({
       next: () => {
         this.loadAllCombos();
         this.closeDialog();
@@ -387,7 +348,7 @@ export class ComboComponent implements OnInit, OnDestroy {
   // Open delete confirmation dialog
   confirmDelete(id: string, name: string): void {
     // Find the combo to check permissions
-    const comboToDelete = this.combos.find(combo => combo._id === id);
+    const comboToDelete = this.combos.find(combo => combo.id === id);
     
     if (comboToDelete && !this.canDeleteCombo(comboToDelete)) {
       this.errorMessage = 'Bạn không có quyền xóa combo này.';
@@ -414,7 +375,7 @@ export class ComboComponent implements OnInit, OnDestroy {
     const sub = this.comboService.deleteCombo(id).subscribe({
       next: () => {
         // If deleted combo was selected, deselect it
-        if (this.selectedCombo && this.selectedCombo._id === id) {
+        if (this.selectedCombo && this.selectedCombo.id === id) {
           this.selectedCombo = null;
         }
 
@@ -433,44 +394,45 @@ export class ComboComponent implements OnInit, OnDestroy {
 
   // Reset form to defaults
   resetForm(): void {
-    this.newCombo = {
+    this.newCombo = new ComboDto({
       combo_id: '',
+      user_id: this.currentUserId || '',
       name_combo: '',
       price_combo: 0,
       description_combo: '',
-      image_combo: '',
-      user_id: this.currentUserId || ''
-    };
+      image_combo: ''
+    });
     this.isEditing = false;
     this.editId = '';
     this.errorMessage = '';
   }
 
-  // Add to cart
-  addToCart(combo: Combo): void {
-    // TODO: Implement cart functionality
-    console.log('Added to cart:', combo);
-    // Show a success message
-    this.errorMessage = ''; // Clear any existing errors
-    alert(`Đã thêm ${combo.name_combo} vào giỏ hàng`);
-  }
+  // Get user name from user_id
+  getUserName(userId: any): string {
+    // If userService has a method to get user by ID, use it
+    // This is a placeholder - you should implement actual user lookup
+    if (!userId) return 'Không có thông tin';
 
-  // Format user ID for display
-  displayUserId(userId: any): string {
-    if (!userId) return 'N/A';
-
-    if (typeof userId === 'string') {
-      return userId.length > 8 ? userId.substring(0, 8) + '...' : userId;
-    }
-
+    // If userId is an object that contains user information
     if (typeof userId === 'object') {
-      const id = userId._id || userId.userId || userId.id;
-      if (id) {
-        return this.displayUserId(id);
-      }
+      // Check for common user object properties
+      if (userId.fullName) return userId.fullName;
+      if (userId.name) return userId.name;
+      if (userId.username) return userId.username;
+      if (userId.email) return userId.email;
+      
+      // If there's an _id but no name property, try to return the _id
+      if (userId._id) return `ID: ${this.truncateId(userId._id)}`;
     }
 
-    return 'N/A';
+    // If userId is just a string ID
+    if (typeof userId === 'string') {
+      // Ideally you would call a service to get the user details
+      // userService.getUserById(userId).subscribe(...)
+      return `ID: ${this.truncateId(userId)}`;
+    }
+
+    return 'Không xác định';
   }
 
   // Truncate long IDs
