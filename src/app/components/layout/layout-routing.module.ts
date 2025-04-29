@@ -1,34 +1,149 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LayoutComponent } from './layout.component';
+import { AuthGuard } from '../../../shared/guards/auth.guard';
+import { RoleGuard } from '../../../shared/guards/role.guard';
 
 const routes: Routes = [
   {
     path: '',
     component: LayoutComponent,
+    canActivate: [AuthGuard], // All layout routes require authentication
     children: [
-      { path: 'theloaiphim', loadChildren: () => import('../the-loai-phim/the-loai-phim.module').then(m => m.TheLoaiPhimModule) },
-      { path: 'phim', loadChildren: () => import('../phim/phim.module').then(m => m.PhimModule) },
-      { path: 'rap', loadChildren: () => import('../rap/rap.module').then(m => m.RapModule) },
-      { path: 'thongke', loadChildren: () => import('../thong-ke/thong-ke.module').then(m => m.ThongKeModule) },
-      { path: 'thanhtoan', loadChildren: () => import('../thanh-toan/thanh-toan.module').then(m => m.ThanhToanModule) },
-      { path: 'nhanvien', loadChildren: () => import('../nhan-vien/nhan-vien.module').then(m => m.NhanVienModule) },
-      { path: 'lichchieu', loadChildren: () => import('../lich-chieu/lich-chieu.module').then(m => m.LichChieuModule) },
-      { path: 'nguoidung', loadChildren: () => import('../nguoi-dung/nguoi-dung.module').then(m => m.NguoiDungModule) },
-      { path: 'giaodich', loadChildren: () => import('../giaodich/giaodich.module').then(m => m.GiaodichModule) },
-      { path: 'banner', loadChildren: () => import('../banner/banner.module').then(m => m.BannerModule) },
-      { path: 'combo', loadChildren: () => import('../combo/combo.module').then(m => m.ComboModule) },
-      { path: 'voucher', loadChildren: () => import('../voucher/voucher.module').then(m => m.VoucherModule) },
-
-      { path: 'room/:idRoom/:showtimeId', loadChildren: () => import('../room/room.module').then(m => m.RoomModule) },
-
-
-
-      { path: 'dondat', loadChildren: () => import('../don-dat-ve/don-dat-ve.module').then(m => m.DonDatVeModule) },
-      { path: 'khuyenmai', loadChildren: () => import('../khuyen-mai/khuyen-mai.module').then(m => m.KhuyenMaiModule) },
-      { path: 'room/:idRoom', loadChildren: () => import('../room/room.module').then(m => m.RoomModule) },
-
-      { path: '', redirectTo: 'theloaiphim', pathMatch: 'full' }
+      { 
+        path: 'theloaiphim', 
+        loadChildren: () => import('../the-loai-phim/the-loai-phim.module').then(m => m.TheLoaiPhimModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admin can access
+        }
+      },
+      { 
+        path: 'phim', 
+        loadChildren: () => import('../phim/phim.module').then(m => m.PhimModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admin can access
+        }
+      },
+      { 
+        path: 'rap', 
+        loadChildren: () => import('../rap/rap.module').then(m => m.RapModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2, 3] // Both admin and staff can access
+        }
+      },
+      { 
+        path: 'thongke', 
+        loadChildren: () => import('../thong-ke/thong-ke.module').then(m => m.ThongKeModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admins can access statistics
+        }
+      },
+      { 
+        path: 'thanhtoan', 
+        loadChildren: () => import('../thanh-toan/thanh-toan.module').then(m => m.ThanhToanModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admin can access
+        }
+      },
+      { 
+        path: 'nhanvien', 
+        loadChildren: () => import('../nhan-vien/nhan-vien.module').then(m => m.NhanVienModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admins can access staff management
+        }
+      },
+      { 
+        path: 'lichchieu', 
+        loadChildren: () => import('../lich-chieu/lich-chieu.module').then(m => m.LichChieuModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admin can access
+        }
+      },
+      { 
+        path: 'nguoidung', 
+        loadChildren: () => import('../nguoi-dung/nguoi-dung.module').then(m => m.NguoiDungModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admins can access user management
+        }
+      },
+      { 
+        path: 'giaodich', 
+        loadChildren: () => import('../giaodich/giaodich.module').then(m => m.GiaodichModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admin can access
+        }
+      },
+      { 
+        path: 'banner', 
+        loadChildren: () => import('../banner/banner.module').then(m => m.BannerModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admins can manage banners
+        }
+      },
+      { 
+        path: 'combo', 
+        loadChildren: () => import('../combo/combo.module').then(m => m.ComboModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admin can access combos
+        }
+      },
+      { 
+        path: 'voucher', 
+        loadChildren: () => import('../voucher/voucher.module').then(m => m.VoucherModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admins can manage vouchers
+        }
+      },
+      { 
+        path: 'room/:idRoom/:showtimeId', 
+        loadChildren: () => import('../room/room.module').then(m => m.RoomModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2, 3] // Both admin and staff can access rooms
+        }
+      },
+      { 
+        path: 'dondat', 
+        loadChildren: () => import('../don-dat-ve/don-dat-ve.module').then(m => m.DonDatVeModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admin can access
+        }
+      },
+      { 
+        path: 'khuyenmai', 
+        loadChildren: () => import('../khuyen-mai/khuyen-mai.module').then(m => m.KhuyenMaiModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2] // Only admin can access
+        }
+      },
+      { 
+        path: 'room/:idRoom', 
+        loadChildren: () => import('../room/room.module').then(m => m.RoomModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [2, 3] // Both admin and staff can access rooms
+        }
+      },
+      // Fallback route - redirect based on role
+      { 
+        path: '', 
+        redirectTo: 'rap',
+        pathMatch: 'full'
+      }
     ]
   }
 ];

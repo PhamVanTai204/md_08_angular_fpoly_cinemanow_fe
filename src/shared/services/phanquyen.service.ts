@@ -113,7 +113,7 @@ export class PhanQuyenService {
   // Xóa người dùng
   deleteUser(userId: string): Observable<ApiResponse> {
     return this.http.delete<ApiResponse>(
-      `${this.baseUrl}/delete/${userId}`, 
+      `${this.baseUrl}/deleteUser/${userId}`, 
       { headers: this.getHeaders() }
     );
   }
