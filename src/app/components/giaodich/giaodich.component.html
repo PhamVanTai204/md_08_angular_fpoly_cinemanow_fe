@@ -1,72 +1,55 @@
-<div>
-  <section class="content-header">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-6">
-          <h1>Chọn Phim </h1>
-        </div>
+<div class="min-h-screen bg-white ">
+  <!-- Header -->
 
 
-      </div>
-    </div>
-  </section>
 
-  <section class="content px-2  ">
-    <div class=" table-wrapper">
-      <div class="card-body table-responsive table-striped table-bordered">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <button type="button" class="btn bg-red1 ">
-              <i class="fas fa-search"></i>
-            </button>
+  <!-- Search & Content -->
+  <section class="">
+    <div class="bg-white rounded-lg shadow p-6">
+      <section class="mb-6 px-4">
+        <div class="container mx-auto">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <!-- Tiêu đề -->
+            <h1 class="text-2xl font-bold text-gray-800 whitespace-nowrap">🎬 Chọn Phim</h1>
 
-          </div>
-          <input type="text" class="form-control" [placeholder]="'Nhập vào tên Phim'" #filter />
-          <!-- <input type="text" class="form-control" [placeholder]="'Nhập vào tên Sản Phẩm'" #filter
-            (keyup)="searchPRD(filter.value)" /> -->
-
-          <!-- -->
-
-        </div>
-        <table class="table table-hover">
-          <div class="product-list">
-
-            @for(product of danhSachPhim ; track product.id){
-            <div class="product" (click)="showCreateOrEditProductDialog(product.id)">
-              <div class="khung_prdImg">
-                <img id="img-product-list" alt="Uploaded Image" [src]="product.image_film" />
+            <!-- Ô tìm kiếm -->
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <div class="relative w-full sm:w-80">
+                <input type="text"
+                  class="w-full border border-gray-300 rounded-md px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="Nhập vào tên Phim" #filter />
+                <span class="absolute left-3 top-2.5 text-gray-400">
+                  <i class="fas fa-search"></i>
+                </span>
               </div>
-              <h2> {{ product.title }}</h2>
-              <p class="price">Giới hạn tuổi: {{product.age_limit}}</p>
-              <p class="description">Diễn viên: {{product.cast}}</p>
-
-
-
-
-
-
+              <button type="button" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">
+                Tìm
+              </button>
             </div>
-
-            }
-
-
           </div>
-
-        </table>
-
-
-        <div *ngIf="!danhSachPhim.length" class="text-center mt-5">
-          <p>Không có Phim.</p>
         </div>
-
-
-
+      </section>
+      <!-- Danh sách phim -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 product-list">
+        @for (product of danhSachPhim ; track product.id) {
+        <div
+          class="bg-white border rounded-lg shadow hover:shadow-lg transition cursor-pointer p-4 flex flex-col items-center text-center"
+          (click)="showCreateOrEditProductDialog(product.id)">
+          <div class="w-full h-48 mb-4 overflow-hidden rounded-md">
+            <img id="img-product-list" [src]="product.image_film" alt="Uploaded Image"
+              class="w-full h-full object-cover" />
+          </div>
+          <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ product.title }}</h2>
+          <p class="text-sm text-gray-600 mb-1">🎫 Giới hạn tuổi: {{ product.age_limit }}</p>
+          <p class="text-sm text-gray-500">🎭 Diễn viên: {{ product.cast }}</p>
+        </div>
+        }
       </div>
-      <!-- <div class="card flex justify-content-center">
-        <p-paginator [first]="first" [rows]="pageSize" [totalRecords]="totalRecords" [rowsPerPageOptions]="[10, 15, 20]"
-          (onPageChange)="onPageChange($event)">
-        </p-paginator>
-      </div> -->
+
+      <!-- Không có phim -->
+      <div *ngIf="!danhSachPhim.length" class="text-center mt-10 text-gray-500 text-lg">
+        <p>Không có phim phù hợp.</p>
+      </div>
     </div>
   </section>
 </div>

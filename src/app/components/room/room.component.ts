@@ -165,7 +165,7 @@ export class RoomComponent implements OnInit {
     this.ticketService.createTicket(ticket).subscribe({
       next: (res) => {
         //tạo link 
-        this.vnPaymentService.createVNPayUrl(res.total_amount, res.ticket_id, "thanh toán cho vé " + res.id)
+        this.vnPaymentService.createVNPayUrl(res.id, res.total_amount)
           .subscribe({
             next: (response: any) => {  // Kiểu trả về là raw response
               if (response && response.success) {
@@ -223,22 +223,7 @@ export class RoomComponent implements OnInit {
     });
   }
 
-  // Phương thức gọi dịch vụ để tạo URL VNPay
-  createVNPayUrl(amount: number, orderId: string, orderInfo: string): void {
-    this.vnPaymentService.createVNPayUrl(amount, orderId, orderInfo)
-      .subscribe({
-        next: (response: any) => {  // Kiểu trả về là raw response
-          if (response && response.success) {
-            this.paymentUrl = response.paymentUrl || '';  // Lấy URL thanh toán
-          } else {
-            this.errorMessage = 'Có lỗi xảy ra trong quá trình tạo liên kết thanh toán.';
-          }
-        },
-        error: (err) => {
-          this.errorMessage = err.message || 'Lỗi không xác định';
-        }
-      });
-  }
+
 
 
   // Hàm tính tổng tiền của vé

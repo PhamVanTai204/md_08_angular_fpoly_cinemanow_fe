@@ -9,12 +9,27 @@ import { IVNPaymentResponseDto, VNPaymentResponseDto } from "../dtos/VNPaymentRe
 })
 export class VNPaymentService {
     private createLinkVNpayUrl = 'http://127.0.0.1:3000/vnpay/createvnpayurl';
+    private verifyPaymentUrl = 'http://127.0.0.1:3000/vnpay/verifypayment'; // API verify
 
     constructor(private http: HttpClient) { }
-
+    // Phương thức verify Payment từ VNPay return URL
+    verifyPayment(queryParams: any): Observable<VNPaymentResponseDto | null> {
+        return this.http.get(this.verifyPaymentUrl, { params: queryParams })
+            .pipe(
+                map((response: any) => {
+                    if (response && response.success) {
+                        return new VNPaymentResponseDto(response as IVNPaymentResponseDto);  // Map về DTO mới
+                    } else {
+                        console.error('Verify payment failed');
+                        return null;
+                    }
+                }),
+                catchError(this.handleError)  // Xử lý lỗi nếu có
+            );
+    }
     // Phương thức tạo URL VNPay và trả về VNPaymentResponseDto
-    createVNPayUrl(amount: number, orderId: string, orderInfo: string): Observable<VNPaymentResponseDto | null> {
-        const paymentData = new VNPaymentDto({ amount, orderId, orderInfo });
+    createVNPayUrl(ticket_id: string, amount: number): Observable<VNPaymentResponseDto | null> {
+        const paymentData = new VNPaymentDto({ ticket_id, amount });
         return this.http.post(this.createLinkVNpayUrl, paymentData)
             .pipe(
                 map((response: any) => {  // Type the response here
