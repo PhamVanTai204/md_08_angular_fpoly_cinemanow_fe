@@ -23,7 +23,7 @@ interface MenuItem {
 export class LayoutComponent implements OnInit, OnDestroy {
   currentUser: any;
   currentRoute: string = '';
-  private subscriptions: Subscription[] = [];
+   private subscriptions: Subscription[] = [];
   
   // Danh sách menu được nhóm theo danh mục
   contentMenuItems: MenuItem[] = [
@@ -51,6 +51,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     { path: 'combo', title: 'Combo', icon: 'fastfood', roles: [2] }
   ];
   
+ 
   constructor(
     private userService: UserService,
     private permissionService: PermissionService,
@@ -61,7 +62,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     // Retrieve logged-in user information
     this.currentUser = this.userService.getCurrentUser();
     console.log('Current user:', this.currentUser);
-    
+
     // Redirect to login if no user is found
     if (!this.currentUser) {
       this.router.navigate(['/login']);
@@ -75,7 +76,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
         const url = event.urlAfterRedirects;
         this.currentRoute = url.split('/').pop();
       });
-    
+     
     this.subscriptions.push(routeSub);
     
     // Find first accessible menu item for this user
@@ -92,6 +93,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     const userRole = this.currentUser?.role;
     if (!userRole) return false;
     return item.roles.includes(userRole);
+ 
   }
 
   // Check if any items in a menu group are viewable
@@ -138,7 +140,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   // Get role label based on user role number
   getUserRoleLabel(): string {
     if (!this.currentUser) return '';
-    
+
     switch (this.currentUser.role) {
       case 1:
         return 'Người dùng';

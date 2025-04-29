@@ -37,6 +37,7 @@ export class TicketService {
                 // Ánh xạ dữ liệu trả về từ API vào TicketDto
                 return new TicketDto({
                     ...res.data,  // Giả sử 'data' chứa thông tin vé
+                    id: res.data._id,
                     user_id: res.data.user_id,
                     showtime_id: res.data.showtime_id,
                     ticket_id: res.data.ticket_id

@@ -7,32 +7,21 @@ import { Observable, catchError, map, throwError } from 'rxjs';
 export interface PaymentDto {
     _id: string;
     payment_id: string;
-    ticket_id: {
+    ticket_id: string;
+    payment_method: number;
+    status_order: string;
+    vnp_TransactionNo: string | null;
+    vnp_ResponseCode: string | null;
+    vnp_BankCode: string | null;
+    vnp_PayDate: string | null;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+    ticket: {
         _id: string;
         ticket_id: string;
-        user_id: {
-            _id: string;
-            user_name: string;
-            email: string;
-            // ... other user fields
-        };
-        showtime_id: {
-            _id: string;
-            showtime_id: string;
-            movie_id: {
-                _id: string;
-                title: string;
-                image_film: string;
-                // ... other movie fields
-            };
-            room_id: {
-                _id: string;
-                cinema_id: string;
-                room_name: string;
-                // ... other movie fields
-            };
-            // ... other showtime fields
-        };
+        user_id: string;
+        showtime_id: string;
         seats: Array<{
             seat_id: string;
             price: number;
@@ -44,20 +33,28 @@ export interface PaymentDto {
             price: number;
             _id: string;
         }>;
+        voucher_id: string | null;
         total_amount: number;
         status: string;
+        createdAt: string;
+        updatedAt: string;
+        __v: number;
+        user: {
+            _id: string;
+            user_name: string;
+            email: string;
+            password: string;
+            url_image: string;
+            role: number;
+            createdAt: string;
+            updatedAt: string;
+            __v: number;
+            date_of_birth: string;
+            full_name: string;
+            gender: number;
+            phone_number: number;
+        };
     };
-    payment_method_id: {
-        _id: string;
-        payment_method_id: string;
-        method_name: string;
-    } | null;
-    payment_status_id: {
-        _id: string;
-        name: string;
-    } | null;
-    payment_time: string;
-    status_order: string;
 }
 
 export interface PaymentApiResponseDto {
@@ -67,12 +64,12 @@ export interface PaymentApiResponseDto {
     currentPage: number;
     pageSize: number;
 }
+
 export interface ApiResponse<T> {
     code: number;
     error: string | null;
     data: T;
 }
-
 
 @Injectable({
     providedIn: 'root'
@@ -82,12 +79,10 @@ export class PaymentService {
 
     constructor(private http: HttpClient) { }
 
-    getAllPayments(page: number = 1, limit: number = 10): Observable<PaymentApiResponseDto> {
-        let params = new HttpParams()
-            .set('page', page.toString())
-            .set('limit', limit.toString());
+    getAllPayments(page: number = 1, limit: number = 10, search: string = ''): Observable<PaymentApiResponseDto> {
 
-        return this.http.get<ApiResponse<PaymentApiResponseDto>>(`${this.baseUrl}/get-all`, { params })
+
+        return this.http.get<ApiResponse<PaymentApiResponseDto>>(`${this.baseUrl}/get-all?search=${search}&page=${page}&limit=${limit}`)
             .pipe(
                 map(response => response.data),
                 catchError(this.handleError)

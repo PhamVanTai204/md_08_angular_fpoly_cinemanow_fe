@@ -12,8 +12,10 @@
         <!-- User Profile Section -->
         <div class="flex items-center space-x-2 text-white">
           <div class="bg-white rounded-full h-8 w-8 flex items-center justify-center overflow-hidden">
+ 
             <img [src]="currentUser?.url_image" alt="Avatar"
               class="h-full w-full object-cover"
+ 
               onerror="this.src='https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc'" />
           </div>
           <div class="flex flex-col">
@@ -21,7 +23,7 @@
             <span class="text-xs opacity-80">{{ getUserRoleLabel() }}</span>
           </div>
         </div>
-        
+ 
         <!-- Logout Button -->
         <button (click)="logout()"
           class="px-5 py-2 bg-white text-blue-600 rounded-md hover:bg-gray-100 transition font-medium shadow-sm flex items-center">
@@ -90,6 +92,7 @@
             </li>
           </ul>
         </ng-container>
+
       </div>
     </div>
 
