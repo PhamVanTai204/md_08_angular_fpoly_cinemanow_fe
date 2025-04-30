@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { catchError, Observable, throwError, map } from "rxjs";
+import { catchError, Observable, throwError, map, of } from "rxjs";
 import { RoomDto } from "../dtos/roomDto.dto";
 
 @Injectable({
@@ -8,7 +8,7 @@ import { RoomDto } from "../dtos/roomDto.dto";
 })
 export class RoomService {
   private apiUrlGetAll = 'http://127.0.0.1:3000/room/getroom';
-  private apiUrlGetByCinema = 'http://127.0.0.1:3000/room/getroombyCinema/';
+  private apiUrlGetByCinema = 'http://127.0.0.1:3000/room/getroomById/';
   private apiUrlCreate = 'http://127.0.0.1:3000/room/addRoom';
   private apiUrlGetById = 'http://127.0.0.1:3000/room/getRoomById/';
   private apiUrlEdit = 'http://127.0.0.1:3000/room/editRoom/';
@@ -22,7 +22,10 @@ export class RoomService {
   getAll(): Observable<RoomDto[]> {
     return this.http.get<any>(this.apiUrlGetAll).pipe(
       map(response => {
-        if (response && response.code === 200 && Array.isArray(response.data)) {
+        if (response && response.code === 200 && response.data && response.data.rooms) {
+          // Make sure we're accessing the correct property in the response
+          return response.data.rooms.map((item: any) => RoomDto.fromJS(item));
+        } else if (response && response.code === 200 && Array.isArray(response.data)) {
           return response.data.map((item: any) => RoomDto.fromJS(item));
         }
         throw new Error('Lỗi khi lấy danh sách phòng: dữ liệu không hợp lệ');
@@ -33,16 +36,18 @@ export class RoomService {
 
   /**
    * Lấy phòng theo ID rạp
+   * 
+   * Lưu ý: API endpoint này có thể yêu cầu truyền tham số khác không phải ID rạp.
+   * Nếu gặp vấn đề, cần xác nhận API hoạt động đúng cách.
    */
   getByCinemaId(cinemaId: string): Observable<RoomDto[]> {
-    return this.http.get<any>(`${this.apiUrlGetByCinema}${cinemaId}`).pipe(
-      map(response => {
-        if (response && response.code === 200 && Array.isArray(response.data)) {
-          return response.data.map((item: any) => RoomDto.fromJS(item));
-        }
-        throw new Error('Lỗi khi lấy danh sách phòng theo rạp: dữ liệu không hợp lệ');
-      }),
-      catchError(this.handleError)
+    // Alternative approach: Use proper endpoint for filtering by cinema
+    return this.getAll().pipe(
+      map(rooms => rooms.filter(room => room.cinema_id === cinemaId)),
+      catchError(error => {
+        console.error('Error filtering rooms by cinema:', error);
+        return of([]);
+      })
     );
   }
 

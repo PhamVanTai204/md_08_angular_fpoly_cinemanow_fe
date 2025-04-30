@@ -30,18 +30,18 @@ export class LichChieuComponent implements OnInit {
   rapList: CinemaDto[] = [];
   allMovies: Movie[] = [];
   roomLisst: RoomDto[] = [];
-  
+
   // Quản lý modal Thêm/Sửa
   isMainModalOpen: boolean = false;
   isEditing: boolean = false;
   showtimeForm: ShowtimesDto = new ShowtimesDto();
-  
+
   // Quản lý modal Xoá
   isDeleteModalOpen: boolean = false;
   showtimeDangXoa: ShowtimesDto | null = null;
   deletePassword: string = '';
   deleteError: string = '';
-  
+
   // Validation
   validationErrors: ValidationErrors = {};
   formSubmitted: boolean = false;
@@ -70,12 +70,12 @@ export class LichChieuComponent implements OnInit {
   // Format date từ ISO string hoặc date object sang ngày tháng năm
   formatDate(dateString: string): string {
     if (!dateString) return '';
-    
+
     // Kiểm tra nếu dateString đã ở dạng dd/MM/yyyy
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
       return dateString;
     }
-    
+
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
@@ -94,12 +94,12 @@ export class LichChieuComponent implements OnInit {
     const selectedCinemaId: string = selectElement.value;
     // Cập nhật cinemaId vào body của showtime
     this.showtimeForm['cinemaId'] = selectedCinemaId;
-    
+
     // Xóa thông báo lỗi khi người dùng chọn lại
     if (selectedCinemaId) {
       delete this.validationErrors['cinemaId'];
     }
-    
+
     if (selectedCinemaId) {
       this.getRoom(selectedCinemaId);
     } else {
@@ -148,22 +148,37 @@ export class LichChieuComponent implements OnInit {
     });
   }
 
+  // In your getRoom method in lich-chieu.component.ts:
   getRoom(id?: string): void {
     this.roomErrorMessage = '';
-    this.roomService.getByCinemaId(id!).subscribe({
-      next: (result: RoomDto[]) => {
-        this.roomLisst = result;
-        if (result.length === 0) {
+    if (!id) {
+      this.roomLisst = [];
+      this.roomErrorMessage = 'ID rạp không hợp lệ';
+      return;
+    }
+    
+    // First, try to get all rooms and filter by cinema ID
+    this.roomService.getAll().subscribe({
+      next: (allRooms: RoomDto[]) => {
+        // Filter rooms by the cinema ID
+        this.roomLisst = allRooms.filter(room => room.cinema_id === id);
+        
+        if (this.roomLisst.length === 0) {
           this.roomErrorMessage = 'Không tìm thấy phòng nào thuộc rạp này.';
         }
       },
       error: (error: any) => {
         console.error('Lỗi khi lấy danh sách phòng:', error);
         this.roomLisst = [];
-        if (error.status === 404 && error.error?.error) {
-          this.roomErrorMessage = error.error.error;
+        
+        if (error.status === 404) {
+          this.roomErrorMessage = 'Không thể tải danh sách phòng. API không tìm thấy.';
+        } else if (error.status === 500) {
+          this.roomErrorMessage = 'Lỗi máy chủ khi tải danh sách phòng.';
+        } else if (error.error && error.error.message) {
+          this.roomErrorMessage = error.error.message;
         } else {
-          this.roomErrorMessage = 'Đã xảy ra lỗi khi tải danh sách phòng.';
+          this.roomErrorMessage = 'Đã xảy ra lỗi khi tải danh sách phòng. Vui lòng thử lại sau.';
         }
       }
     });
@@ -206,7 +221,7 @@ export class LichChieuComponent implements OnInit {
 
   onStartTimeInput(time: string): void {
     const numbersOnly: string = time.replace(/[^0-9]/g, '');
-    
+
     // Format time as HH:MM
     if (numbersOnly.length >= 1 && numbersOnly.length <= 4) {
       if (numbersOnly.length <= 2) {
@@ -225,17 +240,17 @@ export class LichChieuComponent implements OnInit {
         this.showtimeForm['startTime'] = hours + ':' + minutes;
       }
     }
-    
+
     // Clear validation error when user modifies input
     delete this.validationErrors['startTime'];
-    
+
     // Validate end time is after start time if both times are set
     this.validateTimeRange();
   }
 
   onEndTimeInput(time: string): void {
     const numbersOnly: string = time.replace(/[^0-9]/g, '');
-    
+
     // Format time as HH:MM
     if (numbersOnly.length >= 1 && numbersOnly.length <= 4) {
       if (numbersOnly.length <= 2) {
@@ -254,64 +269,64 @@ export class LichChieuComponent implements OnInit {
         this.showtimeForm['endTime'] = hours + ':' + minutes;
       }
     }
-    
+
     // Clear validation error when user modifies input
     delete this.validationErrors['endTime'];
-    
+
     // Validate end time is after start time if both times are set
     this.validateTimeRange();
   }
-  
+
   // Validate that end time is after start time
   validateTimeRange(): void {
     if (this.showtimeForm['startTime'] && this.showtimeForm['endTime']) {
       const startParts = this.showtimeForm['startTime'].split(':');
       const endParts = this.showtimeForm['endTime'].split(':');
-      
+
       if (startParts.length === 2 && endParts.length === 2) {
         const startHour = parseInt(startParts[0]);
         const startMinute = parseInt(startParts[1]);
         const endHour = parseInt(endParts[0]);
         const endMinute = parseInt(endParts[1]);
-        
+
         const startMinutes = startHour * 60 + startMinute;
         const endMinutes = endHour * 60 + endMinute;
-        
+
         if (endMinutes <= startMinutes) {
           this.validationErrors['endTime'] = 'Thời gian kết thúc phải sau thời gian bắt đầu';
         }
       }
     }
   }
-  
+
   openAddModal(): void {
     this.resetValidation();
     this.isEditing = false;
     this.isMainModalOpen = true;
-    
+
     // Generate default values for new showtime
     const currentDate: Date = new Date();
     const formattedDate: string = currentDate.toISOString().slice(0, 10); // yyyy-MM-dd
     const randomId: string = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    
+
     // Set default times (current time rounded to next 15 minutes)
     const currentHour: number = currentDate.getHours();
     const roundedMinutes: number = Math.ceil(currentDate.getMinutes() / 15) * 15;
     let defaultStartTime: string = '';
-    
+
     if (roundedMinutes === 60) {
       defaultStartTime = `${(currentHour + 1) % 24}:00`;
     } else {
       defaultStartTime = `${currentHour}:${roundedMinutes.toString().padStart(2, '0')}`;
     }
-    
+
     // Calculate default end time (2 hours later)
     const startTimeParts: string[] = defaultStartTime.split(':');
     const startHour: number = parseInt(startTimeParts[0]);
     const startMinute: number = parseInt(startTimeParts[1]);
     const endHour: number = (startHour + 2) % 24;
     const defaultEndTime: string = `${endHour}:${startMinute.toString().padStart(2, '0')}`;
-    
+
     // Initialize form with defaults
     this.showtimeForm = new ShowtimesDto({
       showtimeId: 'ST' + randomId,
@@ -328,10 +343,10 @@ export class LichChieuComponent implements OnInit {
     this.resetValidation();
     this.isEditing = true;
     this.isMainModalOpen = true;
-    
+
     // Clone the showtime object to avoid modifying the original
     this.showtimeForm = showtime.clone();
-    
+
     // Convert showDate to yyyy-MM-dd for date input if needed
     if (this.showtimeForm['showDate']) {
       try {
@@ -343,12 +358,12 @@ export class LichChieuComponent implements OnInit {
         console.error('Error converting date:', error);
       }
     }
-    
+
     // Load rooms for the selected cinema
     if (this.showtimeForm['cinemaId']) {
       this.getRoom(this.showtimeForm['cinemaId']);
     }
-    
+
     console.log('Editing showtime:', this.showtimeForm);
   }
 
@@ -356,69 +371,69 @@ export class LichChieuComponent implements OnInit {
     this.isMainModalOpen = false;
     this.resetValidation();
   }
-  
+
   // Reset all validation errors
   resetValidation(): void {
     this.validationErrors = {};
     this.formSubmitted = false;
     this.roomErrorMessage = '';
   }
-  
+
   // Check if there are any validation errors
   hasValidationErrors(): boolean {
     return Object.keys(this.validationErrors).length > 0;
   }
-  
+
   // Validate form fields
   validateForm(): boolean {
     this.validationErrors = {};
-    
+
     if (!this.showtimeForm['showtimeId']) {
       this.validationErrors['showtimeId'] = 'Vui lòng nhập mã suất chiếu';
     }
-    
+
     if (!this.showtimeForm['movieId']) {
       this.validationErrors['movieId'] = 'Vui lòng chọn phim';
     }
-    
+
     if (!this.showtimeForm['roomId']) {
       this.validationErrors['roomId'] = 'Vui lòng chọn phòng';
     }
-    
+
     if (!this.showtimeForm['cinemaId']) {
       this.validationErrors['cinemaId'] = 'Vui lòng chọn rạp';
     }
-    
+
     if (!this.showtimeForm['startTime']) {
       this.validationErrors['startTime'] = 'Vui lòng nhập thời gian bắt đầu';
     } else if (!/^\d{1,2}:\d{2}$/.test(this.showtimeForm['startTime'])) {
       this.validationErrors['startTime'] = 'Thời gian không hợp lệ, vui lòng nhập định dạng HH:MM';
     }
-    
+
     if (!this.showtimeForm['endTime']) {
       this.validationErrors['endTime'] = 'Vui lòng nhập thời gian kết thúc';
     } else if (!/^\d{1,2}:\d{2}$/.test(this.showtimeForm['endTime'])) {
       this.validationErrors['endTime'] = 'Thời gian không hợp lệ, vui lòng nhập định dạng HH:MM';
     }
-    
+
     if (!this.showtimeForm['showDate']) {
       this.validationErrors['showDate'] = 'Vui lòng chọn ngày chiếu';
     }
-    
+
     // Check if start time is before end time
     this.validateTimeRange();
-    
+
     return Object.keys(this.validationErrors).length === 0;
   }
-  
+
   saveSchedule(): void {
     this.formSubmitted = true;
-    
+
     // Validate form before submitting
     if (!this.validateForm()) {
       return;
     }
-    
+
     // Format time inputs if needed
     if (/^\d{4}$/.test(this.showtimeForm['startTime'])) {
       this.onStartTimeInput(this.showtimeForm['startTime']);
@@ -426,10 +441,10 @@ export class LichChieuComponent implements OnInit {
     if (/^\d{4}$/.test(this.showtimeForm['endTime'])) {
       this.onEndTimeInput(this.showtimeForm['endTime']);
     }
-    
+
     // Create a copy of the form data
     const showtimeData = this.showtimeForm.clone();
-    
+
     // Format showDate for API - convert from yyyy-MM-dd to dd/MM/yyyy
     try {
       const date = new Date(this.showtimeForm['showDate']);
@@ -442,9 +457,9 @@ export class LichChieuComponent implements OnInit {
     } catch (error) {
       console.error('Error formatting date:', error);
     }
-    
+
     console.log('Dữ liệu gửi đi:', showtimeData.toJSON());
-    
+
     if (this.isEditing) {
       if (!showtimeData['id']) {
         alert('Không tìm thấy ID!');
@@ -502,7 +517,7 @@ export class LichChieuComponent implements OnInit {
     // In a production environment, you should implement a more secure authentication method
     // This is just a simple example for demonstration
     const secretPassword = 'hiendz'; // In a real app, this should be handled securely
-    
+
     if (this.deletePassword === secretPassword) {
       if (!this.showtimeDangXoa?.['id']) {
         alert('Không tìm thấy ID để xoá!');
