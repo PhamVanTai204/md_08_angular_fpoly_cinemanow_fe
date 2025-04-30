@@ -2,66 +2,69 @@
 
 /* Đảm bảo chiều cao cố định cho bảng */
 table {
-    table-layout: fixed;
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-  
-  /* Tạo chiều cao cố định cho mỗi hàng trong bảng */
-  tbody tr {
-    height: 56px; /* Chiều cao cố định cho mỗi dòng */
-  }
-  
-  /* Đảm bảo hàng trống cũng có chiều cao giống với hàng có dữ liệu */
-  .empty-row {
-    height: 56px;
-    background-color: white;
-  }
-  
-  /* Ẩn thanh cuộn */
-  ::-webkit-scrollbar {
-    display: none;
-  }
-  
-  * {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-  
-  /* Cố định chiều cao của nút phân trang */
-  .pagination-controls button,
-  .pagination-controls span {
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-  }
-  
-  /* Hiệu ứng hover cho các hàng trong bảng */
-  tbody tr:not(.empty-row):hover {
-    background-color: #f9fafb;
-  }
-  
-  /* Tùy chỉnh biểu tượng */
-  button svg {
-    display: inline-block;
-    vertical-align: middle;
-  }
-  
-  /* Đảm bảo tất cả cột có chiều rộng tương đối nhất quán */
-  th:first-child, 
-  td:first-child {
-    width: 10%;
-  }
-  
-  th:last-child, 
-  td:last-child {
-    width: 20%;
-  }
-  
-  th:nth-child(2), 
-  td:nth-child(2) {
-    width: 70%;
-  }
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Tạo chiều cao cố định cho mỗi hàng trong bảng */
+tbody tr {
+  height: 56px;
+  /* Chiều cao cố định cho mỗi dòng */
+}
+
+/* Đảm bảo hàng trống cũng có chiều cao giống với hàng có dữ liệu */
+.empty-row {
+  height: 56px;
+  background-color: white;
+}
+
+/* Ẩn thanh cuộn */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+/* Cố định chiều cao của nút phân trang */
+.pagination-controls button,
+.pagination-controls span {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+}
+
+/* Hiệu ứng hover cho các hàng trong bảng */
+tbody tr:not(.empty-row):hover {
+  background-color: #f9fafb;
+}
+
+/* Tùy chỉnh biểu tượng */
+button svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Đảm bảo tất cả cột có chiều rộng tương đối nhất quán */
+th:first-child,
+td:first-child {
+  width: 10%;
+}
+
+th:last-child,
+td:last-child {
+  width: 20%;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  width: 70%;
+}

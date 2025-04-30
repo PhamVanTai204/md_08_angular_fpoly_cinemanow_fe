@@ -13,23 +13,28 @@ export class TheLoaiPhimComponent implements OnInit {
   showDialog = false;
   showEditDialog = false;
   showDeleteConfirm = false;
-  
+
   // Form fields
   genreName = '';
   formSubmitted = false;
-  
+
+  // Validation errors
+  validationErrors = {
+    genreName: ''
+  };
+
   // Data management
   genres: GenresDto[] = [];
   filteredGenres: GenresDto[] = [];
   editIndex: number | null = null;
   deleteIndex: number | null = null;
-  
+
   // Search functionality
   searchTerm = '';
-  
+
   // Loading state
   loading = false;
-  
+
   // Pagination - cố định 10 hàng mỗi trang
   page = 1;
   pageSize = 9; // Luôn hiển thị 10 hàng
@@ -69,15 +74,15 @@ export class TheLoaiPhimComponent implements OnInit {
       this.filteredGenres = [...this.genres];
     } else {
       const term = this.searchTerm.toLowerCase();
-      this.filteredGenres = this.genres.filter(genre => 
+      this.filteredGenres = this.genres.filter(genre =>
         genre.genreName?.toLowerCase().includes(term)
       );
     }
     this.calculateTotalPages();
     // Reset to first page when filter changes
-    this.page = 1; 
+    this.page = 1;
   }
-  
+
   /**
    * Calculate total pages for pagination
    */
@@ -85,7 +90,7 @@ export class TheLoaiPhimComponent implements OnInit {
     this.totalPages = Math.ceil(this.filteredGenres.length / this.pageSize);
     if (this.totalPages === 0) this.totalPages = 1;
   }
-  
+
   /**
    * Navigate to previous page
    */
@@ -94,7 +99,7 @@ export class TheLoaiPhimComponent implements OnInit {
       this.page--;
     }
   }
-  
+
   /**
    * Navigate to next page
    */
@@ -103,7 +108,7 @@ export class TheLoaiPhimComponent implements OnInit {
       this.page++;
     }
   }
-  
+
   /**
    * Get items for the current page
    */
@@ -111,7 +116,7 @@ export class TheLoaiPhimComponent implements OnInit {
     const startIndex = (this.page - 1) * this.pageSize;
     return this.filteredGenres.slice(startIndex, startIndex + this.pageSize);
   }
-  
+
   /**
    * Get empty rows to fill up to exactly 10 rows
    */
@@ -120,7 +125,7 @@ export class TheLoaiPhimComponent implements OnInit {
     const emptyRowsCount = this.pageSize - currentItems;
     return Array(emptyRowsCount > 0 ? emptyRowsCount : 0).fill(0);
   }
-  
+
   /**
    * Find the index in the original array based on item in filtered array
    */
@@ -134,6 +139,7 @@ export class TheLoaiPhimComponent implements OnInit {
   openDialog(): void {
     this.genreName = '';
     this.formSubmitted = false;
+    this.resetValidationErrors();
     this.showDialog = true;
   }
 
@@ -148,6 +154,62 @@ export class TheLoaiPhimComponent implements OnInit {
     this.editIndex = null;
     this.deleteIndex = null;
     this.formSubmitted = false;
+    this.resetValidationErrors();
+  }
+
+  /**
+   * Reset all validation errors
+   */
+  resetValidationErrors(): void {
+    this.validationErrors = {
+      genreName: ''
+    };
+  }
+
+  /**
+   * Validate form input fields
+   * @returns boolean indicating if the form is valid
+   */
+  validateForm(): boolean {
+    this.resetValidationErrors();
+    let isValid = true;
+
+    // Validate genre name
+    if (!this.genreName.trim()) {
+      this.validationErrors.genreName = 'Vui lòng nhập tên thể loại';
+      isValid = false;
+    } else if (this.genreName.trim().length < 2) {
+      this.validationErrors.genreName = 'Tên thể loại phải có ít nhất 2 ký tự';
+      isValid = false;
+    } else if (this.genreName.trim().length > 50) {
+      this.validationErrors.genreName = 'Tên thể loại không được vượt quá 50 ký tự';
+      isValid = false;
+    }
+
+    // Kiểm tra tên thể loại đã tồn tại hay chưa (chỉ khi thêm mới)
+    if (isValid && !this.showEditDialog) {
+      const existingGenre = this.genres.find(
+        g => g.genreName.toLowerCase() === this.genreName.trim().toLowerCase()
+      );
+      if (existingGenre) {
+        this.validationErrors.genreName = 'Thể loại này đã tồn tại';
+        isValid = false;
+      }
+    }
+
+    // Kiểm tra trùng tên khi cập nhật (trừ chính bản thân nó)
+    if (isValid && this.showEditDialog && this.editIndex !== null) {
+      const existingGenre = this.genres.find(
+        (g, index) => index !== this.editIndex &&
+          g.genreName.toLowerCase() === this.genreName.trim().toLowerCase()
+      );
+      if (existingGenre) {
+        this.validationErrors.genreName = 'Thể loại này đã tồn tại';
+        isValid = false;
+      }
+    }
+
+    return isValid;
   }
 
   /**
@@ -155,13 +217,13 @@ export class TheLoaiPhimComponent implements OnInit {
    */
   saveGenre(): void {
     this.formSubmitted = true;
-    
-    if (this.genreName.trim()) {
+
+    if (this.validateForm()) {
       this.loading = true;
-      
+
       const newGenre = new GenresDto();
       newGenre.genreName = this.genreName.trim();
-      
+
       this.genresService.createGenre(newGenre).subscribe({
         next: () => {
           this.loadGenres();
@@ -171,6 +233,10 @@ export class TheLoaiPhimComponent implements OnInit {
         error: (error) => {
           console.error('Lỗi khi thêm thể loại:', error);
           this.loading = false;
+          // Hiển thị lỗi từ server nếu có
+          if (error.message) {
+            this.validationErrors.genreName = 'Lỗi: ' + error.message;
+          }
         }
       });
     }
@@ -183,6 +249,7 @@ export class TheLoaiPhimComponent implements OnInit {
     this.editIndex = index;
     this.genreName = this.genres[index].genreName || '';
     this.formSubmitted = false;
+    this.resetValidationErrors();
     this.showEditDialog = true;
   }
 
@@ -191,14 +258,14 @@ export class TheLoaiPhimComponent implements OnInit {
    */
   updateGenre(): void {
     this.formSubmitted = true;
-    
-    if (this.genreName.trim() && this.editIndex !== null) {
+
+    if (this.validateForm() && this.editIndex !== null) {
       this.loading = true;
-      
+
       const updatedGenre = new GenresDto();
       updatedGenre.id = this.genres[this.editIndex].id;
       updatedGenre.genreName = this.genreName.trim();
-      
+
       this.genresService.updateGenre(updatedGenre.id, updatedGenre).subscribe({
         next: () => {
           this.loadGenres();
@@ -208,6 +275,10 @@ export class TheLoaiPhimComponent implements OnInit {
         error: (error) => {
           console.error('Lỗi khi cập nhật thể loại:', error);
           this.loading = false;
+          // Hiển thị lỗi từ server nếu có
+          if (error.message) {
+            this.validationErrors.genreName = 'Lỗi: ' + error.message;
+          }
         }
       });
     }
@@ -220,7 +291,7 @@ export class TheLoaiPhimComponent implements OnInit {
     this.deleteIndex = index;
     this.showDeleteConfirm = true;
   }
-  
+
   /**
    * Cancel delete operation
    */
@@ -235,9 +306,9 @@ export class TheLoaiPhimComponent implements OnInit {
   deleteGenre(): void {
     if (this.deleteIndex !== null) {
       this.loading = true;
-      
+
       const genreToDelete = this.genres[this.deleteIndex];
-      
+
       if (genreToDelete.id) {
         this.genresService.deleteGenre(genreToDelete.id).subscribe({
           next: () => {
