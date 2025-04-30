@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BannersService } from '../../../shared/services/banners.service';
 import { BannersDto } from '../../../shared/dtos/bannersDto.dto';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-banner',
@@ -14,15 +15,34 @@ export class BannerComponent implements OnInit {
   showDeleteDialog: boolean = false;
   showAddDialog: boolean = false;
   bannerToDelete: BannersDto | null = null;
-  newBannerUrl: string = '';
   previewError: string = '';
   errorMessage: string = '';
   isLoading: boolean = false;
+  
+  // Add form group for validation
+  bannerForm!: FormGroup;
+  submitted = false;
 
-  constructor(private bannersService: BannersService) { }
+  constructor(
+    private bannersService: BannersService,
+    private formBuilder: FormBuilder
+  ) { }
 
   ngOnInit() {
+    // Initialize the form with validators
+    this.bannerForm = this.formBuilder.group({
+      imageUrl: ['', [
+        Validators.required,
+        Validators.pattern('^(https?://)[a-zA-Z0-9-_.~%:/=?&#+]+$')
+      ]]
+    });
+    
     this.getBanners();
+  }
+
+  // Helper function to safely access form controls
+  get imageUrl() {
+    return this.bannerForm.get('imageUrl');
   }
 
   // Lấy danh sách banner
@@ -30,50 +50,60 @@ export class BannerComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     
-    this.bannersService.getBanners().subscribe(
-      (data) => {
+    this.bannersService.getBanners().subscribe({
+      next: (data) => {
         this.banners = data;
         this.isLoading = false;
       },
-      (error) => {
+      error: (error) => {
         console.error('Lỗi khi tải banner:', error);
         this.errorMessage = 'Không thể tải danh sách banner. Vui lòng thử lại sau.';
         this.isLoading = false;
       }
-    );
+    });
   }
 
   // Mở dialog thêm banner mới
   addBanner() {
     this.showAddDialog = true;
-    this.newBannerUrl = '';
+    this.submitted = false;
+    this.bannerForm.reset();
     this.previewError = '';
   }
 
   // Đóng dialog thêm banner
   closeAddDialog() {
     this.showAddDialog = false;
-    this.newBannerUrl = '';
+    this.bannerForm.reset();
     this.previewError = '';
+    this.submitted = false;
   }
 
   // Xác nhận thêm banner mới
   confirmAddBanner() {
-    if (this.newBannerUrl && this.newBannerUrl.trim() && !this.previewError) {
+    this.submitted = true;
+
+    // Stop if form is invalid
+    if (this.bannerForm.invalid) {
+      return;
+    }
+
+    const imageUrl = this.bannerForm.get('imageUrl')?.value;
+    if (imageUrl && !this.previewError) {
       this.isLoading = true;
       
-      const newBanner = new BannersDto({ id: '', imageUrl: this.newBannerUrl.trim() });
-      this.bannersService.createBanner(newBanner).subscribe(
-        () => {
+      const newBanner = new BannersDto({ id: '', imageUrl: imageUrl.trim() });
+      this.bannersService.createBanner(newBanner).subscribe({
+        next: () => {
           this.getBanners();
           this.closeAddDialog();
         },
-        (error) => {
+        error: (error) => {
           console.error('Lỗi khi thêm banner:', error);
           this.errorMessage = 'Không thể thêm banner mới. Vui lòng thử lại sau.';
           this.isLoading = false;
         }
-      );
+      });
     }
   }
 
@@ -81,7 +111,7 @@ export class BannerComponent implements OnInit {
   startPress(banner: BannersDto) {
     this.pressTimer = setTimeout(() => {
       this.openDeleteDialog(banner);
-    }, 3000);
+    }, 1500);
   }
 
   // Hủy bỏ tính thời gian bấm giữ
@@ -104,18 +134,18 @@ export class BannerComponent implements OnInit {
     if (this.bannerToDelete) {
       this.isLoading = true;
       
-      this.bannersService.deleteBanner(this.bannerToDelete.id).subscribe(
-        () => {
+      this.bannersService.deleteBanner(this.bannerToDelete.id).subscribe({
+        next: () => {
           this.getBanners();
           this.closeDeleteDialog();
         },
-        (error) => {
+        error: (error) => {
           console.error('Lỗi khi xóa banner:', error);
           this.errorMessage = 'Không thể xóa banner. Vui lòng thử lại sau.';
           this.isLoading = false;
           this.closeDeleteDialog();
         }
-      );
+      });
     }
   }
 
@@ -134,5 +164,17 @@ export class BannerComponent implements OnInit {
   onPreviewError(event: any) {
     this.previewError = 'Không thể tải hình ảnh này. Vui lòng kiểm tra lại URL.';
     event.target.src = 'assets/images/image-placeholder.png'; // Đặt hình ảnh mặc định
+  }
+
+  // Preview the image when URL changes
+  updateImagePreview() {
+    // Clear previous error when URL changes
+    this.previewError = '';
+  }
+
+  // Helper for checking if a form control has a specific error
+  hasError(controlName: string, errorName: string): boolean {
+    const control = this.bannerForm.get(controlName);
+    return !!(control && this.submitted && control.hasError(errorName));
   }
 }
