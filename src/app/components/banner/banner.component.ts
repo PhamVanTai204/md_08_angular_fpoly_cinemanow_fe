@@ -18,6 +18,7 @@ export class BannerComponent implements OnInit {
   previewError: string = '';
   errorMessage: string = '';
   isLoading: boolean = false;
+  // Không sử dụng đường dẫn ảnh nữa để tránh lỗi 404
   
   // Add form group for validation
   bannerForm!: FormGroup;
@@ -155,15 +156,54 @@ export class BannerComponent implements OnInit {
     this.bannerToDelete = null;
   }
 
-  // Xử lý lỗi khi tải hình ảnh
+  // Xử lý lỗi khi tải hình ảnh - phiên bản cải tiến
   onImageError(event: any) {
-    event.target.src = 'assets/images/image-placeholder.png'; // Đặt hình ảnh mặc định
+    // Ngăn chặn sự kiện error lặp lại bằng cách xóa sự kiện error
+    event.target.onerror = null;
+    // Thay vì tải ảnh placeholder, chỉ hiển thị div với nội dung "Lỗi hình ảnh"
+    const imgElement = event.target;
+    const parent = imgElement.parentNode;
+    
+    // Kiểm tra xem đã có div thông báo lỗi chưa để tránh tạo nhiều lần
+    if (!parent.querySelector('.image-error-message')) {
+      // Thêm lớp CSS để chỉ ra đây là container chứa ảnh lỗi
+      parent.classList.add('image-error-container');
+      
+      // Ẩn hình ảnh bị lỗi
+      imgElement.style.display = 'none';
+      
+      // Tạo phần tử div hiển thị thông báo lỗi
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'image-error-message';
+      errorDiv.innerHTML = '<span class="material-icons">broken_image</span><p>Lỗi hình ảnh</p>';
+      
+      // Thêm div thông báo lỗi vào DOM
+      parent.appendChild(errorDiv);
+    }
   }
 
   // Xử lý lỗi khi xem trước
   onPreviewError(event: any) {
     this.previewError = 'Không thể tải hình ảnh này. Vui lòng kiểm tra lại URL.';
-    event.target.src = 'assets/images/image-placeholder.png'; // Đặt hình ảnh mặc định
+    // Ngăn chặn sự kiện error lặp lại
+    event.target.onerror = null;
+    
+    // Ẩn hình ảnh lỗi, không cố gắng tải ảnh placeholder
+    event.target.style.display = 'none';
+    
+    // Tạo và hiển thị div thông báo lỗi nếu chưa có
+    const imgElement = event.target;
+    const parent = imgElement.parentNode;
+    
+    if (!parent.querySelector('.preview-error-message')) {
+      // Tạo phần tử div hiển thị thông báo lỗi trong preview
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'preview-error-message';
+      errorDiv.innerHTML = '<span class="material-icons">broken_image</span>';
+      
+      // Thêm div thông báo lỗi vào DOM
+      parent.appendChild(errorDiv);
+    }
   }
 
   // Preview the image when URL changes
