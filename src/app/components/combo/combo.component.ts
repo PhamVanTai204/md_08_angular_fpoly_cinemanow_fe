@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ComboService } from '../../../shared/services/combo.service';
 import { UserService } from '../../../shared/services/user.service';
 import { Subscription } from 'rxjs';
-import { finalize } from 'rxjs/operators';
 import { ComboDto } from '../../../shared/dtos/ComboDto.dto';
 
 @Component({
@@ -38,17 +37,32 @@ export class ComboComponent implements OnInit, OnDestroy {
   editId = '';
   comboToDelete = { id: '', name: '' };
 
-  // Pagination variables
-  pageSize = 10; // 10 items per page
-  currentPage = 1; // Current page
-  totalItems = 0; // Total number of items
-  totalPages = 0; // Total number of pages
-  pagesToShow: number[] = []; // Pages to show in pagination control
+  // Validation objects
+  formErrors = {
+    combo_id: '',
+    name_combo: '',
+    price_combo: '',
+    description_combo: '',
+    image_combo: ''
+  };
 
-  // Make Math available in the template
+  touchedFields = {
+    combo_id: false,
+    name_combo: false,
+    price_combo: false,
+    description_combo: false,
+    image_combo: false
+  };
+
+  // Pagination variables
+  pageSize = 10;
+  currentPage = 1;
+  totalItems = 0;
+  totalPages = 0;
+  pagesToShow: number[] = [];
   Math = Math;
 
-  // Subscription management to prevent memory leaks
+  // Subscription management
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -57,32 +71,124 @@ export class ComboComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Get current user ID
     this.currentUserId = this.userService.getCurrentUserId();
-
-    // Check user roles
+    
     const currentUser = this.userService.getCurrentUser();
     if (currentUser) {
       this.isAdminView = currentUser.role === 2;
       this.isStaffView = currentUser.role === 3;
     }
 
-    // Verify login
     if (!this.userService.isLoggedIn()) {
       this.errorMessage = "Vui lòng đăng nhập để tiếp tục.";
       return;
     }
 
-    // Load combo list
     this.loadAllCombos();
   }
 
   ngOnDestroy(): void {
-    // Clean up subscriptions to prevent memory leaks
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  // Check if combos is a valid array with items
+  // Reset validation state
+  resetValidationState(): void {
+    this.errorMessage = '';
+    
+    Object.keys(this.formErrors).forEach(key => {
+      this.formErrors[key as keyof typeof this.formErrors] = '';
+    });
+    
+    Object.keys(this.touchedFields).forEach(key => {
+      this.touchedFields[key as keyof typeof this.touchedFields] = false;
+    });
+  }
+
+  // Mark field as touched and validate it
+  markFieldAsTouched(fieldName: keyof typeof this.touchedFields): void {
+    this.touchedFields[fieldName] = true;
+    this.validateField(fieldName);
+  }
+
+  // Validate a single field
+  validateField(fieldName: keyof typeof this.formErrors): void {
+    this.formErrors[fieldName] = '';
+    
+    switch (fieldName) {
+      case 'combo_id':
+        if (!this.newCombo.combo_id?.trim()) {
+          this.formErrors.combo_id = 'Mã combo không được để trống';
+        } else {
+          const idPattern = /^[a-zA-Z0-9_-]+$/;
+          if (!idPattern.test(this.newCombo.combo_id)) {
+            this.formErrors.combo_id = 'Chỉ được chứa chữ cái, số, gạch ngang và gạch dưới';
+          } else if (!this.isEditing) {
+            const existingCombo = this.combos.find(c => c.combo_id === this.newCombo.combo_id);
+            if (existingCombo) {
+              this.formErrors.combo_id = 'Mã combo này đã tồn tại';
+            }
+          }
+        }
+        break;
+        
+      case 'name_combo':
+        if (!this.newCombo.name_combo?.trim()) {
+          this.formErrors.name_combo = 'Tên combo không được để trống';
+        } else if (this.newCombo.name_combo.length < 3) {
+          this.formErrors.name_combo = 'Tên combo phải ít nhất 3 ký tự';
+        }
+        break;
+        
+      case 'price_combo':
+        if (!this.newCombo.price_combo) {
+          this.formErrors.price_combo = 'Giá combo không được để trống';
+        } else if (isNaN(this.newCombo.price_combo) || this.newCombo.price_combo <= 0) {
+          this.formErrors.price_combo = 'Giá phải là số dương';
+        }
+        break;
+        
+      case 'description_combo':
+        if (this.newCombo.description_combo && this.newCombo.description_combo.length > 500) {
+          this.formErrors.description_combo = 'Mô tả không được quá 500 ký tự';
+        }
+        break;
+        
+      case 'image_combo':
+        if (this.newCombo.image_combo) {
+          try {
+            new URL(this.newCombo.image_combo);
+          } catch (e) {
+            this.formErrors.image_combo = 'URL hình ảnh không hợp lệ';
+          }
+        }
+        break;
+    }
+  }
+
+  // Validate all fields at once
+  validateAllFields(): boolean {
+    Object.keys(this.touchedFields).forEach(field => {
+      this.touchedFields[field as keyof typeof this.touchedFields] = true;
+    });
+    
+    this.validateField('combo_id');
+    this.validateField('name_combo');
+    this.validateField('price_combo');
+    this.validateField('description_combo');
+    this.validateField('image_combo');
+    
+    for (const key in this.formErrors) {
+      const error = this.formErrors[key as keyof typeof this.formErrors];
+      if (error !== '') {
+        this.errorMessage = error;
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  // Check if combos array is valid
   isValidCombos(): boolean {
     return Array.isArray(this.combos) && this.combos.length > 0;
   }
@@ -94,7 +200,6 @@ export class ComboComponent implements OnInit, OnDestroy {
 
     const sub = this.comboService.getAllCombos().subscribe({
       next: (response) => {
-        // Ensure response is an array
         if (Array.isArray(response)) {
           this.combos = response;
           this.totalItems = this.combos.length;
@@ -119,7 +224,7 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  // Get current page data
+  // Get paginated combos
   get paginatedCombos(): ComboDto[] {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = Math.min(startIndex + this.pageSize, this.totalItems);
@@ -131,18 +236,16 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.totalPages = Math.ceil(this.totalItems / this.pageSize);
   }
 
-  // Generate array of page numbers to show
+  // Generate pages to show
   generatePagesToShow(): void {
     const maxPagesToShow = 5;
     this.pagesToShow = [];
 
     if (this.totalPages <= maxPagesToShow) {
-      // If we have less pages than max, show all
       for (let i = 1; i <= this.totalPages; i++) {
         this.pagesToShow.push(i);
       }
     } else {
-      // Show a window of pages around the current page
       let startPage = Math.max(this.currentPage - Math.floor(maxPagesToShow / 2), 1);
       let endPage = startPage + maxPagesToShow - 1;
 
@@ -157,7 +260,7 @@ export class ComboComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Go to a specific page
+  // Pagination methods
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages || page === this.currentPage) {
       return;
@@ -166,39 +269,32 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.currentPage = page;
     this.generatePagesToShow();
 
-    // If a combo is selected, deselect it when changing pages
     if (this.selectedCombo) {
       this.selectedCombo = null;
     }
   }
 
-  // Go to previous page
   prevPage(): void {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
-  // Go to next page
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
-  // Check if user can edit a combo (admin or owner)
+  // Permission checks
   canEditCombo(combo: ComboDto): boolean {
-    if (this.isAdminView || this.isStaffView) return true; // Admin and staff can edit any combo
-    
-    // Check if current user is the creator
+    if (this.isAdminView || this.isStaffView) return true;
     if (!combo.user_id) return false;
-    
     return combo.user_id === this.currentUserId;
   }
 
-  // Check if user can delete a combo (admin or owner)
   canDeleteCombo(combo: ComboDto): boolean {
-    return this.canEditCombo(combo); // Same rules as edit
+    return this.canEditCombo(combo);
   }
 
   // Load combo details
@@ -227,25 +323,22 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.selectedCombo = null;
   }
 
-  // Open dialog for add/edit
+  // Open add/edit dialog
   openDialog(combo?: ComboDto): void {
-    // Check if user has permission to edit (admin, staff or owner)
+    this.resetValidationState();
+    
     if (combo && !this.canEditCombo(combo)) {
       this.errorMessage = 'Bạn không có quyền chỉnh sửa combo này.';
       return;
     }
 
     if (combo) {
-      // Edit mode
       this.isEditing = true;
       this.editId = combo.id;
-      this.newCombo = combo.clone(); // Use the clone method
+      this.newCombo = combo.clone();
     } else {
-      // Add mode
       this.resetForm();
       this.isEditing = false;
-
-      // Auto-fill current user ID
       if (this.currentUserId) {
         this.newCombo.user_id = this.currentUserId;
       }
@@ -259,14 +352,12 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.resetForm();
   }
 
-  // Submit form (add or update)
+  // Submit form
   submitForm(): void {
-    // Validate form
-    if (!this.validateForm()) {
+    if (!this.validateAllFields()) {
       return;
     }
 
-    // Ensure user_id is filled
     if (!this.newCombo.user_id && this.currentUserId) {
       this.newCombo.user_id = this.currentUserId;
     }
@@ -276,26 +367,6 @@ export class ComboComponent implements OnInit, OnDestroy {
     } else {
       this.createCombo();
     }
-  }
-
-  // Validate form fields
-  validateForm(): boolean {
-    if (!this.newCombo.combo_id || !this.newCombo.combo_id.trim()) {
-      this.errorMessage = 'Vui lòng nhập Mã combo';
-      return false;
-    }
-
-    if (!this.newCombo.name_combo || !this.newCombo.name_combo.trim()) {
-      this.errorMessage = 'Vui lòng nhập Tên combo';
-      return false;
-    }
-
-    if (!this.newCombo.price_combo || this.newCombo.price_combo <= 0) {
-      this.errorMessage = 'Giá combo phải lớn hơn 0';
-      return false;
-    }
-
-    return true;
   }
 
   // Create new combo
@@ -321,7 +392,6 @@ export class ComboComponent implements OnInit, OnDestroy {
   updateCombo(): void {
     if (!this.editId) return;
 
-    // Check permission again as a safeguard
     const comboToEdit = this.combos.find(combo => combo.id === this.editId);
     if (comboToEdit && !this.canEditCombo(comboToEdit)) {
       this.errorMessage = 'Bạn không có quyền cập nhật combo này.';
@@ -345,9 +415,8 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  // Open delete confirmation dialog
+  // Confirm delete
   confirmDelete(id: string, name: string): void {
-    // Find the combo to check permissions
     const comboToDelete = this.combos.find(combo => combo.id === id);
     
     if (comboToDelete && !this.canDeleteCombo(comboToDelete)) {
@@ -362,7 +431,7 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.showDeleteDialog = true;
   }
 
-  // Cancel delete operation
+  // Cancel delete
   cancelDelete(): void {
     this.showDeleteDialog = false;
     this.comboToDelete = { id: '', name: '' };
@@ -374,7 +443,6 @@ export class ComboComponent implements OnInit, OnDestroy {
 
     const sub = this.comboService.deleteCombo(id).subscribe({
       next: () => {
-        // If deleted combo was selected, deselect it
         if (this.selectedCombo && this.selectedCombo.id === id) {
           this.selectedCombo = null;
         }
@@ -392,7 +460,7 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  // Reset form to defaults
+  // Reset form
   resetForm(): void {
     this.newCombo = new ComboDto({
       combo_id: '',
@@ -405,37 +473,29 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.editId = '';
     this.errorMessage = '';
+    this.resetValidationState();
   }
 
   // Get user name from user_id
   getUserName(userId: any): string {
-    // If userService has a method to get user by ID, use it
-    // This is a placeholder - you should implement actual user lookup
     if (!userId) return 'Không có thông tin';
 
-    // If userId is an object that contains user information
     if (typeof userId === 'object') {
-      // Check for common user object properties
       if (userId.fullName) return userId.fullName;
       if (userId.name) return userId.name;
       if (userId.username) return userId.username;
       if (userId.email) return userId.email;
-      
-      // If there's an _id but no name property, try to return the _id
       if (userId._id) return `ID: ${this.truncateId(userId._id)}`;
     }
 
-    // If userId is just a string ID
     if (typeof userId === 'string') {
-      // Ideally you would call a service to get the user details
-      // userService.getUserById(userId).subscribe(...)
       return `ID: ${this.truncateId(userId)}`;
     }
 
     return 'Không xác định';
   }
 
-  // Truncate long IDs
+  // Truncate ID
   truncateId(id: string): string {
     if (!id) return '';
     return id.length > 8 ? `${id.substring(0, 8)}...` : id;

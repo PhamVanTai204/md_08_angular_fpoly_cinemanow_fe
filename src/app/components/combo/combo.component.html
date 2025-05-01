@@ -1,15 +1,13 @@
 <!-- Main content container -->
 <div class="flex flex-col">
-  <!-- Header with proper permission checks -->
+  <!-- Header with permission checks -->
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-lg font-bold text-gray-800 flex items-center">
       <span class="material-icons text-blue-500 mr-2">fastfood</span>
       {{ isAdminView ? 'Quản Lý Combo' : 'Combo Của Bạn' }}
     </h1>
     
-    <!-- Only show Add button if user is admin, staff or regular user -->
-    <button 
-      (click)="openDialog()" 
+    <button (click)="openDialog()" 
       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
       <span class="material-icons text-sm mr-1">add</span>
       Thêm Combo
@@ -32,7 +30,7 @@
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
   </div>
 
-  <!-- Combo Table with fixed height and scrollable content -->
+  <!-- Combo Table -->
   <div *ngIf="!isLoading" class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden mb-4">
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
@@ -47,16 +45,11 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr *ngFor="let combo of paginatedCombos" class="hover:bg-gray-50 transition-colors duration-150">
-            <!-- Combo Info -->
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
-                  <img 
-                    [src]="combo.image_combo" 
-                    alt="Combo"
-                    class="h-10 w-10 rounded-full object-cover"
-                    onerror="this.src='https://via.placeholder.com/40?text=🍿'" 
-                  />
+                  <img [src]="combo.image_combo" alt="Combo" class="h-10 w-10 rounded-full object-cover"
+                    onerror="this.src='https://via.placeholder.com/40?text=🍿'" />
                 </div>
                 <div class="ml-4">
                   <div class="text-sm font-medium text-gray-900">{{ combo.name_combo }}</div>
@@ -64,47 +57,25 @@
                 </div>
               </div>
             </td>
-            
-            <!-- Price -->
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm font-medium text-blue-600">{{ combo.price_combo | currency:'VND':'':'1.0-0' }}đ</div>
             </td>
-            
-            <!-- Description (truncated) -->
             <td class="px-6 py-4">
               <div class="text-sm text-gray-900 truncate max-w-xs">{{ combo.description_combo }}</div>
             </td>
-            
-            <!-- User who created the combo -->
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm text-gray-900">{{ getUserName(combo.user_id) }}</div>
             </td>
-            
-            <!-- Actions -->
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-              <!-- View Details - Always available -->
-              <button 
-                (click)="loadComboDetails(combo.id)" 
-                class="text-blue-600 hover:text-blue-900 mx-1"
-                title="Chi tiết">
+              <button (click)="loadComboDetails(combo.id)" class="text-blue-600 hover:text-blue-900 mx-1" title="Chi tiết">
                 <span class="material-icons text-sm">visibility</span>
               </button>
-              
-              <!-- Edit - Only for admin, staff or owner -->
-              <button 
-                *ngIf="canEditCombo(combo)"
-                (click)="openDialog(combo)" 
-                class="text-yellow-600 hover:text-yellow-900 mx-1"
-                title="Sửa">
+              <button *ngIf="canEditCombo(combo)" (click)="openDialog(combo)" 
+                class="text-yellow-600 hover:text-yellow-900 mx-1" title="Sửa">
                 <span class="material-icons text-sm">edit</span>
               </button>
-              
-              <!-- Delete - Only for admin, staff or owner -->
-              <button 
-                *ngIf="canDeleteCombo(combo)"
-                (click)="confirmDelete(combo.id, combo.name_combo)" 
-                class="text-red-600 hover:text-red-900 mx-1"
-                title="Xóa">
+              <button *ngIf="canDeleteCombo(combo)" (click)="confirmDelete(combo.id, combo.name_combo)" 
+                class="text-red-600 hover:text-red-900 mx-1" title="Xóa">
                 <span class="material-icons text-sm">delete</span>
               </button>
             </td>
@@ -124,76 +95,52 @@
     </div>
   </div>
 
-  <!-- Pagination controls (Desktop) -->
-  <div *ngIf="isValidCombos() && !isLoading && totalPages > 1" class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden mb-4 hidden sm:block">
+  <!-- Pagination controls (Desktop) - Only show if needed -->
+  <div *ngIf="isValidCombos() && !isLoading && totalPages > 1" 
+    class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden mb-4 hidden sm:block">
     <div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
       <div class="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p class="text-sm text-gray-700">
-            Hiển thị <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> đến <span class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> của <span class="font-medium">{{ totalItems }}</span> combo
+            Hiển thị <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> đến <span
+              class="font-medium">{{ Math.min(currentPage * pageSize, totalItems) }}</span> của <span
+              class="font-medium">{{ totalItems }}</span> combo
           </p>
         </div>
         <div class="mt-3 sm:mt-0">
           <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Phân trang">
-            <!-- First page button -->
-            <button
-              (click)="goToPage(1)"
-              [disabled]="currentPage === 1"
+            <button (click)="goToPage(1)" [disabled]="currentPage === 1"
               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium"
-              [class.text-gray-300]="currentPage === 1"
-              [class.text-gray-700]="currentPage !== 1"
-              [class.hover:bg-gray-50]="currentPage !== 1"
-              [class.cursor-not-allowed]="currentPage === 1">
+              [class.text-gray-300]="currentPage === 1" [class.text-gray-700]="currentPage !== 1"
+              [class.hover:bg-gray-50]="currentPage !== 1" [class.cursor-not-allowed]="currentPage === 1">
               <span class="sr-only">Trang đầu</span>
               <span class="material-icons text-sm">first_page</span>
             </button>
-            
-            <!-- Previous page button -->
-            <button
-              (click)="prevPage()"
-              [disabled]="currentPage === 1"
+            <button (click)="prevPage()" [disabled]="currentPage === 1"
               class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium"
-              [class.text-gray-300]="currentPage === 1"
-              [class.text-gray-700]="currentPage !== 1"
-              [class.hover:bg-gray-50]="currentPage !== 1"
-              [class.cursor-not-allowed]="currentPage === 1">
+              [class.text-gray-300]="currentPage === 1" [class.text-gray-700]="currentPage !== 1"
+              [class.hover:bg-gray-50]="currentPage !== 1" [class.cursor-not-allowed]="currentPage === 1">
               <span class="sr-only">Trang trước</span>
               <span class="material-icons text-sm">chevron_left</span>
             </button>
-            
-            <!-- Page numbers -->
-            <button 
-              *ngFor="let page of pagesToShow" 
-              (click)="goToPage(page)" 
+            <button *ngFor="let page of pagesToShow" (click)="goToPage(page)"
               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium"
-              [class.bg-blue-500]="page === currentPage"
-              [class.text-white]="page === currentPage"
-              [class.bg-white]="page !== currentPage"
-              [class.text-gray-700]="page !== currentPage"
+              [class.bg-blue-500]="page === currentPage" [class.text-white]="page === currentPage"
+              [class.bg-white]="page !== currentPage" [class.text-gray-700]="page !== currentPage"
               [class.hover:bg-gray-50]="page !== currentPage">
               {{ page }}
             </button>
-            
-            <!-- Next page button -->
-            <button
-              (click)="nextPage()"
-              [disabled]="currentPage === totalPages"
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages"
               class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium"
-              [class.text-gray-300]="currentPage === totalPages"
-              [class.text-gray-700]="currentPage !== totalPages"
+              [class.text-gray-300]="currentPage === totalPages" [class.text-gray-700]="currentPage !== totalPages"
               [class.hover:bg-gray-50]="currentPage !== totalPages"
               [class.cursor-not-allowed]="currentPage === totalPages">
               <span class="sr-only">Trang sau</span>
               <span class="material-icons text-sm">chevron_right</span>
             </button>
-            
-            <!-- Last page button -->
-            <button
-              (click)="goToPage(totalPages)"
-              [disabled]="currentPage === totalPages"
+            <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"
               class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium"
-              [class.text-gray-300]="currentPage === totalPages"
-              [class.text-gray-700]="currentPage !== totalPages"
+              [class.text-gray-300]="currentPage === totalPages" [class.text-gray-700]="currentPage !== totalPages"
               [class.hover:bg-gray-50]="currentPage !== totalPages"
               [class.cursor-not-allowed]="currentPage === totalPages">
               <span class="sr-only">Trang cuối</span>
@@ -205,34 +152,24 @@
     </div>
   </div>
 
-  <!-- Mobile pagination display -->
+  <!-- Mobile pagination (simplified) -->
   <div class="sm:hidden mt-4" *ngIf="isValidCombos() && !isLoading && totalPages > 1">
     <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4">
       <div class="flex items-center justify-between">
-        <button
-          (click)="prevPage()"
-          [disabled]="currentPage === 1"
+        <button (click)="prevPage()" [disabled]="currentPage === 1"
           class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md bg-white"
-          [class.text-gray-300]="currentPage === 1"
-          [class.text-gray-700]="currentPage !== 1"
-          [class.hover:bg-gray-50]="currentPage !== 1"
-          [class.cursor-not-allowed]="currentPage === 1">
+          [class.text-gray-300]="currentPage === 1" [class.text-gray-700]="currentPage !== 1"
+          [class.hover:bg-gray-50]="currentPage !== 1" [class.cursor-not-allowed]="currentPage === 1">
           <span class="material-icons text-sm mr-1">arrow_back</span>
           Trước
         </button>
-        
         <span class="text-sm text-gray-600 font-medium">
           Trang {{ currentPage }} / {{ totalPages }}
         </span>
-        
-        <button
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages"
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages"
           class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md bg-white"
-          [class.text-gray-300]="currentPage === totalPages"
-          [class.text-gray-700]="currentPage !== totalPages"
-          [class.hover:bg-gray-50]="currentPage !== totalPages"
-          [class.cursor-not-allowed]="currentPage === totalPages">
+          [class.text-gray-300]="currentPage === totalPages" [class.text-gray-700]="currentPage !== totalPages"
+          [class.hover:bg-gray-50]="currentPage !== totalPages" [class.cursor-not-allowed]="currentPage === totalPages">
           Sau
           <span class="material-icons text-sm ml-1">arrow_forward</span>
         </button>
@@ -244,20 +181,13 @@
 <!-- Combo details dialog -->
 <div *ngIf="showDetailsDialog" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-    <!-- Background overlay -->
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeDetailsDialog()"></div>
-
-    <!-- Modal panel -->
     <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
       <div *ngIf="selectedCombo" class="bg-white">
         <div class="flex flex-col md:flex-row">
           <div class="md:w-2/5 h-64 md:h-auto bg-gray-100">
-            <img 
-              [src]="selectedCombo.image_combo" 
-              [alt]="selectedCombo.name_combo" 
-              class="w-full h-full object-cover"
-              onerror="this.src='https://via.placeholder.com/400x300?text=Không+có+hình+ảnh'"
-            >
+            <img [src]="selectedCombo.image_combo" [alt]="selectedCombo.name_combo" class="w-full h-full object-cover"
+              onerror="this.src='https://via.placeholder.com/400x300?text=Không+có+hình+ảnh'">
           </div>
           <div class="p-6 md:w-3/5">
             <div class="flex justify-between items-start mb-4">
@@ -270,8 +200,6 @@
                 <p class="text-gray-700 mb-4">{{ selectedCombo.description_combo }}</p>
               </div>
             </div>
-            
-            <!-- User information -->
             <div class="mb-4 pb-4 border-b border-gray-200">
               <h3 class="text-sm font-semibold text-gray-600 mb-1">Người tạo:</h3>
               <div class="flex items-center">
@@ -279,8 +207,6 @@
                 <span class="text-gray-800">{{ getUserName(selectedCombo.user_id) }}</span>
               </div>
             </div>
-            
-            <!-- Creation date if available -->
             <div *ngIf="selectedCombo.createdAt" class="mb-4 pb-4 border-b border-gray-200">
               <h3 class="text-sm font-semibold text-gray-600 mb-1">Ngày tạo:</h3>
               <div class="flex items-center">
@@ -288,8 +214,6 @@
                 <span class="text-gray-800">{{ selectedCombo.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
               </div>
             </div>
-            
-            <!-- Price information -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mt-4 pt-4 border-t border-gray-200">
               <div class="text-2xl font-bold text-blue-600 mb-3 sm:mb-0">
                 {{ selectedCombo.price_combo | currency:'VND':'':'1.0-0' }}đ
@@ -298,7 +222,7 @@
           </div>
         </div>
         <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end">
-          <button (click)="closeDetailsDialog()" 
+          <button (click)="closeDetailsDialog()"
             class="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm">
             Đóng
           </button>
@@ -308,13 +232,10 @@
   </div>
 </div>
 
-<!-- Dialog Thêm/Sửa Combo -->
+<!-- Dialog Thêm/Sửa Combo với validation -->
 <div *ngIf="showDialog" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-    <!-- Background overlay -->
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeDialog()"></div>
-
-    <!-- Modal panel -->
     <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
       <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
         <div class="sm:flex sm:items-start">
@@ -329,46 +250,71 @@
             <form (ngSubmit)="submitForm()" class="mt-4">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Mã Combo</label>
+                  <label class="block text-sm font-medium text-gray-700">Mã Combo <span class="text-red-500">*</span></label>
                   <input type="text" [(ngModel)]="newCombo.combo_id" name="combo_id"
+                    (blur)="markFieldAsTouched('combo_id')"
+                    [ngClass]="{'border-red-300': formErrors.combo_id && touchedFields.combo_id}"
                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
                     placeholder="CB001" required>
+                  <p *ngIf="formErrors.combo_id && touchedFields.combo_id" class="mt-1 text-sm text-red-600">
+                    {{ formErrors.combo_id }}
+                  </p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Tên Combo</label>
+                  <label class="block text-sm font-medium text-gray-700">Tên Combo <span class="text-red-500">*</span></label>
                   <input type="text" [(ngModel)]="newCombo.name_combo" name="name_combo"
+                    (blur)="markFieldAsTouched('name_combo')"
+                    [ngClass]="{'border-red-300': formErrors.name_combo && touchedFields.name_combo}"
                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
                     placeholder="Combo Đôi" required>
+                  <p *ngIf="formErrors.name_combo && touchedFields.name_combo" class="mt-1 text-sm text-red-600">
+                    {{ formErrors.name_combo }}
+                  </p>
                 </div>
               </div>
               
               <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700">Giá</label>
+                <label class="block text-sm font-medium text-gray-700">Giá <span class="text-red-500">*</span></label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <span class="text-gray-500 sm:text-sm">₫</span>
                   </div>
                   <input type="number" [(ngModel)]="newCombo.price_combo" name="price_combo"
+                    (blur)="markFieldAsTouched('price_combo')"
+                    [ngClass]="{'border-red-300': formErrors.price_combo && touchedFields.price_combo}"
                     class="block w-full pl-7 pr-12 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
                     placeholder="0" required>
                   <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <span class="text-gray-500 sm:text-sm">VND</span>
                   </div>
                 </div>
+                <p *ngIf="formErrors.price_combo && touchedFields.price_combo" class="mt-1 text-sm text-red-600">
+                  {{ formErrors.price_combo }}
+                </p>
               </div>
               
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700">Mô tả</label>
                 <textarea [(ngModel)]="newCombo.description_combo" name="description_combo" rows="3"
+                  (blur)="markFieldAsTouched('description_combo')"
+                  [ngClass]="{'border-red-300': formErrors.description_combo && touchedFields.description_combo}"
                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
                   placeholder="Bao gồm 2 bắp + 2 nước lớn..."></textarea>
+                <p *ngIf="formErrors.description_combo && touchedFields.description_combo" class="mt-1 text-sm text-red-600">
+                  {{ formErrors.description_combo }}
+                </p>
               </div>
               
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700">URL Hình ảnh</label>
                 <input type="text" [(ngModel)]="newCombo.image_combo" name="image_combo"
+                  (blur)="markFieldAsTouched('image_combo')"
+                  [ngClass]="{'border-red-300': formErrors.image_combo && touchedFields.image_combo}"
                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
                   placeholder="https://example.com/images/combo.jpg">
+                <p *ngIf="formErrors.image_combo && touchedFields.image_combo" class="mt-1 text-sm text-red-600">
+                  {{ formErrors.image_combo }}
+                </p>
                 
                 <!-- Image preview -->
                 <div *ngIf="newCombo.image_combo" class="mt-2 h-24 w-24 rounded border overflow-hidden">
@@ -377,19 +323,25 @@
                 </div>
               </div>
               
-              <!-- Hidden user_id field - always included but not visible -->
+              <!-- Hidden user_id field -->
               <input type="hidden" [(ngModel)]="newCombo.user_id" name="user_id">
             </form>
           </div>
         </div>
       </div>
       <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-        <button (click)="submitForm()" 
-          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-          {{ isEditing ? 'Cập nhật' : 'Thêm mới' }}
+        <button (click)="submitForm()" [disabled]="isLoading"
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 sm:ml-3 sm:w-auto sm:text-sm">
+          <span *ngIf="isLoading" class="inline-block mr-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+          {{ isLoading ? (isEditing ? 'Đang cập nhật...' : 'Đang thêm...') : (isEditing ? 'Cập nhật' : 'Thêm mới') }}
         </button>
-        <button (click)="closeDialog()" 
-          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+        <button (click)="closeDialog()" [disabled]="isLoading"
+          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:text-gray-400 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
           Hủy
         </button>
       </div>
@@ -400,10 +352,7 @@
 <!-- Dialog Xác nhận xóa -->
 <div *ngIf="showDeleteDialog" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-    <!-- Background overlay -->
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="cancelDelete()"></div>
-
-    <!-- Modal panel -->
     <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
       <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
         <div class="sm:flex sm:items-start">
@@ -423,12 +372,18 @@
         </div>
       </div>
       <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-        <button (click)="deleteCombo(comboToDelete.id)" 
-          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
-          Xóa
+        <button (click)="deleteCombo(comboToDelete.id)" [disabled]="isLoading"
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-400 sm:ml-3 sm:w-auto sm:text-sm">
+          <span *ngIf="isLoading" class="inline-block mr-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+          {{ isLoading ? 'Đang xóa...' : 'Xóa' }}
         </button>
-        <button (click)="cancelDelete()" 
-          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+        <button (click)="cancelDelete()" [disabled]="isLoading"
+          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:text-gray-400 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
           Hủy
         </button>
       </div>
