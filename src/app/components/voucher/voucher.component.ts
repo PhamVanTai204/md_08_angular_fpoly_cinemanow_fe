@@ -231,8 +231,6 @@ export class VoucherComponent implements OnInit {
     for (const key in this.formErrors) {
       const error = this.formErrors[key as keyof typeof this.formErrors];
       if (error !== '') {
-        // Thiết lập thông báo lỗi chung
-        this.errorMessage = error;
         return false;
       }
     }
