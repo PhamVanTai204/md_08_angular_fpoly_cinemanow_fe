@@ -140,9 +140,9 @@ export class ComboComponent implements OnInit, OnDestroy {
         break;
         
       case 'price_combo':
-        if (!this.newCombo.price_combo) {
+        if (this.newCombo.price_combo === undefined || this.newCombo.price_combo === null) {
           this.formErrors.price_combo = 'Giá combo không được để trống';
-        } else if (isNaN(this.newCombo.price_combo) || this.newCombo.price_combo <= 0) {
+        } else if (isNaN(Number(this.newCombo.price_combo)) || Number(this.newCombo.price_combo) <= 0) {
           this.formErrors.price_combo = 'Giá phải là số dương';
         }
         break;
@@ -167,20 +167,22 @@ export class ComboComponent implements OnInit, OnDestroy {
 
   // Validate all fields at once
   validateAllFields(): boolean {
+    // Mark all fields as touched
     Object.keys(this.touchedFields).forEach(field => {
       this.touchedFields[field as keyof typeof this.touchedFields] = true;
     });
     
+    // Validate each field
     this.validateField('combo_id');
     this.validateField('name_combo');
     this.validateField('price_combo');
     this.validateField('description_combo');
     this.validateField('image_combo');
     
+    // Check for any errors
     for (const key in this.formErrors) {
       const error = this.formErrors[key as keyof typeof this.formErrors];
       if (error !== '') {
-        this.errorMessage = error;
         return false;
       }
     }
@@ -234,6 +236,7 @@ export class ComboComponent implements OnInit, OnDestroy {
   // Calculate total pages
   calculateTotalPages(): void {
     this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+    if (this.totalPages === 0) this.totalPages = 1;
   }
 
   // Generate pages to show
@@ -335,6 +338,7 @@ export class ComboComponent implements OnInit, OnDestroy {
     if (combo) {
       this.isEditing = true;
       this.editId = combo.id;
+      // Use the clone method from your ComboDto class
       this.newCombo = combo.clone();
     } else {
       this.resetForm();
@@ -354,7 +358,16 @@ export class ComboComponent implements OnInit, OnDestroy {
 
   // Submit form
   submitForm(): void {
+    // First validate all fields
     if (!this.validateAllFields()) {
+      // Find the first error and set it as the main error message
+      for (const key in this.formErrors) {
+        const error = this.formErrors[key as keyof typeof this.formErrors];
+        if (error !== '') {
+          this.errorMessage = error;
+          return;
+        }
+      }
       return;
     }
 
@@ -462,14 +475,17 @@ export class ComboComponent implements OnInit, OnDestroy {
 
   // Reset form
   resetForm(): void {
-    this.newCombo = new ComboDto({
-      combo_id: '',
-      user_id: this.currentUserId || '',
-      name_combo: '',
-      price_combo: 0,
-      description_combo: '',
-      image_combo: ''
-    });
+    // Create a new instance of ComboDto class
+    this.newCombo = new ComboDto();
+    // Set all properties individually
+    this.newCombo.id = '';
+    this.newCombo.combo_id = '';
+    this.newCombo.user_id = this.currentUserId || '';
+    this.newCombo.name_combo = '';
+    this.newCombo.price_combo = 0;
+    this.newCombo.description_combo = '';
+    this.newCombo.image_combo = '';
+    
     this.isEditing = false;
     this.editId = '';
     this.errorMessage = '';
