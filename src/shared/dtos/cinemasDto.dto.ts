@@ -1,19 +1,19 @@
-import { ShowtimesDto } from "./showtimesDto.dto"; // import đúng đường dẫn
+import { ShowtimesDto } from "./showtimesDto.dto";
 
 export interface ICinemaDto {
   id: string;
   cinemaName: string;
   location: string;
   totalRoom: number;
-  showtimes?: ShowtimesDto[]; // Thêm dòng này
+  showtimes?: ShowtimesDto[];
 }
 
 export class CinemaDto implements ICinemaDto {
-  id!: string;
-  cinemaName!: string;
-  location!: string;
-  totalRoom!: number;
-  showtimes?: ShowtimesDto[]; // Thêm dòng này
+  id: string = '';
+  cinemaName: string = '';
+  location: string = '';
+  totalRoom: number = 0;
+  showtimes?: ShowtimesDto[];
 
   constructor(data?: ICinemaDto) {
     if (data) {
@@ -23,10 +23,10 @@ export class CinemaDto implements ICinemaDto {
 
   init(_data?: any) {
     if (_data) {
-      this.id = _data["_id"];
-      this.cinemaName = _data["cinema_name"];
-      this.location = _data["location"];
-      this.totalRoom = _data["total_room"];
+      this.id = _data["_id"] || _data["id"] || '';
+      this.cinemaName = _data["cinema_name"] || '';
+      this.location = _data["location"] || '';
+      this.totalRoom = _data["total_room"] || 0;
 
       // Map showtimes nếu có
       if (Array.isArray(_data["showtimes"])) {
@@ -45,11 +45,19 @@ export class CinemaDto implements ICinemaDto {
 
   toJSON() {
     const data: any = {};
-    data["_id"] = this.id;
+    
+    if (this.id) {
+      data["_id"] = this.id;
+    }
+    
     data["cinema_name"] = this.cinemaName;
     data["location"] = this.location;
     data["total_room"] = this.totalRoom;
-    data["showtimes"] = this.showtimes?.map(s => s.toJSON()); // optional
+    
+    if (this.showtimes && this.showtimes.length > 0) {
+      data["showtimes"] = this.showtimes.map(s => s.toJSON());
+    }
+    
     return data;
   }
 

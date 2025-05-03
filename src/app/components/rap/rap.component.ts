@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
 })
 export class RapComponent implements OnInit {
   rapList: CinemaDto[] = [];
+  pagedRapList: CinemaDto[] = []; // Danh sách rạp đã phân trang
   roomLisst: RoomDto[] = [];
   isAddModalOpen = false;
   newRap: CinemaDto = new CinemaDto();
@@ -29,11 +30,17 @@ export class RapComponent implements OnInit {
   room_style: string = '';
   total_seat: number = 0;
 
+  // Thêm biến quản lý thông báo lỗi
+  errorMessage: string = '';
+  showError = false;
+
+  // Thêm biến tìm kiếm
+  searchText: string = '';
+
   // Pagination properties
   currentPage: number = 1;
   pageSize: number = 6;
   totalPages: number = 1;
-  pagedRapList: CinemaDto[] = [];
 
   constructor(
     private cinemasService: CinemasService,
@@ -45,9 +52,49 @@ export class RapComponent implements OnInit {
     this.getAllRaps();
   }
 
+  // Hiển thị thông báo lỗi
+  showErrorMessage(message: string): void {
+    this.errorMessage = message;
+    this.showError = true;
+    setTimeout(() => {
+      this.showError = false;
+    }, 5000); // Ẩn sau 5 giây
+  }
+
+  // Tìm kiếm rạp
+  searchRaps(): void {
+    if (this.searchText.trim() === '') {
+      this.getAllRaps();
+      return;
+    }
+    
+    this.cinemasService.searchCinema(this.searchText).subscribe({
+      next: (data) => {
+        this.rapList = data;
+        this.currentPage = 1; // Đặt lại về trang đầu tiên
+        this.updatePagedData();
+      },
+      error: (err) => {
+        console.error('Lỗi tìm kiếm rạp:', err);
+        this.showErrorMessage('Lỗi tìm kiếm rạp. Vui lòng thử lại sau.');
+      }
+    });
+  }
+
   // Phân trang
   updatePagedData(): void {
     this.totalPages = Math.ceil(this.rapList.length / this.pageSize);
+    
+    // Đảm bảo ít nhất có 1 trang
+    if (this.totalPages === 0) {
+      this.totalPages = 1;
+    }
+    
+    // Đảm bảo trang hiện tại không vượt quá tổng số trang
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+    
     const startIndex = (this.currentPage - 1) * this.pageSize;
     this.pagedRapList = this.rapList.slice(startIndex, startIndex + this.pageSize);
   }
@@ -120,7 +167,10 @@ export class RapComponent implements OnInit {
 
   openAddRoomModal(): void {
     this.isAddRoomModalOpen = true;
-    this.newRoom = new RoomDto();
+    // Reset form
+    this.room_name = '';
+    this.room_style = '';
+    this.total_seat = 0;
   }
 
   closeAddRoomModal(): void {
@@ -129,7 +179,12 @@ export class RapComponent implements OnInit {
 
   saveNewRoom(): void {
     if (!this.selectedCinemaId) {
-      console.error('Không có rạp nào được chọn để thêm phòng.');
+      this.showErrorMessage('Không có rạp nào được chọn để thêm phòng.');
+      return;
+    }
+
+    if (!this.room_name || !this.room_style || this.total_seat <= 0) {
+      this.showErrorMessage('Vui lòng điền đầy đủ thông tin phòng chiếu.');
       return;
     }
 
@@ -138,8 +193,15 @@ export class RapComponent implements OnInit {
         this.roomLisst.push(addedRoom);
         this.getRoom(this.selectedCinemaId);
         this.isAddRoomModalOpen = false;
+        // Reset form
+        this.room_name = '';
+        this.room_style = '';
+        this.total_seat = 0;
       },
-      error: (err) => console.error('Lỗi khi thêm phòng:', err)
+      error: (err) => {
+        console.error('Lỗi khi thêm phòng:', err);
+        this.showErrorMessage('Không thể thêm phòng. Vui lòng thử lại sau.');
+      }
     });
   }
 
@@ -150,7 +212,8 @@ export class RapComponent implements OnInit {
         this.updatePagedData();
       },
       error: (err) => {
-        console.error('Error fetching cinemas:', err);
+        console.error('Lỗi khi tải danh sách rạp:', err);
+        this.showErrorMessage('Không thể tải danh sách rạp. Vui lòng thử lại sau.');
       }
     });
   }
@@ -165,6 +228,12 @@ export class RapComponent implements OnInit {
   }
 
   saveNewRap(): void {
+    // Thêm kiểm tra trước khi gọi API
+    if (!this.newRap.cinemaName || !this.newRap.location || !this.newRap.totalRoom || this.newRap.totalRoom <= 0) {
+      this.showErrorMessage('Vui lòng điền đầy đủ thông tin rạp.');
+      return;
+    }
+
     this.cinemasService.addCinema(this.newRap).subscribe({
       next: (addedCinema: CinemaDto) => {
         this.rapList = [...this.rapList, addedCinema];
@@ -172,7 +241,10 @@ export class RapComponent implements OnInit {
         this.isAddModalOpen = false;
         this.newRap = new CinemaDto();
       },
-      error: (err) => console.error('Error adding cinema:', err)
+      error: (err) => {
+        console.error('Lỗi khi thêm rạp:', err);
+        this.showErrorMessage('Không thể thêm rạp. Vui lòng thử lại sau.');
+      }
     });
   }
 
@@ -189,6 +261,7 @@ export class RapComponent implements OnInit {
     } catch (error) {
       console.error('Lỗi khi tải danh sách phòng:', error);
       this.roomLisst = [];
+      this.showErrorMessage('Không thể tải danh sách phòng. Vui lòng thử lại sau.');
     }
   }
 
@@ -198,6 +271,12 @@ export class RapComponent implements OnInit {
   }
 
   saveEditRap(): void {
+    // Kiểm tra dữ liệu đầu vào
+    if (!this.editRapData.cinemaName || !this.editRapData.location || !this.editRapData.totalRoom || this.editRapData.totalRoom <= 0) {
+      this.showErrorMessage('Vui lòng điền đầy đủ thông tin rạp.');
+      return;
+    }
+
     this.cinemasService.editCinema(this.editRapData.id, this.editRapData).subscribe({
       next: (updatedCinema: CinemaDto) => {
         if (this.editRapIndex > -1) {
@@ -209,7 +288,10 @@ export class RapComponent implements OnInit {
         this.isEditModalOpen = false;
         this.editRapIndex = -1;
       },
-      error: (err) => console.error('Error updating cinema:', err)
+      error: (err) => {
+        console.error('Lỗi khi cập nhật rạp:', err);
+        this.showErrorMessage('Không thể cập nhật thông tin rạp. Vui lòng thử lại sau.');
+      }
     });
   }
 
@@ -222,24 +304,33 @@ export class RapComponent implements OnInit {
         this.rapList = this.rapList.filter(item => item.id !== rap.id);
         this.updatePagedData();
       },
-      error: (err) => console.error('Error deleting cinema:', err)
+      error: (err) => {
+        console.error('Lỗi khi xóa rạp:', err);
+        this.showErrorMessage('Không thể xóa rạp. Vui lòng thử lại sau.');
+      }
     });
   }
 
   editRoom(index: number): void {
     // Phương thức xử lý chỉnh sửa phòng
-    console.log('Editing room at index:', index);
+    console.log('Đang chỉnh sửa phòng với chỉ số:', index);
   }
   
   deleteRoom(index: number): void {
-    // Phương thức xử lý xóa phòng
     if (index >= 0 && index < this.roomLisst.length) {
       const room = this.roomLisst[index];
       const confirmDelete = confirm(`Bạn có chắc muốn xóa phòng: ${room.room_name}?`);
       if (!confirmDelete) return;
 
-      // Implement the delete functionality here
-      console.log('Deleting room at index:', index);
+      this.roomService.deleteRoom(room.id).subscribe({
+        next: () => {
+          this.roomLisst = this.roomLisst.filter(r => r.id !== room.id);
+        },
+        error: (err) => {
+          console.error('Lỗi khi xóa phòng:', err);
+          this.showErrorMessage('Không thể xóa phòng. Vui lòng thử lại sau.');
+        }
+      });
     }
   }
   
@@ -252,11 +343,11 @@ export class RapComponent implements OnInit {
         },
         error: (error) => {
           console.error('Lỗi khi lấy danh sách phòng:', error);
+          this.showErrorMessage('Không thể tải danh sách phòng. Vui lòng thử lại sau.');
         }
       });
   }
 
-  // Fix: Move this method inside the class
   showRomDialog(idRoom: string): void {
     this.router.navigate(['/layout', 'room', idRoom]);
   }

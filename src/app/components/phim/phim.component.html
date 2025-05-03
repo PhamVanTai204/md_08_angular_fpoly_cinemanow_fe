@@ -175,12 +175,12 @@
   <div class="flex items-center">
     <label class="text-sm text-gray-600 mr-2">Hiển thị:</label>
     <select [(ngModel)]="limit" (change)="onLimitChange()" 
-  class="border border-gray-300 rounded-md text-sm py-1 px-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-  <option [ngValue]="5">5</option>
-  <option [ngValue]="10">10</option>
-  <option [ngValue]="20">20</option>
-  <option [ngValue]="50">50</option>
-</select>
+      class="border border-gray-300 rounded-md text-sm py-1 px-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      <option [ngValue]="5">5</option>
+      <option [ngValue]="10">10</option>
+      <option [ngValue]="20">20</option>
+      <option [ngValue]="50">50</option>
+    </select>
   </div>
 </div>
 
@@ -207,35 +207,56 @@
       <div class="space-y-5" style="margin-bottom: 1.5rem;">
         <!-- Input fields -->
         <div class="border border-gray-200 rounded-lg p-4">
+          <!-- Tên phim -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Tên phim</label>
+            <label class="block font-medium mb-2 text-gray-700">Tên phim <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="currentPhim.title"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              [ngClass]="{'border-red-500': validationErrors['title']}" />
+            <p *ngIf="validationErrors['title']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['title'] }}
+            </p>
           </div>
 
+          <!-- Đạo diễn -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Đạo diễn</label>
+            <label class="block font-medium mb-2 text-gray-700">Đạo diễn <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="currentPhim.director"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              [ngClass]="{'border-red-500': validationErrors['director']}" />
+            <p *ngIf="validationErrors['director']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['director'] }}
+            </p>
           </div>
 
+          <!-- Giới hạn tuổi -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Giới hạn tuổi</label>
+            <label class="block font-medium mb-2 text-gray-700">Giới hạn tuổi <span class="text-red-500">*</span></label>
             <input type="number" [(ngModel)]="currentPhim.age_limit"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="VD: 18" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              placeholder="VD: 18" min="0" max="21"
+              [ngClass]="{'border-red-500': validationErrors['age_limit']}" />
+            <p *ngIf="validationErrors['age_limit']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['age_limit'] }}
+            </p>
           </div>
 
+          <!-- Ngôn ngữ -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Ngôn ngữ</label>
+            <label class="block font-medium mb-2 text-gray-700">Ngôn ngữ <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="currentPhim.language"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="VD: Tiếng Việt" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              placeholder="VD: Tiếng Việt"
+              [ngClass]="{'border-red-500': validationErrors['language']}" />
+            <p *ngIf="validationErrors['language']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['language'] }}
+            </p>
           </div>
 
-          <div class="mb-4 border border-gray-200 rounded-lg p-3">
-            <label class="block font-medium mb-2 text-gray-700">Thể loại phim</label>
-            <div class="grid grid-cols-2 gap-3">
+          <!-- Thể loại phim -->
+          <div class="mb-4 border border-gray-200 rounded-lg p-3" [ngClass]="{'border-red-500': validationErrors['genre_film']}">
+            <label class="block font-medium mb-2 text-gray-700">Thể loại phim <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-2 gap-3 error-field">
               <div *ngFor="let genre of danhSachTheLoai" class="flex items-center">
                 <label class="inline-flex items-center space-x-3">
                   <input type="checkbox" [value]="genre.id" [checked]="currentPhim.genre_film.includes(genre.id)"
@@ -245,10 +266,14 @@
                 </label>
               </div>
             </div>
+            <p *ngIf="validationErrors['genre_film']" class="text-red-500 text-sm mt-2">
+              {{ validationErrors['genre_film'] }}
+            </p>
           </div>
 
+          <!-- Trạng thái -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Trạng thái</label>
+            <label class="block font-medium mb-2 text-gray-700">Trạng thái <span class="text-red-500">*</span></label>
             <select [(ngModel)]="currentPhim.status_film"
               class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <option [ngValue]="1">ONLINE</option>
@@ -256,56 +281,95 @@
             </select>
           </div>
 
+          <!-- Poster (URL) -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Poster (URL)</label>
+            <label class="block font-medium mb-2 text-gray-700">Poster (URL) <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="currentPhim.image_film"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              [ngClass]="{'border-red-500': validationErrors['image_film']}" />
+            <p *ngIf="validationErrors['image_film']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['image_film'] }}
+            </p>
           </div>
 
+          <!-- Trailer (URL) -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Trailer (URL)</label>
+            <label class="block font-medium mb-2 text-gray-700">Trailer (URL) <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="currentPhim.trailer_film"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              [ngClass]="{'border-red-500': validationErrors['trailer_film']}" />
+            <p *ngIf="validationErrors['trailer_film']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['trailer_film'] }}
+            </p>
           </div>
 
+          <!-- Thời lượng -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Thời lượng</label>
+            <label class="block font-medium mb-2 text-gray-700">Thời lượng <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="currentPhim.duration"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="VD: 120 phút" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              placeholder="VD: 120 phút"
+              [ngClass]="{'border-red-500': validationErrors['duration']}" />
+            <p *ngIf="validationErrors['duration']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['duration'] }}
+            </p>
           </div>
 
+          <!-- Ngày phát hành và kết thúc -->
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block font-medium mb-2 text-gray-700">Ngày phát hành</label>
+              <label class="block font-medium mb-2 text-gray-700">Ngày phát hành <span class="text-red-500">*</span></label>
               <input type="date" [(ngModel)]="currentPhim.release_date"
-                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                [ngClass]="{'border-red-500': validationErrors['release_date']}" />
+              <p *ngIf="validationErrors['release_date']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['release_date'] }}
+              </p>
             </div>
             <div>
-              <label class="block font-medium mb-2 text-gray-700">Ngày kết thúc</label>
+              <label class="block font-medium mb-2 text-gray-700">Ngày kết thúc <span class="text-red-500">*</span></label>
               <input type="date" [(ngModel)]="currentPhim.end_date"
-                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                [ngClass]="{'border-red-500': validationErrors['end_date']}" />
+              <p *ngIf="validationErrors['end_date']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['end_date'] }}
+              </p>
             </div>
           </div>
 
+          <!-- Diễn viên -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Diễn viên</label>
+            <label class="block font-medium mb-2 text-gray-700">Diễn viên <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="currentPhim.cast"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="VD: Diễn viên A, Diễn viên B" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              placeholder="VD: Diễn viên A, Diễn viên B"
+              [ngClass]="{'border-red-500': validationErrors['cast']}" />
+            <p *ngIf="validationErrors['cast']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['cast'] }}
+            </p>
           </div>
 
+          <!-- Đánh giá -->
           <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Đánh giá</label>
+            <label class="block font-medium mb-2 text-gray-700">Đánh giá <span class="text-red-500">*</span></label>
             <input type="number" [(ngModel)]="currentPhim.ratings"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="VD: 9.5" step="0.1" min="0" max="10" />
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              placeholder="VD: 9.5" step="0.1" min="0" max="10"
+              [ngClass]="{'border-red-500': validationErrors['ratings']}" />
+            <p *ngIf="validationErrors['ratings']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['ratings'] }}
+            </p>
           </div>
 
+          <!-- Mô tả -->
           <div>
-            <label class="block font-medium mb-2 text-gray-700">Mô tả</label>
+            <label class="block font-medium mb-2 text-gray-700">Mô tả <span class="text-red-500">*</span></label>
             <textarea [(ngModel)]="currentPhim.describe" rows="4"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+              [ngClass]="{'border-red-500': validationErrors['describe']}"></textarea>
+            <p *ngIf="validationErrors['describe']" class="text-red-500 text-sm mt-1">
+              {{ validationErrors['describe'] }}
+            </p>
           </div>
         </div>
       </div>
@@ -343,11 +407,18 @@
         "<strong>{{ deletePhim?.title }}</strong>"?
       </p>
 
-      <label class="block font-medium mb-1">
-        Nhập mật khẩu <strong>hiendz</strong> để xác nhận:
-      </label>
-      <input type="password" [(ngModel)]="deletePassword" class="border rounded w-full px-3 py-2 mb-4"
-        placeholder="Nhập mật khẩu" />
+      <div class="mb-4">
+        <label class="block font-medium mb-1">
+          Nhập mật khẩu <strong>hiendz</strong> để xác nhận:
+        </label>
+        <input type="password" [(ngModel)]="deletePassword" 
+          class="border rounded w-full px-3 py-2 mb-1"
+          [ngClass]="{'border-red-500': deletePasswordError}"
+          placeholder="Nhập mật khẩu" />
+        <p *ngIf="deletePasswordError" class="text-red-500 text-sm">
+          {{ deletePasswordError }}
+        </p>
+      </div>
 
       <div class="flex justify-end">
         <button class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded" (click)="closeDeleteModal()">
