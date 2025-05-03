@@ -1,1 +1,109 @@
-<p>khuyen-mai works!</p>
+<div class="p-6 bg-white shadow rounded-lg">
+  <h2 class="text-2xl font-bold mb-4">Quản lý đánh giá</h2>
+
+  <!-- ===== 1. DANH SÁCH PHIM + TÌM KIẾM + PHÂN TRANG ===== -->
+  <div *ngIf="!selectedMovieId">
+    <!-- ô tìm kiếm -->
+    <div class="relative mb-4">
+      <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+        <i class="material-icons">search</i>
+      </span>
+      <input
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Tìm phim..."
+        class="w-full border px-3 py-2 pl-10 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+
+    <!-- loading -->
+    <div *ngIf="loadingFilms" class="text-center text-gray-500">Đang tải...</div>
+
+    <!-- bảng phim -->
+    <table *ngIf="!loadingFilms" class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-center">STT</th>
+          <th class="px-4 py-2 text-left">Tên phim</th>
+          <th class="px-4 py-2 text-center">Hành&nbsp;động</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <tr *ngFor="let f of films; let i = index">
+          <td class="px-4 py-2 text-center">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td class="px-4 py-2">{{ f.movieName }}</td>
+          <td class="px-4 py-2 text-center">
+            <button (click)="chooseFilm(f.movieId)" class="p-2 hover:text-blue-600">
+              <i class="material-icons">visibility</i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- thanh phân trang -->
+    <div *ngIf="totalPages > 1" class="flex items-center justify-between mt-4">
+      <p class="text-sm text-gray-500">
+        Hiển thị {{ (currentPage - 1) * pageSize + films.length }}
+        trên tổng số {{ totalFilms }} phim
+      </p>
+
+      <div class="flex items-center space-x-2">
+        <button
+          (click)="prevPage()"
+          [disabled]="currentPage === 1"
+          class="px-3 py-1 rounded border text-sm disabled:opacity-50 hover:bg-gray-100"
+        >
+          Trước
+        </button>
+
+        <ng-container *ngFor="let p of pages">
+          <button
+            (click)="goToPage(p)"
+            [ngClass]="{
+              'bg-blue-600 text-white': p === currentPage,
+              'border': true,
+              'px-3 py-1 rounded text-sm hover:bg-gray-100': true
+            }"
+          >
+            {{ p }}
+          </button>
+        </ng-container>
+
+        <button
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages"
+          class="px-3 py-1 rounded border text-sm disabled:opacity-50 hover:bg-gray-100"
+        >
+          Sau
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 2. DANH SÁCH ĐÁNH GIÁ CỦA PHIM ===== -->
+  <div *ngIf="selectedMovieId" class="mt-6">
+    <button (click)="backToList()" class="mb-4 text-sm text-gray-600 hover:underline">« Quay lại</button>
+    <h3 class="text-lg font-semibold mb-4">Đánh giá</h3>
+
+    <div *ngIf="loadingReviews" class="text-center text-gray-500">Đang tải...</div>
+
+    <ng-container *ngIf="!loadingReviews">
+      <ng-container *ngIf="reviews.length; else noReviews">
+        <div *ngFor="let r of reviews" class="border rounded p-4 mb-3 flex justify-between">
+          <div>
+            <p class="font-medium text-indigo-600">{{ r.userEmail || r.user_id }}</p>
+            <p class="mt-1">{{ r.comment }}</p>
+            <p class="mt-1 text-xs text-gray-500">{{ r.date | date:'short' }}</p>
+          </div>
+          <button (click)="confirmDelete(r.id)" class="self-start p-2 hover:text-red-600">
+            <i class="material-icons">delete</i>
+          </button>
+        </div>
+      </ng-container>
+      <ng-template #noReviews>
+        <p class="text-center text-gray-500">Chưa có đánh giá nào.</p>
+      </ng-template>
+    </ng-container>
+  </div>
+</div>

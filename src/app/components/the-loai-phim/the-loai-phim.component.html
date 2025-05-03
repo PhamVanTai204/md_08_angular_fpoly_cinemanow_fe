@@ -16,8 +16,9 @@
   <!-- Thanh tìm kiếm -->
   <div class="p-4 border-b">
     <div class="relative">
+ 
       <input type="text" [(ngModel)]="searchTerm" placeholder="Tìm kiếm thể loại..." (input)="filterGenres()"
-        class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+         class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none"
         viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -80,14 +81,16 @@
           trên tổng số <span class="font-medium">{{filteredGenres.length}}</span> thể loại
     </div>
     <div class="flex items-center space-x-1">
+ 
       <button [disabled]="page <= 1" (click)="previousPage()"
-        [ngClass]="page <= 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-blue-600 hover:bg-blue-50'"
+         [ngClass]="page <= 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-blue-600 hover:bg-blue-50'"
         class="px-3 py-1 border rounded-md transition-colors">
         Trước
       </button>
       <span class="px-3 py-1 border rounded-md bg-blue-600 text-white">{{page}}</span>
+ 
       <button [disabled]="page >= totalPages" (click)="nextPage()"
-        [ngClass]="page >= totalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-blue-600 hover:bg-blue-50'"
+         [ngClass]="page >= totalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-blue-600 hover:bg-blue-50'"
         class="px-3 py-1 border rounded-md transition-colors">
         Sau
       </button>
@@ -113,11 +116,12 @@
       </div>
       <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
         <div class="mb-4">
+ 
           <label for="genre-name" class="block text-sm font-medium text-gray-700 mb-1">Tên thể loại <span
               class="text-red-500">*</span></label>
           <input type="text" id="genre-name" [(ngModel)]="genreName" placeholder="Nhập tên thể loại"
             [ngClass]="{'border-red-500 focus:ring-red-500 focus:border-red-500': validationErrors.genreName}"
-            class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+             class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
           <p *ngIf="validationErrors.genreName" class="mt-1 text-sm text-red-600">
             {{ validationErrors.genreName }}
           </p>
@@ -155,10 +159,12 @@
       </div>
       <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
         <div class="mb-4">
+ 
           <label for="edit-genre-name" class="block text-sm font-medium text-gray-700 mb-1">Tên thể loại <span
               class="text-red-500">*</span></label>
           <input type="text" id="edit-genre-name" [(ngModel)]="genreName" placeholder="Nhập tên thể loại"
             [ngClass]="{'border-red-500 focus:ring-red-500 focus:border-red-500': validationErrors.genreName}"
+ 
             class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
           <p *ngIf="validationErrors.genreName" class="mt-1 text-sm text-red-600">
             {{ validationErrors.genreName }}
