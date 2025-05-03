@@ -1,55 +1,83 @@
-<div class="min-h-screen bg-white ">
-  <!-- Header -->
-
-
-
+<div class="page-container">
   <!-- Search & Content -->
-  <section class="">
-    <div class="bg-white rounded-lg shadow p-6">
-      <section class="mb-6 px-4">
-        <div class="container mx-auto">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <!-- Tiêu đề -->
-            <h1 class="text-2xl font-bold text-gray-800 whitespace-nowrap">🎬 Chọn Phim</h1>
+  <section>
+    <div class="search-wrapper">
+      <section>
+        <div class="search-header">
+          <h1 class="title">🎬 Chọn Phim</h1>
 
-            <!-- Ô tìm kiếm -->
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              <div class="relative w-full sm:w-80">
-                <input type="text"
-                  class="w-full border border-gray-300 rounded-md px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder="Nhập vào tên Phim" #filter />
-                <span class="absolute left-3 top-2.5 text-gray-400">
-                  <i class="fas fa-search"></i>
-                </span>
-              </div>
-              <button type="button" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">
-                Tìm
-              </button>
+          <div class="search-form">
+            <div class="input-wrapper">
+              <input type="text" placeholder="Nhập vào tên Phim" #filter class="search-input" />
+              <span class="search-icon">
+                <i class="fas fa-search"></i>
+              </span>
             </div>
+            <button type="button" class="search-button">Tìm</button>
           </div>
         </div>
+
       </section>
-      <!-- Danh sách phim -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 product-list">
+
+      <div class="product-list">
         @for (product of danhSachPhim ; track product.id) {
-        <div
-          class="bg-white border rounded-lg shadow hover:shadow-lg transition cursor-pointer p-4 flex flex-col items-center text-center"
-          (click)="showCreateOrEditProductDialog(product.id)">
-          <div class="w-full h-48 mb-4 overflow-hidden rounded-md">
-            <img id="img-product-list" [src]="product.image_film" alt="Uploaded Image"
-              class="w-full h-full object-cover" />
+        <div class="product-card" (click)="showCreateOrEditProductDialog(product.id)">
+          <div class="product-img-wrapper">
+            <img id="img-product-list" [src]="product.image_film" alt="Uploaded Image" class="product-img" />
           </div>
-          <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ product.title }}</h2>
-          <p class="text-sm text-gray-600 mb-1">🎫 Giới hạn tuổi: {{ product.age_limit }}</p>
-          <p class="text-sm text-gray-500">🎭 Diễn viên: {{ product.cast }}</p>
+          <h2 class="product-title">{{ product.title }}</h2>
+          <p class="product-age">🎫 Giới hạn tuổi: {{ product.age_limit }}</p>
         </div>
         }
       </div>
 
-      <!-- Không có phim -->
-      <div *ngIf="!danhSachPhim.length" class="text-center mt-10 text-gray-500 text-lg">
+      <div *ngIf="!danhSachPhim.length" class="no-result">
         <p>Không có phim phù hợp.</p>
       </div>
     </div>
   </section>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && danhSachPhim.length > 0" class="pagination-container">
+    <div class="pagination-info">
+      Hiển thị {{ (page - 1) * limit + 1 }} đến
+      {{ Math.min(page * limit, totalPhim) }} trong tổng số {{ totalPhim }} phim
+    </div>
+
+    <div class="pagination-controls">
+      <nav aria-label="Pagination">
+        <button [disabled]="page === 1" [ngClass]="{'disabled': page === 1}" class="page-button"
+          (click)="changePage(1)">
+          ««
+        </button>
+        <button [disabled]="page === 1" [ngClass]="{'disabled': page === 1}" class="page-button"
+          (click)="changePage(page - 1)">
+          «
+        </button>
+        <ng-container *ngFor="let p of getPaginationRange()">
+          <button [ngClass]="p === page ? 'page-button active' : 'page-button'" (click)="changePage(p)">
+            {{ p }}
+          </button>
+        </ng-container>
+        <button [disabled]="page >= totalPages" [ngClass]="{'disabled': page >= totalPages}" class="page-button"
+          (click)="changePage(page + 1)">
+          »
+        </button>
+        <button [disabled]="page >= totalPages" [ngClass]="{'disabled': page >= totalPages}" class="page-button"
+          (click)="changePage(totalPages)">
+          »»
+        </button>
+      </nav>
+    </div>
+
+    <div class="pagination-limit">
+      <label for="limit">Hiển thị:</label>
+      <select id="limit" [(ngModel)]="limit" (change)="onLimitChange()" class="limit-select">
+        <option [ngValue]="5">5</option>
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="20">20</option>
+        <option [ngValue]="50">50</option>
+      </select>
+    </div>
+  </div>
 </div>

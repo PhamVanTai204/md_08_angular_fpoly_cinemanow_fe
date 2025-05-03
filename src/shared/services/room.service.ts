@@ -34,7 +34,14 @@ export class RoomService {
     );
   }
 
-  /**
+     createRoom(cinema_id: string, room_name: string, room_style: string, total_seat: number): Observable<RoomDto> {
+        const body = { cinema_id, room_name, room_style, total_seat };
+        return this.http.post<any>(this.createUrlRoom, body).pipe(
+            map(response => RoomDto.fromJS(response.data)), // chỉ lấy `data`
+            catchError(this.handleError)
+        );
+    }
+   /**
    * Lấy phòng theo ID rạp
    * 
    * Lưu ý: API endpoint này có thể yêu cầu truyền tham số khác không phải ID rạp.
@@ -50,7 +57,7 @@ export class RoomService {
       })
     );
   }
-
+ 
   /**
    * Lấy phòng theo ID
    */

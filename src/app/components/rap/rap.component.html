@@ -329,20 +329,31 @@
         </div>
 
         <!-- Tổng số ghế -->
+        <!-- Số hàng -->
         <div>
-          <label for="total_seat" class="block text-gray-700 font-medium mb-1">Tổng số ghế <span
+          <label for="rows" class="block text-gray-700 font-medium mb-1">Số hàng ghế <span
               class="text-red-500">*</span></label>
-          <input type="number" id="total_seat" [(ngModel)]="total_seat" name="total_seat" required min="1"
-            #totalSeat="ngModel"
-            class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-            placeholder="Nhập tổng số ghế" />
-          <div *ngIf="totalSeat.invalid && totalSeat.touched" class="text-red-500 text-sm mt-1">
-            Vui lòng nhập tổng số ghế
-          </div>
-          <div *ngIf="totalSeat.value <= 0 && totalSeat.touched" class="text-red-500 text-sm mt-1">
-            Số ghế phải lớn hơn 0
-          </div>
+           <input type="number" id="rows" [(ngModel)]="rows" name="rows" required min="1"
+            class="border border-gray-300 rounded-lg w-full px-3 py-2" placeholder="Nhập số hàng" />
         </div>
+
+        <!-- Số cột -->
+        <div>
+          <label for="cols" class="block text-gray-700 font-medium mb-1">Số cột ghế <span
+              class="text-red-500">*</span></label>
+          <input type="number" id="cols" [(ngModel)]="cols" name="cols" required min="1"
+            class="border border-gray-300 rounded-lg w-full px-3 py-2" placeholder="Nhập số cột" />
+ 
+        </div>
+
+        <!-- Giá ghế -->
+        <div>
+          <label for="price_seat" class="block text-gray-700 font-medium mb-1">Giá mỗi ghế <span
+              class="text-red-500">*</span></label>
+          <input type="number" id="price_seat" [(ngModel)]="price_seat" name="price_seat" required min="0"
+            class="border border-gray-300 rounded-lg w-full px-3 py-2" placeholder="Nhập giá ghế" />
+        </div>
+
 
         <div class="flex justify-end space-x-2 mt-6">
           <button type="button" (click)="closeAddRoomModal()"

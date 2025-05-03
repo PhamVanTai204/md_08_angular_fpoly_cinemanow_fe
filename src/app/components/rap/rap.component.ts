@@ -5,6 +5,7 @@ import { RoomService } from '../../../shared/services/room.service';
 import { RoomDto } from '../../../shared/dtos/roomDto.dto';
 import { lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
+import { SeatService } from '../../../shared/services/seat.service';
 
 @Component({
   selector: 'app-rap',
@@ -29,6 +30,9 @@ export class RapComponent implements OnInit {
   room_name: string = '';
   room_style: string = '';
   total_seat: number = 0;
+  rows: number = 0;
+  cols: number = 0;
+  price_seat: number = 0;
 
   // Thêm biến quản lý thông báo lỗi
   errorMessage: string = '';
@@ -45,6 +49,8 @@ export class RapComponent implements OnInit {
   constructor(
     private cinemasService: CinemasService,
     private roomService: RoomService,
+    private seatService: SeatService,
+
     private router: Router
   ) { }
 
@@ -124,18 +130,18 @@ export class RapComponent implements OnInit {
     const totalPages = this.totalPages;
     const currentPage = this.currentPage;
     const visiblePages = 5;
-    
+
     if (totalPages <= visiblePages) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
     const pages: (number | string)[] = [];
-    
+
     pages.push(1);
-    
+
     let rangeStart = Math.max(2, currentPage - 1);
     let rangeEnd = Math.min(totalPages - 1, currentPage + 1);
-    
+
     while (rangeEnd - rangeStart < Math.min(visiblePages - 3, totalPages - 2)) {
       if (rangeStart > 2) {
         rangeStart--;
@@ -145,23 +151,23 @@ export class RapComponent implements OnInit {
         break;
       }
     }
-    
+
     if (rangeStart > 2) {
       pages.push('...');
     }
-    
+
     for (let i = rangeStart; i <= rangeEnd; i++) {
       pages.push(i);
     }
-    
+
     if (rangeEnd < totalPages - 1) {
       pages.push('...');
     }
-    
+
     if (totalPages > 1) {
       pages.push(totalPages);
     }
-    
+
     return pages;
   }
 
@@ -188,15 +194,20 @@ export class RapComponent implements OnInit {
       return;
     }
 
-    this.roomService.createRoom(this.selectedCinemaId, this.room_name, this.room_style, this.total_seat).subscribe({
+    this.roomService.createRoom(this.selectedCinemaId, this.room_name, this.room_style, this.cols * this.rows).subscribe({
       next: (addedRoom: RoomDto) => {
-        this.roomLisst.push(addedRoom);
-        this.getRoom(this.selectedCinemaId);
-        this.isAddRoomModalOpen = false;
-        // Reset form
-        this.room_name = '';
-        this.room_style = '';
-        this.total_seat = 0;
+         console.log('Phòng đã tạo:', addedRoom);
+
+        // Gọi API tạo ghế ngay sau khi tạo phòng
+        this.seatService.addMultipleSeats(addedRoom.id, this.rows, this.cols, this.price_seat).subscribe({
+          next: (res) => {
+            console.log('Ghế đã được tạo:', res);
+            this.getRoom(this.selectedCinemaId);
+            this.isAddRoomModalOpen = false;
+          },
+          error: (err) => console.error('Lỗi khi tạo ghế:', err)
+        });
+ 
       },
       error: (err) => {
         console.error('Lỗi khi thêm phòng:', err);
@@ -204,6 +215,7 @@ export class RapComponent implements OnInit {
       }
     });
   }
+
 
   getAllRaps(): void {
     this.cinemasService.getCinemas().subscribe({
@@ -315,7 +327,7 @@ export class RapComponent implements OnInit {
     // Phương thức xử lý chỉnh sửa phòng
     console.log('Đang chỉnh sửa phòng với chỉ số:', index);
   }
-  
+
   deleteRoom(index: number): void {
     if (index >= 0 && index < this.roomLisst.length) {
       const room = this.roomLisst[index];
@@ -333,7 +345,7 @@ export class RapComponent implements OnInit {
       });
     }
   }
-  
+
   getRoom(id: string): void {
     this.roomService.getByCinemaId(id)
       .subscribe({
@@ -349,6 +361,7 @@ export class RapComponent implements OnInit {
   }
 
   showRomDialog(idRoom: string): void {
-    this.router.navigate(['/layout', 'room', idRoom]);
+    this.router.navigate(['/layout', 'room', idRoom, '1', '1']);
   }
+
 }
