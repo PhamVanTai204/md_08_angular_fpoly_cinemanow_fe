@@ -20,6 +20,9 @@ export class PhimComponent implements OnInit {
   totalPhim: number = 0;
   isLoading: boolean = false;
 
+  // Validation errors
+  validationErrors: { [key: string]: string } = {};
+
   // Modal variables
   showModal: boolean = false;
   isEdit: boolean = false;
@@ -30,6 +33,7 @@ export class PhimComponent implements OnInit {
   showDeleteModal: boolean = false;
   deletePhim: PhimDto | null = null;
   deletePassword: string = '';
+  deletePasswordError: string = '';
 
   constructor(
     private phimService: PhimService,
@@ -271,7 +275,13 @@ export class PhimComponent implements OnInit {
     }
   }
 
+  // Reset validation errors
+  resetValidationErrors(): void {
+    this.validationErrors = {};
+  }
+
   themPhim(): void {
+    this.resetValidationErrors();
     this.isEdit = false;
     this.editIndex = null;
     this.currentPhim = new PhimDto();
@@ -297,6 +307,7 @@ export class PhimComponent implements OnInit {
   }
 
   suaPhim(phim: PhimDto, index: number): void {
+    this.resetValidationErrors();
     this.isEdit = true;
     this.editIndex = index;
     this.currentPhim = phim.clone();
@@ -328,6 +339,127 @@ export class PhimComponent implements OnInit {
       // Remove genre from the list
       this.currentPhim.genre_film = this.currentPhim.genre_film.filter(id => id !== genreId);
     }
+
+    // Clear genre validation error if at least one genre is selected
+    if (this.currentPhim.genre_film.length > 0) {
+      delete this.validationErrors['genre_film'];
+    }
+  }
+
+  validatePhimForm(): boolean {
+    this.resetValidationErrors();
+    let isValid = true;
+
+    // Validate title
+    if (!this.currentPhim.title || this.currentPhim.title.trim() === '') {
+      this.validationErrors['title'] = 'Vui lòng nhập tên phim';
+      isValid = false;
+    } else if (this.currentPhim.title.trim().length < 2) {
+      this.validationErrors['title'] = 'Tên phim phải có ít nhất 2 ký tự';
+      isValid = false;
+    } else if (this.currentPhim.title.trim().length > 200) {
+      this.validationErrors['title'] = 'Tên phim không được vượt quá 200 ký tự';
+      isValid = false;
+    }
+
+    // Validate director
+    if (!this.currentPhim.director || this.currentPhim.director.trim() === '') {
+      this.validationErrors['director'] = 'Vui lòng nhập tên đạo diễn';
+      isValid = false;
+    }
+
+    // Validate age_limit
+    if (!this.currentPhim.age_limit || this.currentPhim.age_limit <= 0) {
+      this.validationErrors['age_limit'] = 'Vui lòng nhập giới hạn tuổi hợp lệ';
+      isValid = false;
+    } else if (this.currentPhim.age_limit > 21) {
+      this.validationErrors['age_limit'] = 'Giới hạn tuổi không được vượt quá 21';
+      isValid = false;
+    }
+
+    // Validate language
+    if (!this.currentPhim.language || this.currentPhim.language.trim() === '') {
+      this.validationErrors['language'] = 'Vui lòng nhập ngôn ngữ phim';
+      isValid = false;
+    }
+
+    // Validate genre_film
+    if (!this.currentPhim.genre_film || this.currentPhim.genre_film.length === 0) {
+      this.validationErrors['genre_film'] = 'Vui lòng chọn ít nhất một thể loại phim';
+      isValid = false;
+    }
+
+    // Validate image_film (poster URL)
+    if (!this.currentPhim.image_film || this.currentPhim.image_film.trim() === '') {
+      this.validationErrors['image_film'] = 'Vui lòng nhập URL hình ảnh poster';
+      isValid = false;
+    } else if (!this.isValidUrl(this.currentPhim.image_film)) {
+      this.validationErrors['image_film'] = 'URL hình ảnh không hợp lệ';
+      isValid = false;
+    }
+
+    // Validate trailer_film URL
+    if (!this.currentPhim.trailer_film || this.currentPhim.trailer_film.trim() === '') {
+      this.validationErrors['trailer_film'] = 'Vui lòng nhập URL trailer phim';
+      isValid = false;
+    } else if (!this.isValidUrl(this.currentPhim.trailer_film)) {
+      this.validationErrors['trailer_film'] = 'URL trailer không hợp lệ';
+      isValid = false;
+    }
+
+    // Validate duration
+    if (!this.currentPhim.duration || this.currentPhim.duration.trim() === '') {
+      this.validationErrors['duration'] = 'Vui lòng nhập thời lượng phim';
+      isValid = false;
+    }
+
+    // Validate release_date
+    if (!this.currentPhim.release_date) {
+      this.validationErrors['release_date'] = 'Vui lòng chọn ngày phát hành';
+      isValid = false;
+    }
+
+    // Validate end_date (must be after release_date)
+    if (!this.currentPhim.end_date) {
+      this.validationErrors['end_date'] = 'Vui lòng chọn ngày kết thúc';
+      isValid = false;
+    } else if (new Date(this.currentPhim.end_date) < new Date(this.currentPhim.release_date)) {
+      this.validationErrors['end_date'] = 'Ngày kết thúc phải sau ngày phát hành';
+      isValid = false;
+    }
+
+    // Validate cast
+    if (!this.currentPhim.cast || this.currentPhim.cast.trim() === '') {
+      this.validationErrors['cast'] = 'Vui lòng nhập danh sách diễn viên';
+      isValid = false;
+    }
+
+    // Validate ratings
+    if (this.currentPhim.ratings < 0 || this.currentPhim.ratings > 10) {
+      this.validationErrors['ratings'] = 'Đánh giá phải từ 0 đến 10';
+      isValid = false;
+    }
+
+    // Validate describe (description)
+    if (!this.currentPhim.describe || this.currentPhim.describe.trim() === '') {
+      this.validationErrors['describe'] = 'Vui lòng nhập mô tả phim';
+      isValid = false;
+    } else if (this.currentPhim.describe.trim().length < 10) {
+      this.validationErrors['describe'] = 'Mô tả phim phải có ít nhất 10 ký tự';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  // Helper method to validate URLs
+  isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   savePhim(): void {
@@ -342,7 +474,13 @@ export class PhimComponent implements OnInit {
     }
 
     if (!this.validatePhimForm()) {
-      alert('Please fill in all film information!');
+      // Scroll to first error
+      setTimeout(() => {
+        const firstErrorField = document.querySelector('.error-field');
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
 
@@ -357,7 +495,7 @@ export class PhimComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error updating film:', error);
-          alert('Failed to update film! ' + (error.message || 'Unknown error'));
+          alert('Cập nhật phim thất bại! ' + (error.message || 'Lỗi không xác định'));
         }
       });
     } else {
@@ -369,50 +507,35 @@ export class PhimComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error adding film:', error);
-          alert('Failed to add film! ' + (error.message || 'Unknown error'));
+          alert('Thêm phim thất bại! ' + (error.message || 'Lỗi không xác định'));
         }
       });
     }
   }
 
-  validatePhimForm(): boolean {
-    return !!(
-      this.currentPhim.title &&
-      this.currentPhim.image_film &&
-      this.currentPhim.genre_film?.length &&
-      this.currentPhim.duration &&
-      this.currentPhim.release_date &&
-      this.currentPhim.director &&
-      this.currentPhim.language &&
-      this.currentPhim.age_limit && this.currentPhim.age_limit > 0 &&
-      this.currentPhim.trailer_film &&
-      this.currentPhim.describe &&
-      this.currentPhim.cast &&
-      this.currentPhim.ratings >= 0
-    );
-  }
-
   closeModal(): void {
     this.showModal = false;
+    this.resetValidationErrors();
   }
 
   xoaPhim(phim: PhimDto, index: number): void {
     this.deletePhim = phim;
     this.showDeleteModal = true;
     this.deletePassword = '';
+    this.deletePasswordError = '';
   }
 
   confirmXoaPhim(): void {
     if (!this.deletePhim) return;
 
     if (this.deletePassword !== 'hiendz') {
-      alert('Incorrect password!');
+      this.deletePasswordError = 'Mật khẩu không chính xác!';
       return;
     }
 
     const phimId = this.deletePhim.id ? this.getIdAsString(this.deletePhim.id) : null;
     if (!phimId) {
-      alert('Cannot delete film: ID does not exist!');
+      alert('Không thể xóa phim: ID không tồn tại!');
       return;
     }
 
@@ -423,7 +546,7 @@ export class PhimComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error deleting film:', error);
-        alert('Failed to delete film!');
+        alert('Xóa phim thất bại: ' + (error.message || 'Lỗi không xác định'));
       }
     });
   }
@@ -432,6 +555,7 @@ export class PhimComponent implements OnInit {
     this.showDeleteModal = false;
     this.deletePhim = null;
     this.deletePassword = '';
+    this.deletePasswordError = '';
   }
 
   formatDate(dateString: string): string {

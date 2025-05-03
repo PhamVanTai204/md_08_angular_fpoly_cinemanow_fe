@@ -18,12 +18,11 @@ export class CinemasService {
 
   constructor(private http: HttpClient) { }
 
-
   /**
- * Lấy danh sách rạp theo ID phim
- * Endpoint: /cinema/get-by-movie/:filmId
- * Trả về: { code: 200, data: { cinemas: [...] } }
- */
+   * Lấy danh sách rạp theo ID phim
+   * Endpoint: /cinema/get-by-movie/:filmId
+   * Trả về: { code: 200, data: { cinemas: [...] } }
+   */
   getCinemaByFilm(filmId: string): Observable<CinemaDto[]> {
     return this.http.get<any>(`${this.apiUrlgetByFilm}${filmId}`).pipe(
       map(response => {
@@ -34,12 +33,11 @@ export class CinemasService {
         ) {
           return response.data.map((item: any) => CinemaDto.fromJS(item));
         }
-        throw new Error('Failed to fetch cinemas by film ID');
+        throw new Error('Không thể tải danh sách rạp theo ID phim');
       }),
       catchError(this.handleError)
     );
   }
-
 
   /**
    * Lấy danh sách rạp
@@ -56,7 +54,7 @@ export class CinemasService {
         ) {
           return response.data.cinemas.map((item: any) => CinemaDto.fromJS(item));
         }
-        throw new Error('Failed to fetch cinemas: data.cinemas is not an array');
+        throw new Error('Không thể tải danh sách rạp: Dữ liệu không hợp lệ');
       }),
       catchError(this.handleError)
     );
@@ -71,7 +69,7 @@ export class CinemasService {
         if (response && response.code === 200 && response.data) {
           return CinemaDto.fromJS(response.data);
         }
-        throw new Error('Failed to fetch cinema by ID');
+        throw new Error('Không thể tải thông tin rạp');
       }),
       catchError(this.handleError)
     );
@@ -97,7 +95,7 @@ export class CinemasService {
           }
         }
         // Nếu server trả về code khác, ném lỗi
-        throw new Error(response && response.error ? response.error : 'Failed to add cinema');
+        throw new Error(response && response.error ? response.error : 'Không thể thêm rạp');
       }),
       catchError(this.handleError)
     );
@@ -112,7 +110,7 @@ export class CinemasService {
         if (response && response.code === 200 && response.data) {
           return CinemaDto.fromJS(response.data);
         }
-        throw new Error('Failed to edit cinema');
+        throw new Error('Không thể cập nhật thông tin rạp');
       }),
       catchError(this.handleError)
     );
@@ -127,7 +125,7 @@ export class CinemasService {
         if (response && response.code === 200) {
           return response;
         }
-        throw new Error('Failed to delete cinema');
+        throw new Error('Không thể xóa rạp');
       }),
       catchError(this.handleError)
     );
@@ -147,7 +145,7 @@ export class CinemasService {
         ) {
           return response.data.cinemas.map((item: any) => CinemaDto.fromJS(item));
         }
-        throw new Error('Failed to search cinemas');
+        throw new Error('Không thể tìm kiếm rạp');
       }),
       catchError(this.handleError)
     );
@@ -155,6 +153,12 @@ export class CinemasService {
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('CinemasService Error:', error);
-    return throwError(() => new Error(error.message || 'Server error'));
+    let errorMessage = 'Đã xảy ra lỗi khi thực hiện thao tác.';
+    
+    if (error.error && error.error.message) {
+      errorMessage = error.error.message;
+    }
+    
+    return throwError(() => new Error(errorMessage));
   }
 }

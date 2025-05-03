@@ -81,6 +81,7 @@ button, a {
   position: relative;
   z-index: 10;
 }
+
 /* Modal styling */
 .modal-container {
   max-height: 90vh;
@@ -127,7 +128,7 @@ input:focus, select:focus, textarea:focus {
 
 .table-container {
   flex: 1;
-  overflow: auto; /* Fixed: changed from overflow-auto to overflow: auto */
+  overflow: auto;
 }
 
 /* Fixed bottom pagination on smaller screens */
@@ -141,6 +142,7 @@ input:focus, select:focus, textarea:focus {
     z-index: 10;
   }
 }
+
 @media (max-width: 768px) {
   .pagination-container {
     flex-direction: column;
@@ -158,4 +160,46 @@ input:focus, select:focus, textarea:focus {
   .pagination-size-selector {
     order: 3;
   }
+}
+
+/* Validation styling */
+.border-red-500 {
+  border-color: #ef4444 !important;
+}
+
+.text-red-500 {
+  color: #ef4444 !important;
+}
+
+input.ng-invalid.ng-touched, 
+select.ng-invalid.ng-touched, 
+textarea.ng-invalid.ng-touched {
+  border-color: #ef4444;
+}
+
+/* Error message styling */
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Highlight inputs with errors */
+.error-field.border-red-500 {
+  border-width: 1.5px;
+}
+
+/* Form section with validation errors */
+.form-section.has-error {
+  background-color: rgba(239, 68, 68, 0.05);
+  border-color: #ef4444;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+}
+
+/* Required field indication */
+.required-field::after {
+  content: '*';
+  color: #ef4444;
+  margin-left: 0.25rem;
 }

@@ -18,7 +18,13 @@ export class TheLoaiPhimComponent implements OnInit {
   genreName = '';
   formSubmitted = false;
 
-  // Data management
+ 
+  // Validation errors
+  validationErrors = {
+    genreName: ''
+  };
+
+   // Data management
   genres: GenresDto[] = [];
   filteredGenres: GenresDto[] = [];
   editIndex: number | null = null;
@@ -134,6 +140,7 @@ export class TheLoaiPhimComponent implements OnInit {
   openDialog(): void {
     this.genreName = '';
     this.formSubmitted = false;
+    this.resetValidationErrors();
     this.showDialog = true;
   }
 
@@ -148,6 +155,62 @@ export class TheLoaiPhimComponent implements OnInit {
     this.editIndex = null;
     this.deleteIndex = null;
     this.formSubmitted = false;
+    this.resetValidationErrors();
+  }
+
+  /**
+   * Reset all validation errors
+   */
+  resetValidationErrors(): void {
+    this.validationErrors = {
+      genreName: ''
+    };
+  }
+
+  /**
+   * Validate form input fields
+   * @returns boolean indicating if the form is valid
+   */
+  validateForm(): boolean {
+    this.resetValidationErrors();
+    let isValid = true;
+
+    // Validate genre name
+    if (!this.genreName.trim()) {
+      this.validationErrors.genreName = 'Vui lòng nhập tên thể loại';
+      isValid = false;
+    } else if (this.genreName.trim().length < 2) {
+      this.validationErrors.genreName = 'Tên thể loại phải có ít nhất 2 ký tự';
+      isValid = false;
+    } else if (this.genreName.trim().length > 50) {
+      this.validationErrors.genreName = 'Tên thể loại không được vượt quá 50 ký tự';
+      isValid = false;
+    }
+
+    // Kiểm tra tên thể loại đã tồn tại hay chưa (chỉ khi thêm mới)
+    if (isValid && !this.showEditDialog) {
+      const existingGenre = this.genres.find(
+        g => g.genreName.toLowerCase() === this.genreName.trim().toLowerCase()
+      );
+      if (existingGenre) {
+        this.validationErrors.genreName = 'Thể loại này đã tồn tại';
+        isValid = false;
+      }
+    }
+
+    // Kiểm tra trùng tên khi cập nhật (trừ chính bản thân nó)
+    if (isValid && this.showEditDialog && this.editIndex !== null) {
+      const existingGenre = this.genres.find(
+        (g, index) => index !== this.editIndex &&
+          g.genreName.toLowerCase() === this.genreName.trim().toLowerCase()
+      );
+      if (existingGenre) {
+        this.validationErrors.genreName = 'Thể loại này đã tồn tại';
+        isValid = false;
+      }
+    }
+
+    return isValid;
   }
 
   /**
@@ -156,8 +219,9 @@ export class TheLoaiPhimComponent implements OnInit {
   saveGenre(): void {
     this.formSubmitted = true;
 
-    if (this.genreName.trim()) {
-      this.loading = true;
+ 
+    if (this.validateForm()) {
+       this.loading = true;
 
       const newGenre = new GenresDto();
       newGenre.genreName = this.genreName.trim();
@@ -171,6 +235,10 @@ export class TheLoaiPhimComponent implements OnInit {
         error: (error) => {
           console.error('Lỗi khi thêm thể loại:', error);
           this.loading = false;
+          // Hiển thị lỗi từ server nếu có
+          if (error.message) {
+            this.validationErrors.genreName = 'Lỗi: ' + error.message;
+          }
         }
       });
     }
@@ -183,6 +251,7 @@ export class TheLoaiPhimComponent implements OnInit {
     this.editIndex = index;
     this.genreName = this.genres[index].genreName || '';
     this.formSubmitted = false;
+    this.resetValidationErrors();
     this.showEditDialog = true;
   }
 
@@ -192,8 +261,9 @@ export class TheLoaiPhimComponent implements OnInit {
   updateGenre(): void {
     this.formSubmitted = true;
 
-    if (this.genreName.trim() && this.editIndex !== null) {
-      this.loading = true;
+ 
+    if (this.validateForm() && this.editIndex !== null) {
+       this.loading = true;
 
       const updatedGenre = new GenresDto();
       updatedGenre.id = this.genres[this.editIndex].id;
@@ -208,6 +278,10 @@ export class TheLoaiPhimComponent implements OnInit {
         error: (error) => {
           console.error('Lỗi khi cập nhật thể loại:', error);
           this.loading = false;
+          // Hiển thị lỗi từ server nếu có
+          if (error.message) {
+            this.validationErrors.genreName = 'Lỗi: ' + error.message;
+          }
         }
       });
     }

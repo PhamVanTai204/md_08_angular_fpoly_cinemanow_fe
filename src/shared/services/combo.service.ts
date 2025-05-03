@@ -12,6 +12,7 @@ export interface Combo {
   description_combo: string;
   image_combo: string;
   user_id?: any; // Có thể là string hoặc object chứa thông tin người dùng
+  quantity?: number; // Thêm field quantity
 }
 
 // Định nghĩa kiểu dữ liệu cho response
@@ -40,7 +41,9 @@ export class ComboService {
       'Authorization': token ? `Bearer ${token}` : ''
     });
   }
-  getAllCombos1(): Observable<ComboDto[]> {
+  
+  // Lấy tất cả combos với ComboDto
+  getAllCombos(): Observable<ComboDto[]> {
     const headers = this.getHeaders();
     return this.http.get<any>(`${this.baseUrl}/get-all`, { headers })
       .pipe(
@@ -54,6 +57,10 @@ export class ComboService {
             if (response.data && Array.isArray(response.data)) {
               return response.data.map((combo: any) => ComboDto.fromJS(combo));
             }
+            // Nếu response là object chứa mảng combos
+            else if (response.combos && Array.isArray(response.combos)) {
+              return response.combos.map((combo: any) => ComboDto.fromJS(combo));
+            }
           }
           // Trường hợp không tìm thấy mảng, trả về mảng rỗng
           console.warn('API không trả về dữ liệu mong đợi:', response);
@@ -65,8 +72,9 @@ export class ComboService {
         })
       );
   }
-  // Lấy tất cả combos
-  getAllCombos(): Observable<Combo[]> {
+
+  // Giữ lại phương thức này để tương thích với mã cũ nhưng đổi tên
+  getAllCombosLegacy(): Observable<Combo[]> {
     const headers = this.getHeaders();
     return this.http.get<any>(`${this.baseUrl}/get-all`, { headers })
       .pipe(
@@ -90,14 +98,14 @@ export class ComboService {
           return [];
         }),
         catchError(error => {
-          console.error('Error in getAllCombos:', error);
+          console.error('Error in getAllCombosLegacy:', error);
           throw error;
         })
       );
   }
 
-  // Lấy chi tiết combo
-  getComboById(id: string): Observable<Combo> {
+  // Lấy chi tiết combo theo ComboDto
+  getComboById(id: string): Observable<ComboDto> {
     const headers = this.getHeaders();
     return this.http.get<any>(`${this.baseUrl}/get-by-id/${id}`, { headers })
       .pipe(
@@ -105,9 +113,9 @@ export class ComboService {
           // Xử lý các trường hợp response khác nhau
           if (typeof response === 'object') {
             if (response.data && !Array.isArray(response.data)) {
-              return response.data;
+              return ComboDto.fromJS(response.data);
             } else if (!response.data && !response.combos) {
-              return response as Combo;
+              return ComboDto.fromJS(response);
             }
           }
           throw new Error('API không trả về dữ liệu combo hợp lệ');
@@ -120,31 +128,21 @@ export class ComboService {
   }
 
   // Tạo combo mới
-  createCombo(combo: Omit<Combo, '_id'>): Observable<Combo> {
+  createCombo(combo: Partial<ComboDto>): Observable<ComboDto> {
     const headers = this.getHeaders();
 
-    // Đảm bảo rằng combo đủ các trường cần thiết
-    const comboToCreate = {
-      combo_id: combo.combo_id,
-      name_combo: combo.name_combo,
-      price_combo: Number(combo.price_combo),
-      description_combo: combo.description_combo || '',
-      image_combo: combo.image_combo || '',
-      user_id: combo.user_id || null // Include user_id if provided
-    };
+    console.log('Creating combo with data:', combo);
 
-    console.log('Creating combo with data:', comboToCreate);
-
-    return this.http.post<any>(`${this.baseUrl}/create`, comboToCreate, { headers })
+    return this.http.post<any>(`${this.baseUrl}/create`, combo.toJSON ? combo.toJSON() : combo, { headers })
       .pipe(
         map((response: any) => {
           console.log('Create combo response:', response);
           // Xử lý các trường hợp response khác nhau
           if (typeof response === 'object') {
             if (response.data && !Array.isArray(response.data)) {
-              return response.data;
+              return ComboDto.fromJS(response.data);
             } else if (!response.data && !response.combos) {
-              return response as Combo;
+              return ComboDto.fromJS(response);
             }
           }
           throw new Error('API không trả về dữ liệu combo sau khi tạo');
@@ -157,31 +155,21 @@ export class ComboService {
   }
 
   // Cập nhật combo
-  updateCombo(id: string, combo: Partial<Combo>): Observable<Combo> {
+  updateCombo(id: string, combo: Partial<ComboDto>): Observable<ComboDto> {
     const headers = this.getHeaders();
 
-    // Đảm bảo rằng combo đủ các trường cần thiết để cập nhật
-    const comboToUpdate = {
-      combo_id: combo.combo_id,
-      name_combo: combo.name_combo,
-      price_combo: Number(combo.price_combo),
-      description_combo: combo.description_combo,
-      image_combo: combo.image_combo,
-      user_id: combo.user_id // Include user_id if provided
-    };
+    console.log('Updating combo with data:', combo);
 
-    console.log('Updating combo with data:', comboToUpdate);
-
-    return this.http.put<any>(`${this.baseUrl}/update/${id}`, comboToUpdate, { headers })
+    return this.http.put<any>(`${this.baseUrl}/update/${id}`, combo.toJSON ? combo.toJSON() : combo, { headers })
       .pipe(
         map((response: any) => {
           console.log('Update combo response:', response);
           // Xử lý các trường hợp response khác nhau
           if (typeof response === 'object') {
             if (response.data && !Array.isArray(response.data)) {
-              return response.data;
+              return ComboDto.fromJS(response.data);
             } else if (!response.data && !response.combos) {
-              return response as Combo;
+              return ComboDto.fromJS(response);
             }
           }
           throw new Error('API không trả về dữ liệu combo sau khi cập nhật');

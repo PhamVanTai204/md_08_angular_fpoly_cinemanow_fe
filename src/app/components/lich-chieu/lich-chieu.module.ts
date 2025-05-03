@@ -1,9 +1,8 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';  // Quan trọng để sử dụng ngModel
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { LichChieuComponent } from './lich-chieu.component';
-import { DatePipe } from '@angular/common';  // Để sử dụng date pipe
 
 const routes: Routes = [
   {
@@ -13,7 +12,9 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [LichChieuComponent],
+  declarations: [
+    LichChieuComponent
+  ],
   imports: [
     CommonModule,
     FormsModule,  // Cần thiết cho [(ngModel)]

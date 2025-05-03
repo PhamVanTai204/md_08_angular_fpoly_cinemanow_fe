@@ -1,12 +1,20 @@
 <div>
   <h1 class="text-3xl font-bold mb-6 text-gray-800">DANH SÁCH RẠP</h1>
 
+  <!-- Thông báo lỗi -->
+  <div *ngIf="showError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+    <span class="block sm:inline">{{ errorMessage }}</span>
+    <span class="absolute top-0 bottom-0 right-0 px-4 py-3" (click)="showError = false">
+      <i class="fas fa-times"></i>
+    </span>
+  </div>
+
   <!-- Search section -->
   <div class="mb-6">
     <div class="relative w-full md:w-64">
-      <input type="text" placeholder="Tìm kiếm rạp"
+      <input type="text" [(ngModel)]="searchText" (keyup.enter)="searchRaps()" placeholder="Tìm kiếm rạp"
         class="w-full border border-gray-300 rounded-lg py-2 px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700" />
-      <button
+      <button (click)="searchRaps()"
         class="absolute right-1 top-1 bottom-1 px-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
         <i class="fas fa-search"></i>
       </button>
@@ -15,7 +23,7 @@
 
   <!-- Card grid for cinemas -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let rap of rapList; let i = index"
+    <div *ngFor="let rap of pagedRapList; let i = index"
       class="bg-white rounded-lg shadow hover:shadow-lg transition-all border-l-4 border-red-500 card-hover">
       <div class="p-4">
         <div class="flex justify-between items-start mb-3">
@@ -53,8 +61,30 @@
     </div>
   </div>
 
+  <!-- Phân trang -->
+  <div *ngIf="rapList.length > 0" class="flex justify-center mt-6 space-x-2">
+    <button (click)="prevPage()" [disabled]="currentPage === 1"
+      class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  
+    <div *ngFor="let page of getPageNumbers()">
+      <button *ngIf="page !== '...'" [class.bg-red-500]="page === currentPage" [class.text-white]="page === currentPage"
+        [class.bg-gray-200]="page !== currentPage" (click)="goToPage(+page)"
+        class="px-3 py-1 rounded mx-1">
+        {{ page }}
+      </button>
+      <span *ngIf="page === '...'" class="px-2">...</span>
+    </div>
+  
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+      class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
   <!-- Hiển thị thông báo khi không có rạp nào -->
-  <div *ngIf="rapList.length === 0"
+  <div *ngIf="pagedRapList.length === 0"
     class="flex flex-col items-center justify-center py-12 bg-white rounded-lg shadow-sm mt-6 empty-state">
     <i class="fas fa-theater-masks text-5xl text-gray-300 mb-4"></i>
     <p class="text-gray-500 text-xl mb-4">Chưa có rạp nào được thêm</p>
@@ -108,11 +138,14 @@
         <!-- Số phòng -->
         <div class="mb-4">
           <label class="block font-medium mb-1 text-gray-700">Số phòng <span class="text-red-500">*</span></label>
-          <input type="number" name="totalRoom" [(ngModel)]="newRap.totalRoom" required #totalRoom="ngModel"
+          <input type="number" name="totalRoom" [(ngModel)]="newRap.totalRoom" required #totalRoom="ngModel" min="1"
             class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
             placeholder="Nhập số phòng" />
           <div *ngIf="totalRoom.invalid && totalRoom.touched" class="text-red-500 text-sm mt-1">
             Vui lòng nhập số phòng
+          </div>
+          <div *ngIf="totalRoom.value <= 0 && totalRoom.touched" class="text-red-500 text-sm mt-1">
+            Số phòng phải lớn hơn 0
           </div>
         </div>
 
@@ -169,10 +202,14 @@
           <div>
             <label class="block text-gray-700 font-medium mb-1">Số phòng <span class="text-red-500">*</span></label>
             <input type="number" name="totalRoom" [(ngModel)]="editRapData.totalRoom" required #editTotalRoom="ngModel"
+              min="1"
               class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
               placeholder="Nhập số phòng" />
             <div *ngIf="editTotalRoom.invalid && editTotalRoom.touched" class="text-red-500 text-sm mt-1">Vui lòng nhập
               số phòng</div>
+            <div *ngIf="editTotalRoom.value <= 0 && editTotalRoom.touched" class="text-red-500 text-sm mt-1">
+              Số phòng phải lớn hơn 0
+            </div>
           </div>
         </div>
 
@@ -262,27 +299,33 @@
         </button>
       </div>
 
-      <form (ngSubmit)="saveNewRoom()" class="space-y-4">
+      <form (ngSubmit)="saveNewRoom()" #addRoomForm="ngForm" class="space-y-4">
         <!-- Tên phòng -->
         <div>
           <label for="room_name" class="block text-gray-700 font-medium mb-1">Tên phòng <span
               class="text-red-500">*</span></label>
-          <input type="text" id="room_name" [(ngModel)]="room_name" name="room_name" required
+          <input type="text" id="room_name" [(ngModel)]="room_name" name="room_name" required #roomName="ngModel"
             class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
             placeholder="Nhập tên phòng" />
+          <div *ngIf="roomName.invalid && roomName.touched" class="text-red-500 text-sm mt-1">
+            Vui lòng nhập tên phòng
+          </div>
         </div>
 
         <!-- Loại phòng -->
         <div>
           <label for="room_style" class="block text-gray-700 font-medium mb-1">Loại phòng <span
               class="text-red-500">*</span></label>
-          <select id="room_style" [(ngModel)]="room_style" name="room_style" required
+          <select id="room_style" [(ngModel)]="room_style" name="room_style" required #roomStyle="ngModel"
             class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all">
             <option value="" disabled selected>Chọn loại phòng</option>
             <option value="2D">2D</option>
             <option value="3D">3D</option>
             <option value="IMAX">IMAX</option>
           </select>
+          <div *ngIf="roomStyle.invalid && roomStyle.touched" class="text-red-500 text-sm mt-1">
+            Vui lòng chọn loại phòng
+          </div>
         </div>
 
         <!-- Tổng số ghế -->
@@ -290,8 +333,15 @@
           <label for="total_seat" class="block text-gray-700 font-medium mb-1">Tổng số ghế <span
               class="text-red-500">*</span></label>
           <input type="number" id="total_seat" [(ngModel)]="total_seat" name="total_seat" required min="1"
+            #totalSeat="ngModel"
             class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
             placeholder="Nhập tổng số ghế" />
+          <div *ngIf="totalSeat.invalid && totalSeat.touched" class="text-red-500 text-sm mt-1">
+            Vui lòng nhập tổng số ghế
+          </div>
+          <div *ngIf="totalSeat.value <= 0 && totalSeat.touched" class="text-red-500 text-sm mt-1">
+            Số ghế phải lớn hơn 0
+          </div>
         </div>
 
         <div class="flex justify-end space-x-2 mt-6">
@@ -300,7 +350,8 @@
             Hủy
           </button>
           <button type="submit"
-            class="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-medium transition-colors shadow-md">
+            class="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-medium transition-colors shadow-md"
+            [disabled]="addRoomForm.invalid">
             Lưu
           </button>
         </div>
