@@ -13,23 +13,23 @@ export class TheLoaiPhimComponent implements OnInit {
   showDialog = false;
   showEditDialog = false;
   showDeleteConfirm = false;
-  
+
   // Form fields
   genreName = '';
   formSubmitted = false;
-  
+
   // Data management
   genres: GenresDto[] = [];
   filteredGenres: GenresDto[] = [];
   editIndex: number | null = null;
   deleteIndex: number | null = null;
-  
+
   // Search functionality
   searchTerm = '';
-  
+
   // Loading state
   loading = false;
-  
+
   // Pagination - cố định 10 hàng mỗi trang
   page = 1;
   pageSize = 9; // Luôn hiển thị 10 hàng
@@ -69,15 +69,15 @@ export class TheLoaiPhimComponent implements OnInit {
       this.filteredGenres = [...this.genres];
     } else {
       const term = this.searchTerm.toLowerCase();
-      this.filteredGenres = this.genres.filter(genre => 
+      this.filteredGenres = this.genres.filter(genre =>
         genre.genreName?.toLowerCase().includes(term)
       );
     }
     this.calculateTotalPages();
     // Reset to first page when filter changes
-    this.page = 1; 
+    this.page = 1;
   }
-  
+
   /**
    * Calculate total pages for pagination
    */
@@ -85,7 +85,7 @@ export class TheLoaiPhimComponent implements OnInit {
     this.totalPages = Math.ceil(this.filteredGenres.length / this.pageSize);
     if (this.totalPages === 0) this.totalPages = 1;
   }
-  
+
   /**
    * Navigate to previous page
    */
@@ -94,7 +94,7 @@ export class TheLoaiPhimComponent implements OnInit {
       this.page--;
     }
   }
-  
+
   /**
    * Navigate to next page
    */
@@ -103,7 +103,7 @@ export class TheLoaiPhimComponent implements OnInit {
       this.page++;
     }
   }
-  
+
   /**
    * Get items for the current page
    */
@@ -111,7 +111,7 @@ export class TheLoaiPhimComponent implements OnInit {
     const startIndex = (this.page - 1) * this.pageSize;
     return this.filteredGenres.slice(startIndex, startIndex + this.pageSize);
   }
-  
+
   /**
    * Get empty rows to fill up to exactly 10 rows
    */
@@ -120,7 +120,7 @@ export class TheLoaiPhimComponent implements OnInit {
     const emptyRowsCount = this.pageSize - currentItems;
     return Array(emptyRowsCount > 0 ? emptyRowsCount : 0).fill(0);
   }
-  
+
   /**
    * Find the index in the original array based on item in filtered array
    */
@@ -155,13 +155,13 @@ export class TheLoaiPhimComponent implements OnInit {
    */
   saveGenre(): void {
     this.formSubmitted = true;
-    
+
     if (this.genreName.trim()) {
       this.loading = true;
-      
+
       const newGenre = new GenresDto();
       newGenre.genreName = this.genreName.trim();
-      
+
       this.genresService.createGenre(newGenre).subscribe({
         next: () => {
           this.loadGenres();
@@ -191,14 +191,14 @@ export class TheLoaiPhimComponent implements OnInit {
    */
   updateGenre(): void {
     this.formSubmitted = true;
-    
+
     if (this.genreName.trim() && this.editIndex !== null) {
       this.loading = true;
-      
+
       const updatedGenre = new GenresDto();
       updatedGenre.id = this.genres[this.editIndex].id;
       updatedGenre.genreName = this.genreName.trim();
-      
+
       this.genresService.updateGenre(updatedGenre.id, updatedGenre).subscribe({
         next: () => {
           this.loadGenres();
@@ -220,7 +220,7 @@ export class TheLoaiPhimComponent implements OnInit {
     this.deleteIndex = index;
     this.showDeleteConfirm = true;
   }
-  
+
   /**
    * Cancel delete operation
    */
@@ -235,9 +235,9 @@ export class TheLoaiPhimComponent implements OnInit {
   deleteGenre(): void {
     if (this.deleteIndex !== null) {
       this.loading = true;
-      
+
       const genreToDelete = this.genres[this.deleteIndex];
-      
+
       if (genreToDelete.id) {
         this.genresService.deleteGenre(genreToDelete.id).subscribe({
           next: () => {
