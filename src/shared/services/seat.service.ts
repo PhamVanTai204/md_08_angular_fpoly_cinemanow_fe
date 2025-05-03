@@ -11,16 +11,33 @@ export class SeatService {
     private apiUrlGetbyrom = "http://127.0.0.1:3000/cinema/rooms/seats"; // Base URL
     private apiUrlAddMultiple = "http://127.0.0.1:3000/seats/addmuti"; // URL để tạo hàng loạt ghế
     private apiUrlUpdateSeat = "http://127.0.0.1:3000/seats/update/"; // URL để tạo hàng loạt ghế
+    private apiUrlCreateMutiSeat = "http://127.0.0.1:3000/seats/addmuti"; // URL để tạo hàng loạt ghế
 
     constructor(private http: HttpClient) { }
+    // URL cập nhật nhiều ghế
+    private apiUrlUpdateMultiple = "http://127.0.0.1:3000/seats/updatemuti";
+
+    // Phương thức cập nhật nhiều ghế
+    updateMultipleSeats(_ids: string[], seat_type: string, price_seat: number): Observable<any> {
+        const data = {
+            _ids,
+            seat_type,
+            price_seat
+        };
+
+        return this.http.put(this.apiUrlUpdateMultiple, data).pipe(
+            map(response => response),
+            catchError(this.handleError)
+        );
+    }
+
+
     // Phương thức thêm nhiều ghế
-    addMultipleSeats(room_id: string, rows: number, cols: number, seat_status: string, seat_type: string, price_seat: number): Observable<any> {
+    addMultipleSeats(room_id: string, rows: number, cols: number, price_seat: number): Observable<any> {
         const data = {
             room_id: room_id,
             rows: rows,
             cols: cols,
-            seat_status: seat_status,
-            seat_type: seat_type,
             price_seat: price_seat
         };
 

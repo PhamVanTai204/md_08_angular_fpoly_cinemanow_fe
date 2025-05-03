@@ -19,6 +19,7 @@ import { VNPaymentService } from '../../../shared/services/vnpayment.service';
 })
 export class RoomComponent implements OnInit {
   idRoom: string = '';
+  quanLyStatus: string = '0';
   seats: SeatDto[] = [];
   groupedSeats: { [key: string]: SeatDto[] } = {}; // Chứa các ghế đã nhóm theo hàng
   combos: ComboDto[] = [];
@@ -33,6 +34,20 @@ export class RoomComponent implements OnInit {
   orderInfo: string = '';
   paymentUrl: string = '';
   showtime_id: string = '';
+  showSeatEditDialog = false;
+  seatTypeLabels: { [key: string]: string } = {
+    standard: 'Thường',
+    vip: 'VIP',
+    couple: 'Cặp đôi'
+  };
+
+  //biến cho seat
+  selectedRowKey: string = '';
+  selectedType = 'standard';
+  selectedPrice = 40000;
+
+  seatTypes = ['standard', 'vip', 'couple'];
+
   constructor(
     public bsModalRef: BsModalRef,
     private seatService: SeatService,
@@ -41,6 +56,98 @@ export class RoomComponent implements OnInit {
     private comboService: ComboService,
     private vnPaymentService: VNPaymentService
   ) { }
+  // Tăng số lượng combo
+  increaseComboQuantity(combo: ComboDto): void {
+    const index = this.selectedCombos.findIndex(c => c.combo_id === combo.combo_id);
+    if (index !== -1) {
+      this.selectedCombos[index].quantity = (this.selectedCombos[index].quantity ?? 0) + 1;
+    }
+  }
+
+  // Giảm số lượng combo
+  decreaseComboQuantity(combo: ComboDto): void {
+    const index = this.selectedCombos.findIndex(c => c.combo_id === combo.combo_id);
+    if (index !== -1) {
+      const currentQuantity = this.selectedCombos[index].quantity ?? 0;
+      if (currentQuantity > 1) {
+        this.selectedCombos[index].quantity = currentQuantity - 1;
+      } else {
+        this.selectedCombos.splice(index, 1);
+      }
+    }
+  }
+
+  // Xóa combo khỏi danh sách
+  removeCombo(combo: ComboDto): void {
+    const index = this.selectedCombos.findIndex(c => c.combo_id === combo.combo_id);
+    if (index !== -1) {
+      this.selectedCombos.splice(index, 1);
+    }
+  }
+  getSeatColor(seat: SeatDto): string {
+    if (seat.seat_status === 'booked') {
+      return '#ef4444'; // Màu đỏ cho ghế đã bán
+    }
+    if (this.isSelected(seat)) {
+      return '#00F5FF'; // Màu xanh dương cho ghế đã chọn
+    }
+
+    switch (seat.seat_type) {
+      case 'vip': return '#FFE066'; // Màu vàng cam cho VIP
+      case 'couple': return '#00F5FF'; // Màu hồng cho ghế cặp đôi
+      default: return '#D1D1D1'; // Màu xám cho ghế thường (standard)
+    }
+  }
+  openSeatEditDialog(rowKey: string) {
+    this.selectedRowKey = rowKey;
+    this.showSeatEditDialog = true;
+  }
+
+  closeSeatEditDialog() {
+    this.showSeatEditDialog = false;
+  }
+
+  saveSeatEdit() {
+    const rowSeats = this.groupedSeats[this.selectedRowKey];
+    const ids = rowSeats.map(seat => seat._id);
+
+    this.seatService.updateMultipleSeats(ids, this.selectedType, this.selectedPrice).subscribe({
+      next: res => {
+        console.log('Cập nhật thành công:', res);
+        this.list();
+        this.closeSeatEditDialog();
+      },
+      error: err => {
+        console.error('Lỗi cập nhật:', err);
+      }
+    });
+  }
+
+  selectAllSeatsInRow(rowKey: string): void {
+    const rowSeats = this.groupedSeats[rowKey];
+
+    // Tạo biến ids chứa danh sách _id của ghế trong hàng
+    const ids = rowSeats.map(seat => seat._id);
+
+
+    console.log('Danh sách _ids:', ids);
+    this.seatService.updateMultipleSeats(
+      ids,
+      "standard",
+      40000
+    ).subscribe({
+      next: res => {
+        console.log('Cập nhật thành công:', res);
+      },
+      error: err => {
+        console.error('Lỗi cập nhật:', err);
+      }
+    });
+
+  }
+
+
+
   addToCart(combo: ComboDto): void {
     // Kiểm tra xem combo đã có trong selectedCombos chưa
     const existingComboIndex = this.selectedCombos.findIndex(existingCombo => existingCombo.combo_id === combo.combo_id);
@@ -77,9 +184,12 @@ export class RoomComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const idRoomParam = params.get('idRoom');
+
       const showtimeId = params.get('showtimeId');
       this.idRoom = idRoomParam || '';
       this.showtime_id = showtimeId ?? '';
+      this.quanLyStatus = params.get('quanLyStatus') ?? '0';
+
       if (this.idRoom) {
         this.list();
       } else {

@@ -15,9 +15,9 @@ export class RoomService {
     private createUrlRoom = 'http://127.0.0.1:3000/room/addroom';
 
     createRoom(cinema_id: string, room_name: string, room_style: string, total_seat: number): Observable<RoomDto> {
-        const body = { cinema_id, room_name, room_style, total_seat }
-        return this.http.post<RoomDto>(this.createUrlRoom, body).pipe(
-            map(response => new RoomDto(response)), // Chuyển đổi phản hồi thành RoomDto
+        const body = { cinema_id, room_name, room_style, total_seat };
+        return this.http.post<any>(this.createUrlRoom, body).pipe(
+            map(response => RoomDto.fromJS(response.data)), // chỉ lấy `data`
             catchError(this.handleError)
         );
     }

@@ -15,6 +15,7 @@ import { ShowTimeDialogComponent } from './show-time-dialog/show-time-dialog.com
   styleUrls: ['./giaodich.component.css']
 })
 export class GiaodichComponent implements OnInit {
+  Math = Math;
   searchTerm: string = '';
   danhSachPhim: PhimDto[] = [];
   danhSachTheLoai: GenresDto[] = [];
@@ -83,7 +84,6 @@ export class GiaodichComponent implements OnInit {
 
         this.isLoading = false;
         console.log(this.danhSachPhim);
-
       },
       error: (error) => {
         console.error('Lỗi khi tải danh sách phim:', error);
@@ -161,5 +161,54 @@ export class GiaodichComponent implements OnInit {
     // Nếu đã là string hoặc kiểu dữ liệu khác
     return String(idObject);
 
+  }
+  // Thêm vào GiaodichComponent
+  get totalPages(): number {
+    return Math.ceil(this.totalPhim / this.limit) || 1;
+  }
+
+  changePage(newPage: number): void {
+    if (newPage < 1 || newPage > this.totalPages) {
+      return;
+    }
+
+    this.page = newPage;
+    this.loadPhims();
+
+    // Scroll to top when changing page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  onLimitChange(): void {
+    // Reset to page 1 when changing limit to avoid empty pages
+    this.page = 1;
+
+    // Load films with new pagination settings
+    this.loadPhims();
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  getPaginationRange(): number[] {
+    const maxPagesToShow = 5;
+    const totalPages = this.totalPages;
+
+    // Simple case - show all pages if there are few
+    if (totalPages <= maxPagesToShow) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    // Complex case - decide which pages to show
+    let startPage = Math.max(1, this.page - Math.floor(maxPagesToShow / 2));
+    let endPage = startPage + maxPagesToShow - 1;
+
+    // Adjust if we're near the end
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    return Array.from({ length: (endPage - startPage) + 1 }, (_, i) => startPage + i);
   }
 }

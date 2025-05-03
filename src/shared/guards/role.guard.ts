@@ -18,7 +18,7 @@ export class RoleGuard implements CanActivate {
     private permissionService: PermissionService,
     private userService: UserService,
     private router: Router
-  ) {}
+  ) { }
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -26,34 +26,34 @@ export class RoleGuard implements CanActivate {
   ): Observable<boolean> {
     // Get allowed roles from route data
     const allowedRoles = route.data['allowedRoles'];
-    
+
     if (!allowedRoles) {
       console.warn('No roles specified for RoleGuard. Denying access by default.');
       this.router.navigate(['/']);
       return of(false);
     }
-    
+
     // Convert to array if it's a single role
     const requiredRoles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-    
+
     // Get current user synchronously first (for faster response)
     const currentUser = this.userService.getCurrentUser();
-    
+
     // Special handling for staff role (3)
     if (currentUser && currentUser.role === 3) {
       // Check if this is the 'rap' route or a route that starts with 'room'
       const path = route.routeConfig?.path || '';
       const isRapRoute = path === 'rap';
       const isRoomRoute = path.startsWith('room');
-      
+
       // If staff is trying to access anything other than 'rap' or 'room'
       if (!isRapRoute && !isRoomRoute) {
         console.log('Staff attempting to access restricted route:', path);
-        this.router.navigate(['/rap']);
+        this.router.navigate(['/giaodich']);
         return of(false);
       }
     }
-    
+
     // If we have the user data cached and can make a quick decision
     if (currentUser) {
       if (requiredRoles.includes(currentUser.role)) {
@@ -64,7 +64,7 @@ export class RoleGuard implements CanActivate {
         return of(false);
       }
     }
-    
+
     // Otherwise, do the full asynchronous check with the PermissionService
     return this.permissionService.hasPermission(requiredRoles).pipe(
       tap(hasPermission => {
@@ -102,7 +102,7 @@ export class RoleGuard implements CanActivate {
   private navigateToDefaultPage(userRole: number, currentUrl: string): void {
     // Store the current URL as return URL if needed later
     sessionStorage.setItem('returnUrl', currentUrl);
-    
+
     switch (userRole) {
       case 2: // Admin
         // Admins can go to the theloaiphim as default

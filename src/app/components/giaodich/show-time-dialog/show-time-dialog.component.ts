@@ -48,6 +48,6 @@ export class ShowTimeDialogComponent implements OnInit {
   showRomDialog(idRoom: string, showtimeId: string = ''): void {
     this._modalService.hide();
 
-    this.router.navigate(['/layout/room', idRoom, showtimeId]);
+    this.router.navigate(['/layout/room', idRoom, showtimeId, '0']);
   }
 }
