@@ -41,7 +41,31 @@ export class ComboService {
       'Authorization': token ? `Bearer ${token}` : ''
     });
   }
-  
+  getAllCombos1(): Observable<ComboDto[]> {
+    const headers = this.getHeaders();
+    return this.http.get<any>(`${this.baseUrl}/get-all`, { headers })
+      .pipe(
+        map((response: any) => {
+          // Nếu response là mảng, ánh xạ từng combo thành ComboDto
+          if (Array.isArray(response)) {
+            return response.map((combo: any) => ComboDto.fromJS(combo));
+          }
+          // Nếu response là object chứa mảng data
+          else if (response && typeof response === 'object') {
+            if (response.data && Array.isArray(response.data)) {
+              return response.data.map((combo: any) => ComboDto.fromJS(combo));
+            }
+          }
+          // Trường hợp không tìm thấy mảng, trả về mảng rỗng
+          console.warn('API không trả về dữ liệu mong đợi:', response);
+          return [];
+        }),
+        catchError(error => {
+          console.error('Error in getAllCombos:', error);
+          throw error;
+        })
+      );
+  }
   // Lấy tất cả combos với ComboDto
   getAllCombos(): Observable<ComboDto[]> {
     const headers = this.getHeaders();

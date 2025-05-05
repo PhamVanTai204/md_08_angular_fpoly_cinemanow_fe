@@ -8,6 +8,7 @@ import { ComboService } from '../../../shared/services/combo.service';
 import { TicketDto } from '../../../shared/dtos/ticketDto.dto';
 import { ComboDto } from '../../../shared/dtos/ComboDto.dto';
 import { VNPaymentDto } from '../../../shared/dtos/vnpaymentDto.dto';
+import { VNPaymentResponseDto } from '../../../shared/dtos/VNPaymentResponseDto.dto';
 import { VNPaymentService } from '../../../shared/services/vnpayment.service';
 
 @Component({
@@ -33,7 +34,7 @@ export class RoomComponent implements OnInit {
   orderInfo: string = '';
   paymentUrl: string = '';
   showtime_id: string = '';
-   showSeatEditDialog = false;
+  showSeatEditDialog = false;
   seatTypeLabels: { [key: string]: string } = {
     standard: 'Thường',
     vip: 'VIP',
@@ -47,7 +48,6 @@ export class RoomComponent implements OnInit {
 
   seatTypes = ['standard', 'vip', 'couple'];
 
- 
   constructor(
     public bsModalRef: BsModalRef,
     private seatService: SeatService,
@@ -56,7 +56,7 @@ export class RoomComponent implements OnInit {
     private comboService: ComboService,
     private vnPaymentService: VNPaymentService
   ) { }
-   // Tăng số lượng combo
+  // Tăng số lượng combo
   increaseComboQuantity(combo: ComboDto): void {
     const index = this.selectedCombos.findIndex(c => c.combo_id === combo.combo_id);
     if (index !== -1) {
@@ -148,12 +148,9 @@ export class RoomComponent implements OnInit {
 
 
 
- 
   addToCart(combo: ComboDto): void {
     // Kiểm tra xem combo đã có trong selectedCombos chưa
-    const existingComboIndex = this.selectedCombos.findIndex(existingCombo => 
-      existingCombo.combo_id === combo.combo_id
-    );
+    const existingComboIndex = this.selectedCombos.findIndex(existingCombo => existingCombo.combo_id === combo.combo_id);
 
     if (existingComboIndex !== -1) {
       // Nếu combo đã tồn tại, tăng số lượng của combo đó lên
@@ -182,6 +179,7 @@ export class RoomComponent implements OnInit {
       }
     );
   }
+
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -227,8 +225,8 @@ export class RoomComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.comboService.getAllCombos().subscribe({
-      next: (response: ComboDto[]) => {
+    this.comboService.getAllCombos1().subscribe({
+      next: (response) => {
         if (Array.isArray(response)) {
           this.combos = response;
           console.log(this.combos, "combo");
@@ -238,7 +236,7 @@ export class RoomComponent implements OnInit {
         }
         this.isLoading = false;
       },
-      error: (error: any) => {
+      error: (error) => {
         this.errorMessage = 'Không thể tải dữ liệu combo. Vui lòng thử lại sau.';
         this.isLoading = false;
         console.error('Error loading combos:', error);
@@ -322,18 +320,21 @@ export class RoomComponent implements OnInit {
         row_of_seat: seat.row_of_seat
       })),
       combos: this.selectedCombos.map(combo => new ComboDto({
-        combo_id: combo.combo_id, // Sử dụng combo_id thay vì id
-        user_id: combo.user_id, 
-        name_combo: combo.name_combo,
+        combo_id: combo.id,
+        user_id: combo.user_id, // Nếu có
+        name_combo: combo.name_combo, // Nếu có
         price_combo: combo.price_combo,
-        description_combo: combo.description_combo,
-        image_combo: combo.image_combo,
+        description_combo: combo.description_combo, // Nếu có
+        image_combo: combo.image_combo, // Nếu có
         quantity: combo.quantity ?? 1, // Nếu không có, fallback = 1
       })),
       total_amount: this.calculateTotalAmount(),
       status: "pending" // Bạn có thể thay đổi giá trị status nếu cần thiết
     });
   }
+
+
+
 
   // Hàm tính tổng tiền của vé
   calculateTotalAmount(): number {
@@ -344,4 +345,6 @@ export class RoomComponent implements OnInit {
     }, 0);
     return seatTotal + comboTotal;
   }
+
+
 }

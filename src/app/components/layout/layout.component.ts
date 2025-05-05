@@ -31,6 +31,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     { path: 'phim', title: 'Phim', icon: 'movie', roles: [2] },
     { path: 'rap', title: 'Rạp', icon: 'store', roles: [2, 3] }, // Only Rap is visible to staff
     { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] },
+    { path: 'danhgia', title: 'Đánh giá phim', icon: 'reviews', roles: [2] },
 
   ];
 

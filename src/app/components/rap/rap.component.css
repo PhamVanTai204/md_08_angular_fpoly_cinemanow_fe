@@ -25,20 +25,32 @@
 
 /* Modal animation */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .fixed {
   animation: fadeIn 0.3s ease;
 }
 
-.fixed > div {
+.fixed>div {
   animation: slideUp 0.3s ease;
 }
 
@@ -77,12 +89,12 @@ button:disabled {
 }
 
 /* Card Design Enhancements */
-.grid > div {
+.grid>div {
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
-.grid > div:hover {
+.grid>div:hover {
   transform: translateY(-2px);
 }
 
@@ -97,46 +109,19 @@ button:disabled {
 
 /* Custom Animation for Alerts */
 @keyframes pulseAlert {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .alert-animation {
   animation: pulseAlert 2s infinite;
-}
-
-/* Thông báo lỗi */
-.bg-red-100 {
-  position: relative;
-  margin-bottom: 1rem;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Nút phân trang active */
-.bg-red-500 {
-  transition: all 0.2s ease;
-}
-
-/* Cải thiện form validation */
-input.ng-invalid.ng-touched, 
-select.ng-invalid.ng-touched {
-  border-color: rgb(239, 68, 68);
-}
-
-input:focus, 
-select:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
 }
