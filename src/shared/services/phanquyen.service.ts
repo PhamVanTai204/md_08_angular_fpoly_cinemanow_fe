@@ -1,14 +1,15 @@
+// Update imports at the top of PhanQuyenService
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { 
-  ApiResponse, 
-  User, 
-  UsersByRoleResponse, 
+import { Observable, throwError } from 'rxjs';
+import { map, tap, catchError } from 'rxjs/operators';
+import {
+  ApiResponse,
+  User,
+  UsersByRoleResponse,
   PaginationParams,
-  UserFilter, 
-  UserCreateUpdate 
+  UserFilter,
+  UserCreateUpdate
 } from '../dtos/phanquyenDto.dto';
 
 @Injectable({
@@ -94,18 +95,26 @@ export class PhanQuyenService {
 
   // Cập nhật thông tin người dùng
   updateUser(userId: string, userData: UserCreateUpdate): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(
-      `${this.baseUrl}/update/${userId}`, 
-      userData, 
+    console.log('Service updateUser called with ID:', userId);
+    console.log('Update data:', userData);
+
+    return this.http.patch<ApiResponse>(
+      `${this.baseUrl}/update-profile/${userId}`, // Correct endpoint
+      userData,
       { headers: this.getHeaders() }
+    ).pipe(
+      tap(response => console.log('Update response:', response)),
+      catchError(error => {
+        console.error('Update error:', error);
+        return throwError(() => error);
+      })
     );
   }
-
   // Cập nhật trạng thái người dùng (khóa/mở khóa)
   updateUserStatus(userId: string, isActive: boolean): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(
-      `${this.baseUrl}/updateStatus/${userId}`, 
-      { isActive }, 
+      `${this.baseUrl}/updateStatus/${userId}`,
+      { isActive },
       { headers: this.getHeaders() }
     );
   }
@@ -113,7 +122,7 @@ export class PhanQuyenService {
   // Xóa người dùng
   deleteUser(userId: string): Observable<ApiResponse> {
     return this.http.delete<ApiResponse>(
-      `${this.baseUrl}/deleteUser/${userId}`, 
+      `${this.baseUrl}/deleteUser/${userId}`,
       { headers: this.getHeaders() }
     );
   }
