@@ -10,7 +10,7 @@ import { ComboDto } from '../../../shared/dtos/ComboDto.dto';
 import { VNPaymentDto } from '../../../shared/dtos/vnpaymentDto.dto';
 import { VNPaymentResponseDto } from '../../../shared/dtos/VNPaymentResponseDto.dto';
 import { VNPaymentService } from '../../../shared/services/vnpayment.service';
-
+import { CreatePaymentResponse, PaymentService } from '../../../shared/services/payment.service';
 @Component({
   selector: 'app-room',
   standalone: false,
@@ -35,6 +35,7 @@ export class RoomComponent implements OnInit {
   paymentUrl: string = '';
   showtime_id: string = '';
   showSeatEditDialog = false;
+  paymentMethod: string = 'bank';
   seatTypeLabels: { [key: string]: string } = {
     standard: 'Thường',
     vip: 'VIP',
@@ -46,16 +47,59 @@ export class RoomComponent implements OnInit {
   selectedType = 'standard';
   selectedPrice = 40000;
 
-  seatTypes = ['standard', 'vip', 'couple'];
+  seatTypes = ['standard', 'vip'];
+  // Thêm vào RoomComponent
+  showPaymentSuccessDialog = false;
+  paymentSuccessData: CreatePaymentResponse | null = null; // Sẽ chứa dữ liệu quan trọng từ payment
+  printTicket(): void {
+    // Logic để in vé
+    window.print(); // Hoặc gọi API in vé nếu có
+    this.closePaymentSuccessDialog();
+  }
+  // Phương thức hiển thị dialog
+  openPaymentSuccessDialog(data: CreatePaymentResponse): void {
+    this.paymentSuccessData = data;
+    this.showPaymentSuccessDialog = true;
+  }
 
+  closePaymentSuccessDialog(): void {
+    this.showPaymentSuccessDialog = false;
+    this.paymentSuccessData = null;
+  }
   constructor(
     public bsModalRef: BsModalRef,
     private seatService: SeatService,
     private route: ActivatedRoute,
     private ticketService: TicketService,
     private comboService: ComboService,
-    private vnPaymentService: VNPaymentService
+    private vnPaymentService: VNPaymentService,
+    private paymentService: PaymentService,
   ) { }
+  // Thêm vào RoomComponent
+  handlePaymentAction(action: 0 | 1): void {
+    if (!this.paymentSuccessData) return;
+
+    const actionName = action === 0 ? 'xác nhận' : 'hủy';
+
+    this.paymentService.processPaymentAction(
+      this.paymentSuccessData.data._id,
+      action
+    ).subscribe({
+      next: (response) => {
+        console.log(`Payment ${actionName} thành công:`, response);
+        if (this.paymentSuccessData) {
+          this.paymentSuccessData.data.status_order = action === 0 ? 'success' : 'cancelled';
+        }
+        alert(`${action === 0 ? 'Xác nhận' : 'Hủy'} thanh toán thành công`);
+        this.closePaymentSuccessDialog();
+        this.ngOnInit();
+      },
+      error: (err) => {
+        console.error(`Error ${actionName} payment:`, err);
+        alert(`Có lỗi xảy ra khi ${actionName} thanh toán`);
+      }
+    });
+  }
   // Tăng số lượng combo
   increaseComboQuantity(combo: ComboDto): void {
     const index = this.selectedCombos.findIndex(c => c.combo_id === combo.combo_id);
@@ -102,7 +146,11 @@ export class RoomComponent implements OnInit {
     this.selectedRowKey = rowKey;
     this.showSeatEditDialog = true;
   }
-
+  // Thêm vào RoomComponent để lấy tên combo từ combo_id
+  getComboName(comboId: string): string {
+    const combo = this.combos.find(c => c.combo_id === comboId);
+    return combo ? combo.name_combo : 'Combo không xác định';
+  }
   closeSeatEditDialog() {
     this.showSeatEditDialog = false;
   }
@@ -259,48 +307,70 @@ export class RoomComponent implements OnInit {
     return this.selectedSeats.includes(seat);
   }
 
-  createTicket(): void {
-    // Kiểm tra xem có ghế và combo đã chọn hay không
-    if (this.selectedSeats.length === 0) {
-      this.errorMessage = "Bạn chưa chọn ghế";
-      console.error(this.errorMessage);
+  // Thêm vào class RoomComponent
+
+  // Cập nhật hàm createTicket()
+  async createTicket(): Promise<void> {
+    // Kiểm tra xem có ghế hoặc combo đã chọn hay không
+    if (this.selectedSeats.length === 0 && this.selectedCombos.length === 0) {
+      alert("Bạn chưa chọn ghế hoặc combo");
+
       return;
     }
 
-    // Tạo đối tượng TicketDto từ dữ liệu
-    const ticket = this.createTicketDto();
-    console.log(ticket);
+    try {
+      // Tạo đối tượng TicketDto từ dữ liệu
+      const ticket = this.createTicketDto();
+      console.log(ticket);
 
-    // Gọi dịch vụ để tạo vé
-    this.ticketService.createTicket(ticket).subscribe({
-      next: (res) => {
-        //tạo link 
-        this.vnPaymentService.createVNPayUrl(res.id, res.total_amount)
-          .subscribe({
-            next: (response: any) => {  // Kiểu trả về là raw response
-              if (response && response.success) {
-                this.paymentUrl = response.paymentUrl || '';  // Lấy URL thanh toán
-                console.log(this.paymentUrl);
-                window.open(this.paymentUrl, '_blank');
-              } else {
-                this.errorMessage = 'Có lỗi xảy ra trong quá trình tạo liên kết thanh toán.';
-              }
-            },
-            error: (err) => {
-              this.errorMessage = err.message || 'Lỗi không xác định';
-            }
-          });
-        console.log("Ticket created:", res);
+      // Gọi dịch vụ để tạo vé
+      const ticketResponse = await this.ticketService.createTicket(ticket).toPromise();
 
-        this.selectedSeats = [];
-        this.selectedCombos = []
-        // Sau khi tạo vé thành công, bạn có thể làm gì đó (chuyển hướng, thông báo, v.v...)
-      },
-      error: (err) => {
-        console.error("Failed to create ticket:", err);
+      if (!ticketResponse) {
+        throw new Error('Không nhận được phản hồi từ server');
+      }
+
+      // Xử lý theo phương thức thanh toán
+      if (this.paymentMethod === 'bank') {
+        // Thanh toán ngân hàng
+        const paymentResponse = await this.vnPaymentService.createVNPayUrl(ticketResponse.id, ticketResponse.total_amount).toPromise();
+
+        if (paymentResponse && paymentResponse.success) {
+          this.paymentUrl = paymentResponse.paymentUrl || '';
+          console.log(this.paymentUrl);
+          window.open(this.paymentUrl, '_blank');
+        } else {
+          alert("Có lỗi xảy ra trong quá trình tạo liên kết thanh toán.");
+
+        }
+      } else {
+        // Thanh toán tiền mặt
+        const paymentResponse = await this.paymentService.createPayment(ticketResponse.id).toPromise();
+
+        if (paymentResponse) {
+          // Xử lý thành công thanh toán tiền mặt
+          console.log("Thanh toán tiền mặt thành công:", paymentResponse);
+          // Hiển thị dialog với dữ liệu quan trọng
+          this.openPaymentSuccessDialog(paymentResponse);
+
+          // Thêm thông báo thành công
+          this.errorMessage = "Tạo vé thành công";
+
+        }
+      }
+
+      // Reset các lựa chọn sau khi tạo vé thành công
+      this.selectedSeats = [];
+      this.selectedCombos = [];
+
+    } catch (err: unknown) {
+      console.error("Failed to create ticket:", err);
+      if (err instanceof Error) {
+        this.errorMessage = err.message || "Không thể tạo vé. Vui lòng thử lại sau.";
+      } else {
         this.errorMessage = "Không thể tạo vé. Vui lòng thử lại sau.";
       }
-    });
+    }
   }
 
   // Hàm tạo đối tượng TicketDto
@@ -340,7 +410,7 @@ export class RoomComponent implements OnInit {
   calculateTotalAmount(): number {
     const seatTotal = this.selectedSeats.reduce((sum, seat) => sum + seat.price_seat, 0);
     const comboTotal = this.selectedCombos.reduce((sum, combo) => {
-      const quantity = combo.quantity ?? 1; // Sử dụng giá trị mặc định là 1 nếu quantity là undefined
+      const quantity = combo.quantity ?? 1;
       return sum + (combo.price_combo * quantity);
     }, 0);
     return seatTotal + comboTotal;
