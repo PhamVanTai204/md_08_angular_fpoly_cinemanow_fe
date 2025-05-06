@@ -26,7 +26,7 @@ export class GiaodichComponent implements OnInit {
   cinemas: CinemaDto[] = [];
   error: string | null = null;
   danhSachPhimDaLoc: PhimDto[] = []; // Separate property for filtered results
-
+  isSearching: boolean = false;
   filmId: string = '';
   constructor(
     private phimService: PhimService,
@@ -54,48 +54,51 @@ export class GiaodichComponent implements OnInit {
 
 
   }
+
+  onSearch(): void {
+    this.page = 1; // Reset to first page when searching
+    if (this.searchTerm.trim() === '') {
+      this.isSearching = false;
+      this.loadPhims();
+    } else {
+      this.isSearching = true;
+      this.searchPhims();
+    }
+  }
+
   loadPhims(): void {
     this.isLoading = true;
     console.log('Loading films for page:', this.page, 'limit:', this.limit);
 
-    this.phimService.getPhims(this.page, this.limit).subscribe({
+    this.phimService.getPhims(this.page, this.limit, '').subscribe({
       next: (response: any) => {
         console.log('Films loaded successfully:', response);
 
-        // Check if we received an array directly (common API pattern)
         if (Array.isArray(response)) {
           this.danhSachPhim = response;
-
-          // Since server might not provide total count in this case,
-          // we might need to assume there are more pages if we received a full page
+          this.danhSachPhimDaLoc = response;
           if (response.length === this.limit) {
-            // If we received exactly the number of items we requested,
-            // there might be more (this is a simplified approach)
             this.totalPhim = Math.max((this.page * this.limit) + 1, this.totalPhim);
           } else if (this.page === 1) {
-            // If we're on the first page and received fewer items than requested,
-            // this is likely all there is
             this.totalPhim = response.length;
           }
         }
-        // Handle response with data property (your API seems to use this pattern)
         else if (response && typeof response === 'object') {
-          // Handle various API response structures
           if (response.data && response.data.films) {
-            // This seems to be your API's structure based on the service code
             this.danhSachPhim = response.data.films;
+            this.danhSachPhimDaLoc = response.data.films;
             this.totalPhim = response.data.totalCount || response.data.total || 0;
           } else if (response.items || response.results) {
             this.danhSachPhim = response.items || response.results;
+            this.danhSachPhimDaLoc = response.items || response.results;
             this.totalPhim = response.total || response.totalItems || response.count || 0;
           } else if (response.data && Array.isArray(response.data)) {
             this.danhSachPhim = response.data;
+            this.danhSachPhimDaLoc = response.data;
             this.totalPhim = response.totalCount || response.total || 0;
           }
         }
 
-        // Make sure we're using the loaded data directly without additional filtering
-        this.danhSachPhimDaLoc = this.danhSachPhim;
         this.isLoading = false;
       },
       error: (error) => {
@@ -105,6 +108,25 @@ export class GiaodichComponent implements OnInit {
     });
   }
 
+  searchPhims(): void {
+    this.isLoading = true;
+    this.phimService.searchPhims(this.searchTerm).subscribe({
+      next: (response: any) => {
+        if (Array.isArray(response)) {
+          this.danhSachPhimDaLoc = response;
+          this.totalPhim = response.length;
+        } else if (response && response.data) {
+          this.danhSachPhimDaLoc = response.data;
+          this.totalPhim = response.data.length;
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error searching films:', error);
+        this.isLoading = false;
+      }
+    });
+  }
   kiemTraTheLoaiPhim(phim: PhimDto): void {
     console.log('Phim:', phim.title);
     console.log('ID thể loại:', phim.genre_film);
