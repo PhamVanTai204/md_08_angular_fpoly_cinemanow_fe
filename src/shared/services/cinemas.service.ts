@@ -104,8 +104,8 @@ export class CinemasService {
   /**
    * Sửa 1 rạp
    */
-  editCinema(id: string, cinema: CinemaDto): Observable<CinemaDto> {
-    return this.http.put<any>(`${this.editUrl}/${id}`, cinema.toJSON()).pipe(
+  editCinema(id: string, cinemaData: { cinema_name: string; location: string }): Observable<CinemaDto> {
+    return this.http.put<any>(`${this.editUrl}/${id}`, cinemaData).pipe(
       map(response => {
         if (response && response.code === 200 && response.data) {
           return CinemaDto.fromJS(response.data);
@@ -154,11 +154,11 @@ export class CinemasService {
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('CinemasService Error:', error);
     let errorMessage = 'Đã xảy ra lỗi khi thực hiện thao tác.';
-    
+
     if (error.error && error.error.message) {
       errorMessage = error.error.message;
     }
-    
+
     return throwError(() => new Error(errorMessage));
   }
 }

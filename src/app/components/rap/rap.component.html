@@ -105,16 +105,7 @@
           </div>
         </div>
 
-        <!-- Số phòng -->
-        <div class="mb-4">
-          <label class="block font-medium mb-1 text-gray-700">Số phòng <span class="text-red-500">*</span></label>
-          <input type="number" name="totalRoom" [(ngModel)]="newRap.totalRoom" required #totalRoom="ngModel"
-            class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-            placeholder="Nhập số phòng" />
-          <div *ngIf="totalRoom.invalid && totalRoom.touched" class="text-red-500 text-sm mt-1">
-            Vui lòng nhập số phòng
-          </div>
-        </div>
+
 
         <div class="flex justify-end space-x-2 mt-6">
           <button type="button" (click)="closeAddModal()"
@@ -167,12 +158,11 @@
 
           <!-- Số phòng -->
           <div>
-            <label class="block text-gray-700 font-medium mb-1">Số phòng <span class="text-red-500">*</span></label>
-            <input type="number" name="totalRoom" [(ngModel)]="editRapData.totalRoom" required #editTotalRoom="ngModel"
-              class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-              placeholder="Nhập số phòng" />
-            <div *ngIf="editTotalRoom.invalid && editTotalRoom.touched" class="text-red-500 text-sm mt-1">Vui lòng nhập
-              số phòng</div>
+            <label class="block text-gray-700 font-medium mb-1">Số phòng</label>
+            <div class="border border-gray-300 rounded-lg w-full px-3 py-2 bg-gray-50">
+              {{ editRapData.totalRoom || 0 }}
+            </div>
+            <small class="text-gray-500">Số phòng sẽ tự động cập nhật khi bạn thêm/xóa phòng</small>
           </div>
         </div>
 
@@ -197,8 +187,16 @@
                     class="p-1 text-blue-500 hover:bg-blue-50 rounded transition-colors">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button (click)="deleteRoom(i)" class="p-1 text-red-500 hover:bg-red-50 rounded transition-colors">
-                    <i class="fas fa-trash"></i>
+                  <!-- Trong phần danh sách phòng -->
+                  <div *ngIf="deleteRoomError" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {{ deleteRoomError }}
+                  </div>
+
+                  <!-- Trong nút xóa phòng -->
+                  <button (click)="deleteRoom(i)" class="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
+                    [disabled]="isDeletingRoom" title="Xóa phòng">
+                    <i *ngIf="!isDeletingRoom" class="fas fa-trash"></i>
+                    <i *ngIf="isDeletingRoom" class="fas fa-spinner fa-spin"></i>
                   </button>
                 </div>
               </div>

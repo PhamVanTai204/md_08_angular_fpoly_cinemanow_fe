@@ -50,34 +50,37 @@ export class RapComponent implements OnInit {
   ngOnInit(): void {
     this.getAllRaps();
   }
+  // Thêm biến để theo dõi trạng thái loading
+  isDeletingRoom: boolean = false;
+  deleteRoomError: string | null = null;
 
-  // Phân trang
-  updatePagedData(): void {
-    this.totalPages = Math.ceil(this.rapList.length / this.pageSize);
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    this.pagedRapList = this.rapList.slice(startIndex, startIndex + this.pageSize);
-  }
+  async deleteRoom(index: number): Promise<void> {
+    if (this.isDeletingRoom) return;
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePagedData();
+    if (index >= 0 && index < this.roomLisst.length) {
+      const room = this.roomLisst[index];
+      const confirmDelete = confirm(`Bạn có chắc muốn xóa phòng: ${room.room_name}?`);
+      if (!confirmDelete) return;
+
+      this.isDeletingRoom = true;
+      this.deleteRoomError = null;
+
+      try {
+        // Gọi API xóa phòng
+        await lastValueFrom(this.roomService.deleteRoom(room.id));
+        this.getAllRaps();
+
+        console.log('Đã xóa phòng thành công');
+      } catch (error: any) {
+        console.error('Lỗi khi xóa phòng:', error);
+        this.deleteRoomError = error.message || 'Có lỗi xảy ra khi xóa phòng. Vui lòng thử lại.';
+      } finally {
+        this.isDeletingRoom = false;
+      }
     }
   }
 
-  prevPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePagedData();
-    }
-  }
 
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePagedData();
-    }
-  }
 
   getPageNumbers(): (number | string)[] {
     const totalPages = this.totalPages;
@@ -162,7 +165,6 @@ export class RapComponent implements OnInit {
     this.cinemasService.getCinemas().subscribe({
       next: (data) => {
         this.rapList = data;
-        this.updatePagedData();
       },
       error: (err) => {
         console.error('Error fetching cinemas:', err);
@@ -180,10 +182,12 @@ export class RapComponent implements OnInit {
   }
 
   saveNewRap(): void {
+    // Gán cứng totalRoom = 0 khi thêm rạp mới
+    this.newRap.totalRoom = 0;
+
     this.cinemasService.addCinema(this.newRap).subscribe({
       next: (addedCinema: CinemaDto) => {
         this.rapList = [...this.rapList, addedCinema];
-        this.updatePagedData();
         this.isAddModalOpen = false;
         this.newRap = new CinemaDto();
       },
@@ -213,16 +217,16 @@ export class RapComponent implements OnInit {
   }
 
   saveEditRap(): void {
-    this.cinemasService.editCinema(this.editRapData.id, this.editRapData).subscribe({
+    // Prepare the data in the format the service expects
+    const editData = {
+      cinema_name: this.editRapData.cinemaName,
+      location: this.editRapData.location
+    };
+
+    this.cinemasService.editCinema(this.editRapData.id, editData).subscribe({
       next: (updatedCinema: CinemaDto) => {
-        if (this.editRapIndex > -1) {
-          this.rapList = this.rapList.map((rap, i) =>
-            i === this.editRapIndex ? updatedCinema : rap
-          );
-          this.updatePagedData();
-        }
+        this.getAllRaps();
         this.isEditModalOpen = false;
-        this.editRapIndex = -1;
       },
       error: (err) => console.error('Error updating cinema:', err)
     });
@@ -235,7 +239,6 @@ export class RapComponent implements OnInit {
     this.cinemasService.deleteCinema(rap.id).subscribe({
       next: () => {
         this.rapList = this.rapList.filter(item => item.id !== rap.id);
-        this.updatePagedData();
       },
       error: (err) => console.error('Error deleting cinema:', err)
     });
@@ -246,17 +249,7 @@ export class RapComponent implements OnInit {
     console.log('Editing room at index:', index);
   }
 
-  deleteRoom(index: number): void {
-    // Phương thức xử lý xóa phòng
-    if (index >= 0 && index < this.roomLisst.length) {
-      const room = this.roomLisst[index];
-      const confirmDelete = confirm(`Bạn có chắc muốn xóa phòng: ${room.room_name}?`);
-      if (!confirmDelete) return;
 
-      // Implement the delete functionality here
-      console.log('Deleting room at index:', index);
-    }
-  }
 
   getRoom(id: string): void {
     this.roomService.getByCinemaId(id)
