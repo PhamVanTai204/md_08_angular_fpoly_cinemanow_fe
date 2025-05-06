@@ -23,10 +23,13 @@
         @for (product of danhSachPhim ; track product.id) {
         <div class="product-card" (click)="showCreateOrEditProductDialog(product.id)">
           <div class="product-img-wrapper">
-            <img id="img-product-list" [src]="product.image_film" alt="Uploaded Image" class="product-img" />
+            <img id="img-product-list-{{product.id}}" [src]="product.image_film" alt="Uploaded Image"
+              class="product-img" />
           </div>
-          <h2 class="product-title">{{ product.title }}</h2>
-          <p class="product-age">🎫 Giới hạn tuổi: {{ product.age_limit }}</p>
+          <div class="product-info">
+            <h2 class="product-title">{{ product.title }}</h2>
+            <p class="product-age">🎫 Giới hạn tuổi: {{ product.age_limit }}</p>
+          </div>
         </div>
         }
       </div>

@@ -79,19 +79,35 @@ export class PhimComponent implements OnInit {
     // If already a string or other data type
     return String(idObject);
   }
+  searchPhims(): void {
+    this.isLoading = true;
+    // Reset to page 1 when searching
+    this.page = 1;
 
+    this.phimService.getPhims(this.page, this.limit, this.searchTerm).subscribe({
+      next: (films: PhimDto[]) => {
+        this.danhSachPhim = films;
+        this.danhSachPhimDaLoc = films;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error searching films:', error);
+        this.isLoading = false;
+      }
+    });
+  }
   loadPhims(): void {
     this.isLoading = true;
     console.log('Loading films for page:', this.page, 'limit:', this.limit);
-  
-    this.phimService.getPhims(this.page, this.limit).subscribe({
+
+    this.phimService.getPhims(this.page, this.limit, this.searchTerm).subscribe({
       next: (response: any) => {
         console.log('Films loaded successfully:', response);
-  
+
         // Check if we received an array directly (common API pattern)
         if (Array.isArray(response)) {
           this.danhSachPhim = response;
-          
+
           // Since server might not provide total count in this case,
           // we might need to assume there are more pages if we received a full page
           if (response.length === this.limit) {
@@ -103,7 +119,7 @@ export class PhimComponent implements OnInit {
             // this is likely all there is
             this.totalPhim = response.length;
           }
-        } 
+        }
         // Handle response with data property (your API seems to use this pattern)
         else if (response && typeof response === 'object') {
           // Handle various API response structures
@@ -119,7 +135,7 @@ export class PhimComponent implements OnInit {
             this.totalPhim = response.totalCount || response.total || 0;
           }
         }
-  
+
         // Make sure we're using the loaded data directly without additional filtering
         this.danhSachPhimDaLoc = this.danhSachPhim;
         this.isLoading = false;
@@ -164,10 +180,10 @@ export class PhimComponent implements OnInit {
   onLimitChange(): void {
     // Reset to page 1 when changing limit to avoid empty pages
     this.page = 1;
-    
+
     // Load films with new pagination settings
     this.loadPhims();
-    
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -176,22 +192,22 @@ export class PhimComponent implements OnInit {
   getPaginationRange(): number[] {
     const maxPagesToShow = 5;
     const totalPages = this.totalPages;
-    
+
     // Simple case - show all pages if there are few
     if (totalPages <= maxPagesToShow) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-    
+
     // Complex case - decide which pages to show
     let startPage = Math.max(1, this.page - Math.floor(maxPagesToShow / 2));
     let endPage = startPage + maxPagesToShow - 1;
-    
+
     // Adjust if we're near the end
     if (endPage > totalPages) {
       endPage = totalPages;
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-    
+
     return Array.from({ length: (endPage - startPage) + 1 }, (_, i) => startPage + i);
   }
 
@@ -225,42 +241,7 @@ export class PhimComponent implements OnInit {
       .join(', ');
   }
 
-  searchPhims(): void {
-    if (this.searchTerm.trim() === '') {
-      this.loadPhims();
-      return;
-    }
-  
-    this.isLoading = true;
-    // Reset to page 1 when searching
-    this.page = 1;
-  
-    this.phimService.searchPhims(this.searchTerm).subscribe({
-      next: (response: any) => {
-        // Handle response appropriately based on your API's structure
-        if (Array.isArray(response)) {
-          this.danhSachPhim = response;
-          this.totalPhim = response.length;
-        } else if (response && typeof response === 'object') {
-          if (response.data && Array.isArray(response.data)) {
-            this.danhSachPhim = response.data;
-            this.totalPhim = response.totalCount || response.data.length;
-          } else {
-            this.danhSachPhim = response.items || response.results || [];
-            this.totalPhim = response.total || response.totalItems || response.count || this.danhSachPhim.length;
-          }
-        }
-  
-        // Use the search results directly rather than filtering again
-        this.danhSachPhimDaLoc = this.danhSachPhim;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error searching films:', error);
-        this.isLoading = false;
-      }
-    });
-  }
+
 
   updateFilteredList(): void {
     // When searching, we need to apply the filter to the loaded data

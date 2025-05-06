@@ -106,328 +106,349 @@
       </table>
     </div>
 
-   <!-- Improved pagination - all elements in one row -->
-<div *ngIf="!isLoading && danhSachPhimDaLoc.length > 0" class="mt-6 flex justify-between items-center border-t border-gray-200 pt-5">
-  <!-- Left side: Item count text -->
-  <div class="text-sm text-gray-600">
-    Hiển thị {{ danhSachPhimDaLoc.length ? (page - 1) * limit + 1 : 0 }} đến
-    {{ Math.min(page * limit, totalPhim) }} trong tổng số {{ totalPhim }} phim
-  </div>
-  
-  <!-- Center: Pagination controls -->
-  <div class="flex justify-center">
-    <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-      <!-- First page button -->
-      <button [disabled]="page === 1" [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
-        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-        (click)="changePage(1)">
-        <span class="sr-only">First</span>
-        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-          <path fill-rule="evenodd" d="M8.707 5.293a1 1 0 010 1.414L5.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-        </svg>
-      </button>
-      
-      <!-- Previous page button -->
-      <button [disabled]="page === 1" [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
-        class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-        (click)="changePage(page - 1)">
-        <span class="sr-only">Previous</span>
-        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-        </svg>
-      </button>
-      
-      <!-- Page numbers -->
-      <ng-container *ngFor="let p of getPaginationRange()">
-        <button
-          class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium transition-colors duration-150 ease-in-out"
-          [ngClass]="p === page ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 font-semibold' : 'bg-white text-gray-700 hover:bg-gray-50'"
-          (click)="changePage(p)">
-          {{ p }}
+    <!-- Improved pagination - all elements in one row -->
+    <div *ngIf="!isLoading && danhSachPhimDaLoc.length > 0"
+      class="mt-6 flex justify-between items-center border-t border-gray-200 pt-5">
+      <!-- Left side: Item count text -->
+      <div class="text-sm text-gray-600">
+        Hiển thị {{ danhSachPhimDaLoc.length ? (page - 1) * limit + 1 : 0 }} đến
+        {{ Math.min(page * limit, totalPhim) }} trong tổng số {{ totalPhim }} phim
+      </div>
+
+      <!-- Center: Pagination controls -->
+      <div class="flex justify-center">
+        <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+          <!-- First page button -->
+          <button [disabled]="page === 1" [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
+            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            (click)="changePage(1)">
+            <span class="sr-only">First</span>
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"
+              aria-hidden="true">
+              <path fill-rule="evenodd"
+                d="M9.707 4.293a1 1 0 010 1.414L6.414 9l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M15.707 4.293a1 1 0 010 1.414L12.414 9l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clip-rule="evenodd" />
+            </svg>
+
+          </button>
+
+          <!-- Previous page button -->
+          <button [disabled]="page === 1" [ngClass]="{'opacity-50 cursor-not-allowed': page === 1}"
+            class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            (click)="changePage(page - 1)">
+            <span class="sr-only">Previous</span>
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+              aria-hidden="true">
+              <path fill-rule="evenodd"
+                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+
+          <!-- Page numbers -->
+          <ng-container *ngFor="let p of getPaginationRange()">
+            <button
+              class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium transition-colors duration-150 ease-in-out"
+              [ngClass]="p === page ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 font-semibold' : 'bg-white text-gray-700 hover:bg-gray-50'"
+              (click)="changePage(p)">
+              {{ p }}
+            </button>
+          </ng-container>
+
+          <!-- Next page button -->
+          <button [disabled]="page >= totalPages" [ngClass]="{'opacity-50 cursor-not-allowed': page >= totalPages}"
+            class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            (click)="changePage(page + 1)">
+            <span class="sr-only">Next</span>
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+              aria-hidden="true">
+              <path fill-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+
+          <!-- Last page button -->
+          <button [disabled]="page >= totalPages" [ngClass]="{'opacity-50 cursor-not-allowed': page >= totalPages}"
+            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            (click)="changePage(totalPages)">
+            <span class="sr-only">Last</span>
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"
+              aria-hidden="true">
+              <path fill-rule="evenodd"
+                d="M10.293 15.707a1 1 0 010-1.414L13.586 11 10.293 7.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M4.293 15.707a1 1 0 010-1.414L7.586 11 4.293 7.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd" />
+            </svg>
+
+          </button>
+        </nav>
+      </div>
+
+      <!-- Right side: Items per page selector -->
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">Hiển thị:</label>
+        <select [(ngModel)]="limit" (change)="onLimitChange()"
+          class="border border-gray-300 rounded-md text-sm py-1 px-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <option [ngValue]="5">5</option>
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50" *ngIf="showModal">
+      <div class="bg-white p-6 w-full max-w-lg rounded-lg shadow-xl relative max-h-[94vh] overflow-y-auto"
+        style="margin-top: 2rem; border: 2px solid #e2e8f0; border-radius: 0.5rem;">
+
+        <!-- Close button -->
+        <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+          style="border: 1px solid #e2e8f0; border-radius: 50%; padding: 0.25rem;" (click)="closeModal()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
-      </ng-container>
-      
-      <!-- Next page button -->
-      <button [disabled]="page >= totalPages" [ngClass]="{'opacity-50 cursor-not-allowed': page >= totalPages}"
-        class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-        (click)="changePage(page + 1)">
-        <span class="sr-only">Next</span>
-        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-        </svg>
-      </button>
-      
-      <!-- Last page button -->
-      <button [disabled]="page >= totalPages" [ngClass]="{'opacity-50 cursor-not-allowed': page >= totalPages}"
-        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-        (click)="changePage(totalPages)">
-        <span class="sr-only">Last</span>
-        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M7.293 5.293a1 1 0 011.414 0L12 8.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-          <path fill-rule="evenodd" d="M11.293 5.293a1 1 0 011.414 0L16 8.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-        </svg>
-      </button>
-    </nav>
-  </div>
-  
-  <!-- Right side: Items per page selector -->
-  <div class="flex items-center">
-    <label class="text-sm text-gray-600 mr-2">Hiển thị:</label>
-    <select [(ngModel)]="limit" (change)="onLimitChange()" 
-      class="border border-gray-300 rounded-md text-sm py-1 px-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-      <option [ngValue]="5">5</option>
-      <option [ngValue]="10">10</option>
-      <option [ngValue]="20">20</option>
-      <option [ngValue]="50">50</option>
-    </select>
-  </div>
-</div>
 
-  <!-- Add/Edit Modal -->
-  <div class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50" *ngIf="showModal">
-    <div class="bg-white p-6 w-full max-w-lg rounded-lg shadow-xl relative max-h-[94vh] overflow-y-auto"
-      style="margin-top: 2rem; border: 2px solid #e2e8f0; border-radius: 0.5rem;">
+        <!-- Title -->
+        <h2 class="text-xl font-semibold mb-6 pb-2 border-b-2 border-gray-100" *ngIf="!isEdit">Thêm phim</h2>
+        <h2 class="text-xl font-semibold mb-6 pb-2 border-b-2 border-gray-100" *ngIf="isEdit">Sửa phim</h2>
 
-      <!-- Close button -->
-      <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
-        style="border: 1px solid #e2e8f0; border-radius: 50%; padding: 0.25rem;" (click)="closeModal()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-          stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+        <!-- Form content -->
+        <div class="space-y-5" style="margin-bottom: 1.5rem;">
+          <!-- Input fields -->
+          <div class="border border-gray-200 rounded-lg p-4">
+            <!-- Tên phim -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Tên phim <span class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="currentPhim.title"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                [ngClass]="{'border-red-500': validationErrors['title']}" />
+              <p *ngIf="validationErrors['title']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['title'] }}
+              </p>
+            </div>
 
-      <!-- Title -->
-      <h2 class="text-xl font-semibold mb-6 pb-2 border-b-2 border-gray-100" *ngIf="!isEdit">Thêm phim</h2>
-      <h2 class="text-xl font-semibold mb-6 pb-2 border-b-2 border-gray-100" *ngIf="isEdit">Sửa phim</h2>
+            <!-- Đạo diễn -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Đạo diễn <span class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="currentPhim.director"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                [ngClass]="{'border-red-500': validationErrors['director']}" />
+              <p *ngIf="validationErrors['director']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['director'] }}
+              </p>
+            </div>
 
-      <!-- Form content -->
-      <div class="space-y-5" style="margin-bottom: 1.5rem;">
-        <!-- Input fields -->
-        <div class="border border-gray-200 rounded-lg p-4">
-          <!-- Tên phim -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Tên phim <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="currentPhim.title"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              [ngClass]="{'border-red-500': validationErrors['title']}" />
-            <p *ngIf="validationErrors['title']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['title'] }}
-            </p>
-          </div>
+            <!-- Giới hạn tuổi -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Giới hạn tuổi <span
+                  class="text-red-500">*</span></label>
+              <input type="number" [(ngModel)]="currentPhim.age_limit"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                placeholder="VD: 18" min="0" max="21" [ngClass]="{'border-red-500': validationErrors['age_limit']}" />
+              <p *ngIf="validationErrors['age_limit']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['age_limit'] }}
+              </p>
+            </div>
 
-          <!-- Đạo diễn -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Đạo diễn <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="currentPhim.director"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              [ngClass]="{'border-red-500': validationErrors['director']}" />
-            <p *ngIf="validationErrors['director']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['director'] }}
-            </p>
-          </div>
+            <!-- Ngôn ngữ -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Ngôn ngữ <span class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="currentPhim.language"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                placeholder="VD: Tiếng Việt" [ngClass]="{'border-red-500': validationErrors['language']}" />
+              <p *ngIf="validationErrors['language']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['language'] }}
+              </p>
+            </div>
 
-          <!-- Giới hạn tuổi -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Giới hạn tuổi <span class="text-red-500">*</span></label>
-            <input type="number" [(ngModel)]="currentPhim.age_limit"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              placeholder="VD: 18" min="0" max="21"
-              [ngClass]="{'border-red-500': validationErrors['age_limit']}" />
-            <p *ngIf="validationErrors['age_limit']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['age_limit'] }}
-            </p>
-          </div>
+            <!-- Thể loại phim -->
+            <div class="mb-4 border border-gray-200 rounded-lg p-3"
+              [ngClass]="{'border-red-500': validationErrors['genre_film']}">
+              <label class="block font-medium mb-2 text-gray-700">Thể loại phim <span
+                  class="text-red-500">*</span></label>
+              <div class="grid grid-cols-2 gap-3 error-field">
+                <div *ngFor="let genre of danhSachTheLoai" class="flex items-center">
+                  <label class="inline-flex items-center space-x-3">
+                    <input type="checkbox" [value]="genre.id" [checked]="currentPhim.genre_film.includes(genre.id)"
+                      (change)="toggleGenre(genre.id, $event)"
+                      class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300" />
+                    <span class="text-gray-700">{{ genre.genreName }}</span>
+                  </label>
+                </div>
+              </div>
+              <p *ngIf="validationErrors['genre_film']" class="text-red-500 text-sm mt-2">
+                {{ validationErrors['genre_film'] }}
+              </p>
+            </div>
 
-          <!-- Ngôn ngữ -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Ngôn ngữ <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="currentPhim.language"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              placeholder="VD: Tiếng Việt"
-              [ngClass]="{'border-red-500': validationErrors['language']}" />
-            <p *ngIf="validationErrors['language']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['language'] }}
-            </p>
-          </div>
+            <!-- Trạng thái -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Trạng thái <span class="text-red-500">*</span></label>
+              <select [(ngModel)]="currentPhim.status_film"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option [ngValue]="1">ONLINE</option>
+                <option [ngValue]="0">OFFLINE</option>
+              </select>
+            </div>
 
-          <!-- Thể loại phim -->
-          <div class="mb-4 border border-gray-200 rounded-lg p-3" [ngClass]="{'border-red-500': validationErrors['genre_film']}">
-            <label class="block font-medium mb-2 text-gray-700">Thể loại phim <span class="text-red-500">*</span></label>
-            <div class="grid grid-cols-2 gap-3 error-field">
-              <div *ngFor="let genre of danhSachTheLoai" class="flex items-center">
-                <label class="inline-flex items-center space-x-3">
-                  <input type="checkbox" [value]="genre.id" [checked]="currentPhim.genre_film.includes(genre.id)"
-                    (change)="toggleGenre(genre.id, $event)"
-                    class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300" />
-                  <span class="text-gray-700">{{ genre.genreName }}</span>
-                </label>
+            <!-- Poster (URL) -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Poster (URL) <span
+                  class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="currentPhim.image_film"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                [ngClass]="{'border-red-500': validationErrors['image_film']}" />
+              <p *ngIf="validationErrors['image_film']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['image_film'] }}
+              </p>
+            </div>
+
+            <!-- Trailer (URL) -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Trailer (URL) <span
+                  class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="currentPhim.trailer_film"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                [ngClass]="{'border-red-500': validationErrors['trailer_film']}" />
+              <p *ngIf="validationErrors['trailer_film']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['trailer_film'] }}
+              </p>
+            </div>
+
+            <!-- Thời lượng -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Thời lượng <span class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="currentPhim.duration"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                placeholder="VD: 120 phút" [ngClass]="{'border-red-500': validationErrors['duration']}" />
+              <p *ngIf="validationErrors['duration']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['duration'] }}
+              </p>
+            </div>
+
+            <!-- Ngày phát hành và kết thúc -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block font-medium mb-2 text-gray-700">Ngày phát hành <span
+                    class="text-red-500">*</span></label>
+                <input type="date" [(ngModel)]="currentPhim.release_date"
+                  class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                  [ngClass]="{'border-red-500': validationErrors['release_date']}" />
+                <p *ngIf="validationErrors['release_date']" class="text-red-500 text-sm mt-1">
+                  {{ validationErrors['release_date'] }}
+                </p>
+              </div>
+              <div>
+                <label class="block font-medium mb-2 text-gray-700">Ngày kết thúc <span
+                    class="text-red-500">*</span></label>
+                <input type="date" [(ngModel)]="currentPhim.end_date"
+                  class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                  [ngClass]="{'border-red-500': validationErrors['end_date']}" />
+                <p *ngIf="validationErrors['end_date']" class="text-red-500 text-sm mt-1">
+                  {{ validationErrors['end_date'] }}
+                </p>
               </div>
             </div>
-            <p *ngIf="validationErrors['genre_film']" class="text-red-500 text-sm mt-2">
-              {{ validationErrors['genre_film'] }}
-            </p>
-          </div>
 
-          <!-- Trạng thái -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Trạng thái <span class="text-red-500">*</span></label>
-            <select [(ngModel)]="currentPhim.status_film"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-              <option [ngValue]="1">ONLINE</option>
-              <option [ngValue]="0">OFFLINE</option>
-            </select>
-          </div>
-
-          <!-- Poster (URL) -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Poster (URL) <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="currentPhim.image_film"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              [ngClass]="{'border-red-500': validationErrors['image_film']}" />
-            <p *ngIf="validationErrors['image_film']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['image_film'] }}
-            </p>
-          </div>
-
-          <!-- Trailer (URL) -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Trailer (URL) <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="currentPhim.trailer_film"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              [ngClass]="{'border-red-500': validationErrors['trailer_film']}" />
-            <p *ngIf="validationErrors['trailer_film']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['trailer_film'] }}
-            </p>
-          </div>
-
-          <!-- Thời lượng -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Thời lượng <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="currentPhim.duration"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              placeholder="VD: 120 phút"
-              [ngClass]="{'border-red-500': validationErrors['duration']}" />
-            <p *ngIf="validationErrors['duration']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['duration'] }}
-            </p>
-          </div>
-
-          <!-- Ngày phát hành và kết thúc -->
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block font-medium mb-2 text-gray-700">Ngày phát hành <span class="text-red-500">*</span></label>
-              <input type="date" [(ngModel)]="currentPhim.release_date"
+            <!-- Diễn viên -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Diễn viên <span class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="currentPhim.cast"
                 class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-                [ngClass]="{'border-red-500': validationErrors['release_date']}" />
-              <p *ngIf="validationErrors['release_date']" class="text-red-500 text-sm mt-1">
-                {{ validationErrors['release_date'] }}
+                placeholder="VD: Diễn viên A, Diễn viên B" [ngClass]="{'border-red-500': validationErrors['cast']}" />
+              <p *ngIf="validationErrors['cast']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['cast'] }}
               </p>
             </div>
-            <div>
-              <label class="block font-medium mb-2 text-gray-700">Ngày kết thúc <span class="text-red-500">*</span></label>
-              <input type="date" [(ngModel)]="currentPhim.end_date"
+
+            <!-- Đánh giá -->
+            <div class="mb-4">
+              <label class="block font-medium mb-2 text-gray-700">Đánh giá <span class="text-red-500">*</span></label>
+              <input type="number" [(ngModel)]="currentPhim.ratings"
                 class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-                [ngClass]="{'border-red-500': validationErrors['end_date']}" />
-              <p *ngIf="validationErrors['end_date']" class="text-red-500 text-sm mt-1">
-                {{ validationErrors['end_date'] }}
+                placeholder="VD: 9.5" step="0.1" min="0" max="10"
+                [ngClass]="{'border-red-500': validationErrors['ratings']}" />
+              <p *ngIf="validationErrors['ratings']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['ratings'] }}
               </p>
             </div>
-          </div>
 
-          <!-- Diễn viên -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Diễn viên <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="currentPhim.cast"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              placeholder="VD: Diễn viên A, Diễn viên B"
-              [ngClass]="{'border-red-500': validationErrors['cast']}" />
-            <p *ngIf="validationErrors['cast']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['cast'] }}
-            </p>
-          </div>
-
-          <!-- Đánh giá -->
-          <div class="mb-4">
-            <label class="block font-medium mb-2 text-gray-700">Đánh giá <span class="text-red-500">*</span></label>
-            <input type="number" [(ngModel)]="currentPhim.ratings"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              placeholder="VD: 9.5" step="0.1" min="0" max="10"
-              [ngClass]="{'border-red-500': validationErrors['ratings']}" />
-            <p *ngIf="validationErrors['ratings']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['ratings'] }}
-            </p>
-          </div>
-
-          <!-- Mô tả -->
-          <div>
-            <label class="block font-medium mb-2 text-gray-700">Mô tả <span class="text-red-500">*</span></label>
-            <textarea [(ngModel)]="currentPhim.describe" rows="4"
-              class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
-              [ngClass]="{'border-red-500': validationErrors['describe']}"></textarea>
-            <p *ngIf="validationErrors['describe']" class="text-red-500 text-sm mt-1">
-              {{ validationErrors['describe'] }}
-            </p>
+            <!-- Mô tả -->
+            <div>
+              <label class="block font-medium mb-2 text-gray-700">Mô tả <span class="text-red-500">*</span></label>
+              <textarea [(ngModel)]="currentPhim.describe" rows="4"
+                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
+                [ngClass]="{'border-red-500': validationErrors['describe']}"></textarea>
+              <p *ngIf="validationErrors['describe']" class="text-red-500 text-sm mt-1">
+                {{ validationErrors['describe'] }}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Action buttons -->
-      <div class="flex justify-end mt-6 pt-4 border-t-2 border-gray-100">
-        <button
-          class="mr-3 bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg transition-colors border border-gray-300"
-          (click)="closeModal()">
-          Hủy
-        </button>
-        <button
-          class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg transition-colors border border-blue-600"
-          (click)="savePhim()">
-          Lưu
-        </button>
+        <!-- Action buttons -->
+        <div class="flex justify-end mt-6 pt-4 border-t-2 border-gray-100">
+          <button
+            class="mr-3 bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg transition-colors border border-gray-300"
+            (click)="closeModal()">
+            Hủy
+          </button>
+          <button
+            class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg transition-colors border border-blue-600"
+            (click)="savePhim()">
+            Lưu
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Delete Modal -->
-  <div class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50" *ngIf="showDeleteModal">
-    <div class="bg-white p-6 w-full max-w-sm rounded shadow-lg relative">
-      <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" (click)="closeDeleteModal()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-          stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+    <!-- Delete Modal -->
+    <div class="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50" *ngIf="showDeleteModal">
+      <div class="bg-white p-6 w-full max-w-sm rounded shadow-lg relative">
+        <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" (click)="closeDeleteModal()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
 
-      <h2 class="text-xl font-semibold mb-4">Xóa phim</h2>
-      <p class="mb-4">
-        Bạn có chắc muốn xóa phim
-        "<strong>{{ deletePhim?.title }}</strong>"?
-      </p>
-
-      <div class="mb-4">
-        <label class="block font-medium mb-1">
-          Nhập mật khẩu <strong>hiendz</strong> để xác nhận:
-        </label>
-        <input type="password" [(ngModel)]="deletePassword" 
-          class="border rounded w-full px-3 py-2 mb-1"
-          [ngClass]="{'border-red-500': deletePasswordError}"
-          placeholder="Nhập mật khẩu" />
-        <p *ngIf="deletePasswordError" class="text-red-500 text-sm">
-          {{ deletePasswordError }}
+        <h2 class="text-xl font-semibold mb-4">Xóa phim</h2>
+        <p class="mb-4">
+          Bạn có chắc muốn xóa phim
+          "<strong>{{ deletePhim?.title }}</strong>"?
         </p>
-      </div>
 
-      <div class="flex justify-end">
-        <button class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded" (click)="closeDeleteModal()">
-          Hủy
-        </button>
-        <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded" (click)="confirmXoaPhim()">
-          Xóa
-        </button>
+        <div class="mb-4">
+          <label class="block font-medium mb-1">
+            Nhập mật khẩu <strong>hiendz</strong> để xác nhận:
+          </label>
+          <input type="password" [(ngModel)]="deletePassword" class="border rounded w-full px-3 py-2 mb-1"
+            [ngClass]="{'border-red-500': deletePasswordError}" placeholder="Nhập mật khẩu" />
+          <p *ngIf="deletePasswordError" class="text-red-500 text-sm">
+            {{ deletePasswordError }}
+          </p>
+        </div>
+
+        <div class="flex justify-end">
+          <button class="mr-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded"
+            (click)="closeDeleteModal()">
+            Hủy
+          </button>
+          <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded" (click)="confirmXoaPhim()">
+            Xóa
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>

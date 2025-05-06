@@ -9,10 +9,10 @@ import { RoomDto } from "../dtos/roomDto.dto";
 export class RoomService {
     private apiUrlGetAll = 'http://127.0.0.1:3000/room/getroom';
     private apiUrlGetByCinema = 'http://127.0.0.1:3000/room/getroomById/';
-    private apiUrlCreate = 'http://127.0.0.1:3000/room/addRoom';
-    private apiUrlGetById = 'http://127.0.0.1:3000/room/getRoomById/';
+    private apiUrlCreate = 'http://127.0.0.1:3000/room/addroom';
+    private apiUrlGetById = 'http://127.0.0.1:3000/room/getroomById/';
     private apiUrlEdit = 'http://127.0.0.1:3000/room/editRoom/';
-    private apiUrlDelete = 'http://127.0.0.1:3000/room/deleteRoom/';
+    private apiUrlDelete = 'http://127.0.0.1:3000/room/deleteroom/';
     private getByCinema = 'http://127.0.0.1:3000/room/cinema/';
 
     constructor(private http: HttpClient) { }

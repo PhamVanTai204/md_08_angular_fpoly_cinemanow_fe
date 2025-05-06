@@ -18,13 +18,13 @@ export class TheLoaiPhimComponent implements OnInit {
   genreName = '';
   formSubmitted = false;
 
- 
+
   // Validation errors
   validationErrors = {
     genreName: ''
   };
 
-   // Data management
+  // Data management
   genres: GenresDto[] = [];
   filteredGenres: GenresDto[] = [];
   editIndex: number | null = null;
@@ -38,7 +38,7 @@ export class TheLoaiPhimComponent implements OnInit {
 
   // Pagination - cố định 10 hàng mỗi trang
   page = 1;
-  pageSize = 9; // Luôn hiển thị 10 hàng
+  pageSize = 10; // Luôn hiển thị 10 hàng
   totalPages = 1;
 
   constructor(private genresService: GenresService) { }
@@ -219,9 +219,9 @@ export class TheLoaiPhimComponent implements OnInit {
   saveGenre(): void {
     this.formSubmitted = true;
 
- 
+
     if (this.validateForm()) {
-       this.loading = true;
+      this.loading = true;
 
       const newGenre = new GenresDto();
       newGenre.genreName = this.genreName.trim();
@@ -261,9 +261,9 @@ export class TheLoaiPhimComponent implements OnInit {
   updateGenre(): void {
     this.formSubmitted = true;
 
- 
+
     if (this.validateForm() && this.editIndex !== null) {
-       this.loading = true;
+      this.loading = true;
 
       const updatedGenre = new GenresDto();
       updatedGenre.id = this.genres[this.editIndex].id;

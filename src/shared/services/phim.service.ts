@@ -17,8 +17,8 @@ export class PhimService {
 
   constructor(private http: HttpClient) { }
 
-  getPhims(page: number = 1, limit: number = 10): Observable<PhimDto[]> {
-    return this.http.get<any>(`${this.getAllUrl}?page=${page}&limit=${limit}`).pipe(
+  getPhims(page: number = 1, limit: number = 10, search: string): Observable<PhimDto[]> {
+    return this.http.get<any>(`${this.getAllUrl}?search=${search}page=${page}&limit=${limit}`).pipe(
       tap(response => console.log('Films API Response:', response)), // Keep this for debugging
       map(response => {
         // Check if response has expected structure

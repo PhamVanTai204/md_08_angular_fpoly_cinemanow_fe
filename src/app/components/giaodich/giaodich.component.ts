@@ -25,11 +25,11 @@ export class GiaodichComponent implements OnInit {
   isLoading: boolean = false;
   cinemas: CinemaDto[] = [];
   error: string | null = null;
+  danhSachPhimDaLoc: PhimDto[] = []; // Separate property for filtered results
 
   filmId: string = '';
   constructor(
     private phimService: PhimService,
-    private cinemasService: CinemasService,
     private _modalService: BsModalService
 
   ) { }
@@ -56,41 +56,55 @@ export class GiaodichComponent implements OnInit {
   }
   loadPhims(): void {
     this.isLoading = true;
-    console.log('Đang tải phim...');
+    console.log('Loading films for page:', this.page, 'limit:', this.limit);
 
     this.phimService.getPhims(this.page, this.limit).subscribe({
       next: (response: any) => {
-        console.log('Tải phim thành công:', response);
+        console.log('Films loaded successfully:', response);
 
-        // Xử lý dữ liệu phản hồi tùy thuộc vào cấu trúc API
-        if (response && typeof response === 'object' && response.data) {
-          // Nếu API trả về cấu trúc { data: [...], totalCount: number }
-          this.danhSachPhim = response.data;
-          this.totalPhim = response.totalCount || 0;
-        } else if (Array.isArray(response)) {
-          // Nếu API trả về trực tiếp mảng phim
+        // Check if we received an array directly (common API pattern)
+        if (Array.isArray(response)) {
           this.danhSachPhim = response;
-          this.totalPhim = response.length; // Có thể cần API riêng để lấy tổng số
-        } else if (response && typeof response === 'object') {
-          // Trường hợp API trả về { items: [...], total: number } hoặc cấu trúc tương tự
-          this.danhSachPhim = response.items || response.results || [];
-          this.totalPhim = response.total || response.totalItems || response.count || 0;
+
+          // Since server might not provide total count in this case,
+          // we might need to assume there are more pages if we received a full page
+          if (response.length === this.limit) {
+            // If we received exactly the number of items we requested,
+            // there might be more (this is a simplified approach)
+            this.totalPhim = Math.max((this.page * this.limit) + 1, this.totalPhim);
+          } else if (this.page === 1) {
+            // If we're on the first page and received fewer items than requested,
+            // this is likely all there is
+            this.totalPhim = response.length;
+          }
+        }
+        // Handle response with data property (your API seems to use this pattern)
+        else if (response && typeof response === 'object') {
+          // Handle various API response structures
+          if (response.data && response.data.films) {
+            // This seems to be your API's structure based on the service code
+            this.danhSachPhim = response.data.films;
+            this.totalPhim = response.data.totalCount || response.data.total || 0;
+          } else if (response.items || response.results) {
+            this.danhSachPhim = response.items || response.results;
+            this.totalPhim = response.total || response.totalItems || response.count || 0;
+          } else if (response.data && Array.isArray(response.data)) {
+            this.danhSachPhim = response.data;
+            this.totalPhim = response.totalCount || response.total || 0;
+          }
         }
 
-        // Kiểm tra thể loại của phim đầu tiên nếu có
-        if (this.danhSachPhim.length > 0) {
-          this.kiemTraTheLoaiPhim(this.danhSachPhim[0]);
-        }
-
+        // Make sure we're using the loaded data directly without additional filtering
+        this.danhSachPhimDaLoc = this.danhSachPhim;
         this.isLoading = false;
-        console.log(this.danhSachPhim);
       },
       error: (error) => {
-        console.error('Lỗi khi tải danh sách phim:', error);
+        console.error('Error loading films:', error);
         this.isLoading = false;
       }
     });
   }
+
   kiemTraTheLoaiPhim(phim: PhimDto): void {
     console.log('Phim:', phim.title);
     console.log('ID thể loại:', phim.genre_film);
