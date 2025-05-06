@@ -19,7 +19,6 @@
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã suất chiếu</th>
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên phim</th>
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phòng chiếu</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rạp</th>
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bắt đầu</th>
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kết thúc</th>
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
@@ -28,22 +27,19 @@
     </thead>
     <tbody class="bg-white divide-y divide-gray-200">
       <tr *ngFor="let item of filteredShowtimes" class="hover:bg-gray-50 transition-colors duration-150">
-        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item['showtimeId'] }}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.showtimeId }}</td>
         <td class="px-6 py-4 whitespace-nowrap">
-          <span class="font-medium text-gray-900">{{ item['movieName'] || 'Không rõ tên phim' }}</span>
-          <span *ngIf="!item['movieName']" class="text-xs text-gray-500 block">(ID: {{ item['movieId'] }})</span>
+          <span class="font-medium text-gray-900">{{ item.movieName || 'Không rõ tên phim' }}</span>
+          <span *ngIf="!item.movieName" class="text-xs text-gray-500 block">(ID: {{ item.movieId }})</span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
-          <span class="font-medium text-gray-900">{{ item['roomName'] || 'Không rõ phòng' }}</span>
-          <span *ngIf="!item['roomName']" class="text-xs text-gray-500 block">(ID: {{ item['roomId'] }})</span>
+          <span class="font-medium text-gray-900">{{ item.roomName || 'Không rõ phòng' }}</span>
+          <span *ngIf="!item.roomName" class="text-xs text-gray-500 block">(ID: {{ item.roomId }})</span>
         </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-          <span class="font-medium text-gray-900">{{ getCinemaName(item['cinemaId']) || 'Không rõ rạp' }}</span>
-          <span *ngIf="!getCinemaName(item['cinemaId'])" class="text-xs text-gray-500 block">(ID: {{ item['cinemaId'] }})</span>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item.startTime }}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item.endTime }}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item.showDate | date: 'yyyy-MM-dd HH:mm' }}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item['startTime'] }}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item['endTime'] }}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ formatDate(item['showDate']) }}</td>
         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
           <button class="mr-3 text-blue-600 hover:text-blue-800 px-2 py-1 rounded transition-colors duration-200"
             (click)="editSchedule(item)" title="Chỉnh sửa">
@@ -56,7 +52,7 @@
         </td>
       </tr>
       <tr *ngIf="filteredShowtimes.length === 0">
-        <td colspan="8" class="px-6 py-10 text-center text-gray-500">
+        <td colspan="7" class="px-6 py-10 text-center text-gray-500">
           <div class="flex flex-col items-center">
             <span class="material-icons text-gray-400 text-4xl mb-2">search_off</span>
             <p class="text-lg">Không tìm thấy suất chiếu nào</p>
@@ -89,27 +85,20 @@
     <div class="p-6 space-y-4">
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Mã suất chiếu</label>
-        <input [(ngModel)]="showtimeForm['showtimeId']" type="text"
+        <input [(ngModel)]="showtimeForm.showtimeId" type="text"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
-        <div *ngIf="validationErrors['showtimeId']" class="mt-1 text-xs text-red-600">
-          {{ validationErrors['showtimeId'] }}
-        </div>
       </div>
 
       <!-- Dropdown chọn rạp -->
       <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Rạp <span class="text-red-500">*</span></label>
+        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Rạp</label>
         <select (change)="onCinemaChange($event)"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-          [ngClass]="{'border-red-500': validationErrors['cinemaId']}">
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
           <option value="">-- Chọn Rạp --</option>
-          <option *ngFor="let cinema of rapList" [value]="cinema.id" [selected]="cinema.id === showtimeForm['cinemaId']">
+          <option *ngFor="let cinema of rapList" [value]="cinema.id">
             {{ cinema.cinemaName }}
           </option>
         </select>
-        <div *ngIf="validationErrors['cinemaId']" class="mt-1 text-xs text-red-600">
-          {{ validationErrors['cinemaId'] }}
-        </div>
         <div *ngIf="roomErrorMessage" class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md">
           {{ roomErrorMessage }}
         </div>
@@ -117,88 +106,52 @@
 
       <!-- Dropdown chọn phòng chi tiết -->
       <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phòng <span
-            class="text-red-500">*</span></label>
-        <select [(ngModel)]="showtimeForm['roomId']" (change)="onRoomChange(showtimeForm['roomId'])"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-          [ngClass]="{'border-red-500': validationErrors['roomId']}">
+        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phòng</label>
+        <select [(ngModel)]="showtimeForm.roomId" (change)="onRoomChange(showtimeForm.roomId)"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
           <option value="">-- Chọn Phòng --</option>
           <option *ngFor="let room of roomLisst" [value]="room.id">
             {{ room.room_name }}
           </option>
         </select>
-        <div *ngIf="validationErrors['roomId']" class="mt-1 text-xs text-red-600">
-          {{ validationErrors['roomId'] }}
-        </div>
-        <div *ngIf="showtimeForm['roomName']" class="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-md">
-          <span class="font-medium">Phòng đã chọn:</span> {{ showtimeForm['roomName'] }}
+        <div *ngIf="showtimeForm.roomName" class="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-md">
+          <span class="font-medium">Phòng đã chọn:</span> {{ showtimeForm.roomName }}
         </div>
       </div>
 
       <!-- Dropdown chọn phim -->
       <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phim <span
-            class="text-red-500">*</span></label>
-        <select [(ngModel)]="showtimeForm['movieId']" (change)="onMovieChange(showtimeForm['movieId'])"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-          [ngClass]="{'border-red-500': validationErrors['movieId']}">
+        <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phim</label>
+        <select [(ngModel)]="showtimeForm.movieId" (change)="onMovieChange(showtimeForm.movieId)"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
           <option value="">-- Chọn Phim --</option>
           <option *ngFor="let movie of allMovies" [value]="movie._id">
             {{ movie.title }}
           </option>
         </select>
-        <div *ngIf="validationErrors['movieId']" class="mt-1 text-xs text-red-600">
-          {{ validationErrors['movieId'] }}
-        </div>
-        <div *ngIf="showtimeForm['movieName']" class="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-md">
-          <span class="font-medium">Phim đã chọn:</span> {{ showtimeForm['movieName'] }}
+        <div *ngIf="showtimeForm.movieName" class="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded-md">
+          <span class="font-medium">Phim đã chọn:</span> {{ showtimeForm.movieName }}
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian bắt đầu <span
-              class="text-red-500">*</span></label>
-          <input [(ngModel)]="showtimeForm['startTime']" (ngModelChange)="onStartTimeInput(showtimeForm['startTime'])"
+          <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian bắt đầu</label>
+          <input [(ngModel)]="showtimeForm.startTime" (ngModelChange)="onStartTimeInput(showtimeForm.startTime)"
             type="text" placeholder="HH:MM" maxlength="5"
-            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-            [ngClass]="{'border-red-500': validationErrors['startTime']}" />
-          <div *ngIf="validationErrors['startTime']" class="mt-1 text-xs text-red-600">
-            {{ validationErrors['startTime'] }}
-          </div>
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
         </div>
         <div>
-          <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian kết thúc <span
-              class="text-red-500">*</span></label>
-          <input [(ngModel)]="showtimeForm['endTime']" (ngModelChange)="onEndTimeInput(showtimeForm['endTime'])" type="text"
+          <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian kết thúc</label>
+          <input [(ngModel)]="showtimeForm.endTime" (ngModelChange)="onEndTimeInput(showtimeForm.endTime)" type="text"
             placeholder="HH:MM" maxlength="5"
-            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-            [ngClass]="{'border-red-500': validationErrors['endTime']}" />
-          <div *ngIf="validationErrors['endTime']" class="mt-1 text-xs text-red-600">
-            {{ validationErrors['endTime'] }}
-          </div>
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
         </div>
       </div>
       <div>
-        <label class="block mb-2 text-sm font-medium text-gray-700">Ngày <span class="text-red-500">*</span></label>
-        <input [(ngModel)]="showtimeForm['showDate']" type="date"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-          [ngClass]="{'border-red-500': validationErrors['showDate']}" />
-        <div *ngIf="validationErrors['showDate']" class="mt-1 text-xs text-red-600">
-          {{ validationErrors['showDate'] }}
-        </div>
-      </div>
-
-      <!-- Error summary -->
-      <div *ngIf="formSubmitted && hasValidationErrors()" class="bg-red-50 border-l-4 border-red-500 p-4 mt-4">
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <span class="material-icons text-red-500">error</span>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm text-red-700 font-medium">Vui lòng kiểm tra lại thông tin nhập vào</p>
-          </div>
-        </div>
+        <label class="block mb-2 text-sm font-medium text-gray-700">Ngày</label>
+        <input [(ngModel)]="showtimeForm.showDate" type="date"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
       </div>
     </div>
     <div class="flex justify-end px-6 py-4 border-t border-gray-200 bg-gray-50">
@@ -233,39 +186,27 @@
           <div class="ml-3">
             <p class="text-sm text-red-700">
               Bạn có chắc muốn xóa suất chiếu
-              <strong>"{{ showtimeDangXoa?.['showtimeId'] }}"</strong>?
+              <strong>"{{ showtimeDangXoa?.showtimeId }}"</strong>?
             </p>
           </div>
         </div>
       </div>
 
-      <div *ngIf="showtimeDangXoa" class="bg-gray-50 p-4 rounded-md space-y-2">
-        <p *ngIf="showtimeDangXoa['movieName']" class="text-sm text-gray-700">
-          <span class="font-medium">Phim:</span> {{ showtimeDangXoa['movieName'] }}
+      <div *ngIf="showtimeDangXoa?.movieName || showtimeDangXoa?.roomName" class="bg-gray-50 p-4 rounded-md space-y-2">
+        <p *ngIf="showtimeDangXoa?.movieName" class="text-sm text-gray-700">
+          <span class="font-medium">Phim:</span> {{ showtimeDangXoa?.movieName }}
         </p>
-        <p *ngIf="showtimeDangXoa['roomName']" class="text-sm text-gray-700">
-          <span class="font-medium">Phòng:</span> {{ showtimeDangXoa['roomName'] }}
-        </p>
-        <p *ngIf="getCinemaName(showtimeDangXoa['cinemaId'])" class="text-sm text-gray-700">
-          <span class="font-medium">Rạp:</span> {{ getCinemaName(showtimeDangXoa['cinemaId']) }}
-        </p>
-        <p class="text-sm text-gray-700">
-          <span class="font-medium">Ngày chiếu:</span> {{ formatDate(showtimeDangXoa['showDate']) }}
-        </p>
-        <p class="text-sm text-gray-700">
-          <span class="font-medium">Giờ chiếu:</span> {{ showtimeDangXoa['startTime'] }} - {{ showtimeDangXoa['endTime'] }}
+        <p *ngIf="showtimeDangXoa?.roomName" class="text-sm text-gray-700">
+          <span class="font-medium">Phòng:</span> {{ showtimeDangXoa?.roomName }}
         </p>
       </div>
 
       <div>
         <p class="text-sm font-medium text-gray-700 mb-2">
-          Nhập mật khẩu xác nhận:
+          Nhập mật khẩu <strong>hiendz</strong> để xác nhận:
         </p>
         <input [(ngModel)]="deletePassword" type="password" placeholder="Nhập mật khẩu"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700" />
-        <div *ngIf="deleteError" class="mt-1 text-xs text-red-600">
-          {{ deleteError }}
-        </div>
       </div>
     </div>
     <div class="flex justify-end px-6 py-4 border-t border-gray-200 bg-gray-50">
