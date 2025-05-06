@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { finalize, tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { PhanQuyenService } from '../../../shared/services/phanquyen.service';
 import { User, UserCreateUpdate, PaginationParams } from '../../../shared/dtos/phanquyenDto.dto';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-nhan-vien',
@@ -71,9 +72,11 @@ export class NhanVienComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
+  // Update constructor to include HttpClient
   constructor(
     private phanQuyenService: PhanQuyenService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient // Add this line
   ) { }
 
   ngOnInit(): void {
@@ -462,101 +465,118 @@ export class NhanVienComponent implements OnInit, OnDestroy {
   }
 
   // Xử lý form submit
-  onSubmitForm(): void {
-    // Kiểm tra quyền admin trước khi thực hiện hành động
-    if (!this.isAdmin) {
-      this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
-      return;
+onSubmitForm(): void {
+  // Kiểm tra quyền admin trước khi thực hiện hành động
+  if (!this.isAdmin) {
+    this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
+    return;
+  }
+
+  // Kiểm tra dữ liệu hợp lệ
+  if (!this.validateForm()) {
+    return;
+  }
+
+  this.isLoading = true;
+
+  if (this.editMode && this.selectedUser) {
+    // Chỉnh sửa người dùng hiện có
+    const userData: any = {
+      user_name: this.newUser.user_name,
+      email: this.newUser.email,
+      url_image: this.newUser.url_image,
+      role: this.newUser.role
+    };
+
+    // Chỉ gửi password nếu không trống
+    if (this.newUser.password && this.newUser.password.trim() !== '') {
+      userData.password = this.newUser.password;
     }
 
-    // Kiểm tra dữ liệu hợp lệ
-    if (!this.validateForm()) {
-      return;
-    }
+    console.log('Updating user with ID:', this.selectedUser._id);
+    console.log('Update data:', userData);
 
-    this.isLoading = true;
+    // Sử dụng PATCH request với đúng endpoint
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    });
 
-    if (this.editMode && this.selectedUser) {
-      // Chỉnh sửa người dùng hiện có
-      const userData = { ...this.newUser };
+    this.http.patch(
+      `http://127.0.0.1:3000/users/update-profile/${this.selectedUser._id}`,
+      userData, 
+      { headers: headers }
+    ).subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+        this.showForm = false;
+        
+        if (response.code === 200) {
+          this.successMessage = `Đã cập nhật thông tin cho ${this.newUser.user_name}`;
+          this.loadUsers();  // Tải lại danh sách để cập nhật UI
 
-      // Không gửi password nếu trống
-      if (!userData.password) {
-        delete userData.password;
+          // Tự động ẩn thông báo thành công sau 3 giây
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 3000);
+        } else {
+          this.errorMessage = response.error || 'Có lỗi xảy ra khi cập nhật';
+        }
+      },
+      error: (error) => {
+        console.error('Error updating user:', error);
+        this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || JSON.stringify(error));
+        this.isLoading = false;
+        this.showForm = false;
       }
+    });
+  } else {
+    // Thêm người dùng mới - không thay đổi
+    const newUserData = {
+      user_name: this.newUser.user_name,
+      email: this.newUser.email,
+      password: this.newUser.password,
+      url_image: this.newUser.url_image,
+      role: this.newUser.role
+    };
 
-      const sub = this.phanQuyenService.updateUser(this.selectedUser._id, userData)
-        .pipe(finalize(() => {
-          this.isLoading = false;
-          this.showForm = false;
-        }))
-        .subscribe({
-          next: (response) => {
-            if (response.code === 200) {
-              this.successMessage = `Đã cập nhật thông tin cho ${this.newUser.user_name}`;
-              this.loadUsers();  // Tải lại danh sách để cập nhật UI
+    const sub = this.phanQuyenService.createUser(newUserData)
+      .pipe(finalize(() => {
+        this.isLoading = false;
+        this.showForm = false;
+      }))
+      .subscribe({
+        next: (response) => {
+          if (response && (response.code === 200 || response.data)) {
+            this.successMessage = `Đã thêm ${this.newUser.user_name} vào hệ thống`;
+            this.loadUsers();  // Tải lại danh sách để cập nhật UI
 
-              // Tự động ẩn thông báo thành công sau 3 giây
-              setTimeout(() => {
-                this.successMessage = '';
-              }, 3000);
-            } else {
-              this.errorMessage = response.error || 'Có lỗi xảy ra khi cập nhật';
-            }
-          },
-          error: (error) => {
-            console.error('Error updating user:', error);
-            this.errorMessage = 'Lỗi kết nối máy chủ';
-          }
-        });
-
-      this.subscriptions.push(sub);
-    } else {
-      // Thêm người dùng mới - Chỉ gửi các trường cần thiết
-      const newUserData = {
-        user_name: this.newUser.user_name,
-        email: this.newUser.email,
-        password: this.newUser.password,
-        url_image: this.newUser.url_image,
-        role: this.newUser.role
-      };
-
-      const sub = this.phanQuyenService.createUser(newUserData)
-        .pipe(finalize(() => {
-          this.isLoading = false;
-          this.showForm = false;
-        }))
-        .subscribe({
-          next: (response) => {
-            if (response && (response.code === 200 || response.data)) {
-              this.successMessage = `Đã thêm ${this.newUser.user_name} vào hệ thống`;
-              this.loadUsers();  // Tải lại danh sách để cập nhật UI
-
-              // Tự động ẩn thông báo thành công sau 3 giây
-              setTimeout(() => {
-                this.successMessage = '';
-              }, 3000);
-            } else {
-              this.errorMessage = (response && response.error)
-                ? response.error
-                : 'Có lỗi xảy ra khi thêm mới';
-
-              setTimeout(() => {
-                this.errorMessage = '';
-              }, 3000);
-            }
-          },
-          error: (error) => {
-            console.error('Error adding user:', error);
-            this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || error);
+            // Tự động ẩn thông báo thành công sau 3 giây
+            setTimeout(() => {
+              this.successMessage = '';
+            }, 3000);
+          } else {
+            this.errorMessage = (response && response.error)
+              ? response.error
+              : 'Có lỗi xảy ra khi thêm mới';
 
             setTimeout(() => {
               this.errorMessage = '';
             }, 3000);
           }
-        });
+        },
+        error: (error) => {
+          console.error('Error adding user:', error);
+          this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || error);
 
-      this.subscriptions.push(sub);
-    }
+          setTimeout(() => {
+            this.errorMessage = '';
+          }, 3000);
+          }
+      });
+
+    this.subscriptions.push(sub);
   }
+}
+
 }

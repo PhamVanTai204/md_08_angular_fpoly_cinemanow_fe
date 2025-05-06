@@ -31,6 +31,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     { path: 'phim', title: 'Phim', icon: 'movie', roles: [2] },
     { path: 'rap', title: 'Rạp', icon: 'store', roles: [2, 3] }, // Only Rap is visible to staff
     { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] },
+    { path: 'danhgia', title: 'Đánh giá phim', icon: 'reviews', roles: [2] },
 
   ];
 
@@ -104,38 +105,37 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   // Navigate to the first accessible route for the current user
-  navigateToFirstAccessibleRoute(): void {
-    // Special handling for staff role
-    if (this.currentUser?.role === 3) {
-      // Only navigate if we're at the root path
-      if (this.router.url === '/' || this.router.url === '' || this.router.url === '/admin') {
-        this.router.navigate(['rap']);
-      }
-      return;
+ // Navigate to the first accessible route for the current user
+navigateToFirstAccessibleRoute(): void {
+  // Special handling for staff role
+  if (this.currentUser?.role === 3) {
+    // Only navigate if we're at the root path
+    if (this.router.url === '/' || this.router.url === '' || this.router.url === '/admin') {
+      // Chỉ giữ lại một điều hướng: đến giaodich
+      this.router.navigate(['giaodich']);
     }
-
-    // Combine all menu items
-    const allMenuItems = [
-      ...this.contentMenuItems,
-      ...this.businessMenuItems,
-      ...this.userMenuItems,
-      ...this.marketingMenuItems
-    ];
-
-    // Find the first menu item that the user can access
-    const firstAccessibleItem = allMenuItems.find(item => this.canShowMenuItem(item));
-
-    if (firstAccessibleItem) {
-      // Only navigate if we're at the root path
-      if (this.router.url === '/' || this.router.url === '' || this.router.url === '/admin') {
-        this.router.navigate([firstAccessibleItem.path]);
-      }
-    } else {
-      // If no accessible menu items found, redirect to login
-      this.userService.logout();
-      this.router.navigate(['/login']);
-    }
+    return;
   }
+
+  // Phần còn lại giữ nguyên
+  const allMenuItems = [
+    ...this.contentMenuItems,
+    ...this.businessMenuItems,
+    ...this.userMenuItems,
+    ...this.marketingMenuItems
+  ];
+
+  const firstAccessibleItem = allMenuItems.find(item => this.canShowMenuItem(item));
+
+  if (firstAccessibleItem) {
+    if (this.router.url === '/' || this.router.url === '' || this.router.url === '/admin') {
+      this.router.navigate([firstAccessibleItem.path]);
+    }
+  } else {
+    this.userService.logout();
+    this.router.navigate(['/login']);
+  }
+}
 
   // Get role label based on user role number
   getUserRoleLabel(): string {

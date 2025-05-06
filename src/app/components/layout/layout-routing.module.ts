@@ -123,7 +123,7 @@ const routes: Routes = [
         }
       },
       {
-        path: 'khuyenmai',
+        path: 'danhgia',
         loadChildren: () => import('../khuyen-mai/khuyen-mai.module').then(m => m.KhuyenMaiModule),
         canActivate: [RoleGuard],
         data: {

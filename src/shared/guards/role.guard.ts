@@ -24,98 +24,80 @@ export class RoleGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    // Get allowed roles from route data
+    // Lấy danh sách vai trò được phép từ dữ liệu route
     const allowedRoles = route.data['allowedRoles'];
 
     if (!allowedRoles) {
-      console.warn('No roles specified for RoleGuard. Denying access by default.');
+      console.warn('Không có vai trò nào được chỉ định cho RoleGuard. Từ chối truy cập theo mặc định.');
       this.router.navigate(['/']);
       return of(false);
     }
 
-    // Convert to array if it's a single role
+    // Chuyển đổi thành mảng nếu nó là một vai trò đơn
     const requiredRoles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
 
-    // Get current user synchronously first (for faster response)
+    // Lấy thông tin người dùng hiện tại một cách đồng bộ (để phản hồi nhanh hơn)
     const currentUser = this.userService.getCurrentUser();
 
-    // Special handling for staff role (3)
-    if (currentUser && currentUser.role === 3) {
-      // Check if this is the 'rap' route or a route that starts with 'room'
-      const path = route.routeConfig?.path || '';
-      const isRapRoute = path === 'rap';
-      const isRoomRoute = path.startsWith('room');
+    // Nếu không có người dùng đăng nhập, chuyển hướng đến trang đăng nhập
+    if (!currentUser) {
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: state.url }
+      });
+      return of(false);
+    }
 
-      // If staff is trying to access anything other than 'rap' or 'room'
-      if (!isRapRoute && !isRoomRoute) {
-        console.log('Staff attempting to access restricted route:', path);
+    // Xử lý đặc biệt cho nhân viên (role 3)
+    if (currentUser.role === 3) {
+      // Kiểm tra xem đây có phải là các route được phép
+      const path = route.routeConfig?.path || '';
+      
+      // Danh sách các route được phép cho nhân viên
+      const allowedStaffRoutes = ['rap', 'giaodich', 'combo', 'voucher'];
+      const isRoomRoute = path.startsWith('room');
+      
+      // Kiểm tra xem route hiện tại có nằm trong danh sách route được phép không
+      if (allowedStaffRoutes.includes(path) || isRoomRoute) {
+        return of(true);
+      } else {
+        console.log('Nhân viên đang cố gắng truy cập route bị hạn chế:', path);
         this.router.navigate(['/giaodich']);
         return of(false);
       }
     }
 
-    // If we have the user data cached and can make a quick decision
-    if (currentUser) {
-      if (requiredRoles.includes(currentUser.role)) {
-        return of(true);
-      } else {
-        // Navigate to appropriate page based on role
-        this.navigateToDefaultPage(currentUser.role, state.url);
-        return of(false);
-      }
+    // Kiểm tra nhanh nếu người dùng có vai trò phù hợp
+    if (requiredRoles.includes(currentUser.role)) {
+      return of(true);
+    } else {
+      // Điều hướng đến trang thích hợp dựa trên vai trò
+      this.navigateToDefaultPage(currentUser.role, state.url);
+      return of(false);
     }
-
-    // Otherwise, do the full asynchronous check with the PermissionService
-    return this.permissionService.hasPermission(requiredRoles).pipe(
-      tap(hasPermission => {
-        if (!hasPermission) {
-          // Check if user is logged in but doesn't have permission
-          this.permissionService.getCurrentUser().subscribe(user => {
-            if (user) {
-              // User is logged in but doesn't have right permission
-              this.navigateToDefaultPage(user.role, state.url);
-            } else {
-              // User is not logged in
-              this.router.navigate(['/login'], {
-                queryParams: { returnUrl: state.url }
-              });
-            }
-          });
-        }
-      }),
-      catchError(error => {
-        console.error('Error in role guard:', error);
-        // Redirect to login page on error
-        this.router.navigate(['/login'], {
-          queryParams: { returnUrl: state.url }
-        });
-        return of(false);
-      })
-    );
   }
 
   /**
-   * Navigate to the default page based on user role
-   * @param userRole The user's role ID
-   * @param currentUrl The current URL the user was trying to access
+   * Điều hướng đến trang mặc định dựa trên vai trò người dùng
+   * @param userRole ID vai trò của người dùng
+   * @param currentUrl URL hiện tại mà người dùng đang cố gắng truy cập
    */
   private navigateToDefaultPage(userRole: number, currentUrl: string): void {
-    // Store the current URL as return URL if needed later
+    // Lưu URL hiện tại để sử dụng sau này nếu cần
     sessionStorage.setItem('returnUrl', currentUrl);
 
     switch (userRole) {
-      case 2: // Admin
-        // Admins can go to the theloaiphim as default
+      case 2: // Quản trị viên
+        // Quản trị viên có thể chuyển đến theloaiphim mặc định
         this.router.navigate(['/theloaiphim']);
         break;
-      case 3: // Staff
-        // Staff can only go to rap as default (changed from phim)
-        this.router.navigate(['/rap']);
+      case 3: // Nhân viên
+        // Nhân viên chỉ có thể chuyển đến giaodich mặc định
+        this.router.navigate(['/giaodich']);
         break;
-      case 1: // Regular user
+      case 1: // Người dùng thông thường
       default:
-        // Regular users shouldn't be in the admin section at all
-        // Redirect to public homepage or user dashboard
+        // Người dùng thông thường không nên ở trong phần quản trị
+        // Chuyển hướng đến trang chủ công khai hoặc dashboard người dùng
         this.router.navigate(['/']);
         break;
     }

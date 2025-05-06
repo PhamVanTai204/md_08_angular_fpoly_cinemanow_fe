@@ -67,6 +67,8 @@ export class ThanhToanComponent implements OnInit {
         this.thanhToanList = data.payments;
         this.totalRecords = data.totalPayments;
         this.totalPages = data.totalPages;
+        console.log(this.thanhToanList);
+
       },
       error: (err) => {
         console.error('Lỗi tải dữ liệu thanh toán:', err);

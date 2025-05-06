@@ -8,37 +8,40 @@
 
           <div class="search-form">
             <div class="input-wrapper">
-              <input type="text" placeholder="Nhập vào tên Phim" #filter class="search-input" />
+              <input type="text" placeholder="Nhập vào tên Phim" [(ngModel)]="searchTerm" class="search-input"
+                (keyup.enter)="onSearch()" />
               <span class="search-icon">
                 <i class="fas fa-search"></i>
               </span>
             </div>
-            <button type="button" class="search-button">Tìm</button>
+            <button type="button" class="search-button" (click)="onSearch()">Tìm</button>
           </div>
         </div>
-
       </section>
 
       <div class="product-list">
-        @for (product of danhSachPhim ; track product.id) {
+        @for (product of danhSachPhimDaLoc; track product.id) {
         <div class="product-card" (click)="showCreateOrEditProductDialog(product.id)">
           <div class="product-img-wrapper">
-            <img id="img-product-list" [src]="product.image_film" alt="Uploaded Image" class="product-img" />
+            <img id="img-product-list-{{product.id}}" [src]="product.image_film" alt="Uploaded Image"
+              class="product-img" />
           </div>
-          <h2 class="product-title">{{ product.title }}</h2>
-          <p class="product-age">🎫 Giới hạn tuổi: {{ product.age_limit }}</p>
+          <div class="product-info">
+            <h2 class="product-title">{{ product.title }}</h2>
+            <p class="product-age">🎫 Giới hạn tuổi: {{ product.age_limit }}</p>
+          </div>
         </div>
         }
       </div>
 
-      <div *ngIf="!danhSachPhim.length" class="no-result">
+      <div *ngIf="!danhSachPhimDaLoc.length" class="no-result">
         <p>Không có phim phù hợp.</p>
       </div>
     </div>
   </section>
 
   <!-- Pagination -->
-  <div *ngIf="!isLoading && danhSachPhim.length > 0" class="pagination-container">
+  <div *ngIf="!isLoading && danhSachPhimDaLoc.length > 0" class="pagination-container">
     <div class="pagination-info">
       Hiển thị {{ (page - 1) * limit + 1 }} đến
       {{ Math.min(page * limit, totalPhim) }} trong tổng số {{ totalPhim }} phim

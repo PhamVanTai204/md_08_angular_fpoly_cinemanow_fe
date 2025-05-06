@@ -25,11 +25,11 @@ export class GiaodichComponent implements OnInit {
   isLoading: boolean = false;
   cinemas: CinemaDto[] = [];
   error: string | null = null;
-
+  danhSachPhimDaLoc: PhimDto[] = []; // Separate property for filtered results
+  isSearching: boolean = false;
   filmId: string = '';
   constructor(
     private phimService: PhimService,
-    private cinemasService: CinemasService,
     private _modalService: BsModalService
 
   ) { }
@@ -54,39 +54,75 @@ export class GiaodichComponent implements OnInit {
 
 
   }
+
+  onSearch(): void {
+    this.page = 1; // Reset to first page when searching
+    if (this.searchTerm.trim() === '') {
+      this.isSearching = false;
+      this.loadPhims();
+    } else {
+      this.isSearching = true;
+      this.searchPhims();
+    }
+  }
+
   loadPhims(): void {
     this.isLoading = true;
-    console.log('Đang tải phim...');
+    console.log('Loading films for page:', this.page, 'limit:', this.limit);
 
-    this.phimService.getPhims(this.page, this.limit).subscribe({
+    this.phimService.getPhims(this.page, this.limit, '').subscribe({
       next: (response: any) => {
-        console.log('Tải phim thành công:', response);
+        console.log('Films loaded successfully:', response);
 
-        // Xử lý dữ liệu phản hồi tùy thuộc vào cấu trúc API
-        if (response && typeof response === 'object' && response.data) {
-          // Nếu API trả về cấu trúc { data: [...], totalCount: number }
-          this.danhSachPhim = response.data;
-          this.totalPhim = response.totalCount || 0;
-        } else if (Array.isArray(response)) {
-          // Nếu API trả về trực tiếp mảng phim
+        if (Array.isArray(response)) {
           this.danhSachPhim = response;
-          this.totalPhim = response.length; // Có thể cần API riêng để lấy tổng số
-        } else if (response && typeof response === 'object') {
-          // Trường hợp API trả về { items: [...], total: number } hoặc cấu trúc tương tự
-          this.danhSachPhim = response.items || response.results || [];
-          this.totalPhim = response.total || response.totalItems || response.count || 0;
+          this.danhSachPhimDaLoc = response;
+          if (response.length === this.limit) {
+            this.totalPhim = Math.max((this.page * this.limit) + 1, this.totalPhim);
+          } else if (this.page === 1) {
+            this.totalPhim = response.length;
+          }
         }
-
-        // Kiểm tra thể loại của phim đầu tiên nếu có
-        if (this.danhSachPhim.length > 0) {
-          this.kiemTraTheLoaiPhim(this.danhSachPhim[0]);
+        else if (response && typeof response === 'object') {
+          if (response.data && response.data.films) {
+            this.danhSachPhim = response.data.films;
+            this.danhSachPhimDaLoc = response.data.films;
+            this.totalPhim = response.data.totalCount || response.data.total || 0;
+          } else if (response.items || response.results) {
+            this.danhSachPhim = response.items || response.results;
+            this.danhSachPhimDaLoc = response.items || response.results;
+            this.totalPhim = response.total || response.totalItems || response.count || 0;
+          } else if (response.data && Array.isArray(response.data)) {
+            this.danhSachPhim = response.data;
+            this.danhSachPhimDaLoc = response.data;
+            this.totalPhim = response.totalCount || response.total || 0;
+          }
         }
 
         this.isLoading = false;
-        console.log(this.danhSachPhim);
       },
       error: (error) => {
-        console.error('Lỗi khi tải danh sách phim:', error);
+        console.error('Error loading films:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  searchPhims(): void {
+    this.isLoading = true;
+    this.phimService.searchPhims(this.searchTerm).subscribe({
+      next: (response: any) => {
+        if (Array.isArray(response)) {
+          this.danhSachPhimDaLoc = response;
+          this.totalPhim = response.length;
+        } else if (response && response.data) {
+          this.danhSachPhimDaLoc = response.data;
+          this.totalPhim = response.data.length;
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error searching films:', error);
         this.isLoading = false;
       }
     });
