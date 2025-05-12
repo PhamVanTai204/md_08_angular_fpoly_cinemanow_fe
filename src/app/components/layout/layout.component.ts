@@ -142,14 +142,18 @@ navigateToFirstAccessibleRoute(): void {
     if (!this.currentUser) return '';
 
     switch (this.currentUser.role) {
+      case 0:
+        return 'Khách';
       case 1:
         return 'Người dùng';
       case 2:
-        return 'Quản trị viên';
+        return 'Quản trị rạp';
       case 3:
         return 'Nhân viên rạp';
+      case 4: 
+        return 'Quản trị viên hệ thống'
       default:
-        return 'Nhân viên';
+        return 'Không có vai trò';
     }
   }
 
