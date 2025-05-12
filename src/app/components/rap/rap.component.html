@@ -96,12 +96,12 @@
 
         <!-- Địa chỉ -->
         <div class="mb-4">
-          <label class="block font-medium mb-1 text-gray-700">Địa chỉ <span class="text-red-500">*</span></label>
+          <label class="block font-medium mb-1 text-gray-700">Thành Phố <span class="text-red-500">*</span></label>
           <input type="text" name="location" [(ngModel)]="newRap.location" required #location="ngModel"
             class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
             placeholder="Nhập địa chỉ" />
           <div *ngIf="location.invalid && location.touched" class="text-red-500 text-sm mt-1">
-            Vui lòng nhập địa chỉ
+            Vui lòng nhập thành phố
           </div>
         </div>
 

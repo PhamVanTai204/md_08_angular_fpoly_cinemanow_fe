@@ -42,6 +42,8 @@ export class LichChieuComponent implements OnInit {
   deletePassword: string = '';
   roomErrorMessage: string = '';
 
+  isViewOnly: boolean = false;
+
   constructor(
     private showtimesService: ShowtimesService,
     private http: HttpClient,
@@ -218,6 +220,7 @@ export class LichChieuComponent implements OnInit {
 
   openAddModal(): void {
     this.isEditing = false;
+    this.isViewOnly = false; 
     this.isMainModalOpen = true;
     const currentDate: Date = new Date();
     const formattedDate: string = currentDate.toISOString().slice(0, 10); // yyyy-MM-dd
@@ -246,18 +249,33 @@ export class LichChieuComponent implements OnInit {
     });
   }
 
-  editSchedule(showtime: ShowtimesDto): void {
-    this.isEditing = true;
-    this.isMainModalOpen = true;
-    this.showtimeForm = showtime.clone();
-    if (this.showtimeForm.showDate) {
-      const date: Date = new Date(this.showtimeForm.showDate);
-      if (!isNaN(date.getTime())) {
-        this.showtimeForm.showDate = date.toISOString().slice(0, 10);
-      }
+  // editSchedule(showtime: ShowtimesDto): void {
+  //   this.isEditing = true;
+  //   this.isMainModalOpen = true;
+  //   this.showtimeForm = showtime.clone();
+  //   if (this.showtimeForm.showDate) {
+  //     const date: Date = new Date(this.showtimeForm.showDate);
+  //     if (!isNaN(date.getTime())) {
+  //       this.showtimeForm.showDate = date.toISOString().slice(0, 10);
+  //     }
+  //   }
+  //   console.log('Editing showtime:', this.showtimeForm);
+  // }
+viewSchedule(showtime: ShowtimesDto): void {
+  this.isViewOnly = true;
+  this.isMainModalOpen = true;
+  this.showtimeForm = showtime.clone();
+
+  // Format ngày về yyyy-MM-dd nếu cần
+  if (this.showtimeForm.showDate) {
+    const date: Date = new Date(this.showtimeForm.showDate);
+    if (!isNaN(date.getTime())) {
+      this.showtimeForm.showDate = date.toISOString().slice(0, 10);
     }
-    console.log('Editing showtime:', this.showtimeForm);
   }
+
+  console.log('Viewing showtime:', this.showtimeForm);
+}
 
   closeMainModal(): void {
     this.isMainModalOpen = false;
