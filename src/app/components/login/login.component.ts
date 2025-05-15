@@ -30,6 +30,7 @@ export class LoginComponent implements OnInit {
   emailError: string = '';
   passwordError: string = '';
   locationError: string = '';
+  isSubmitting: boolean = false;
   
   // Cinema related properties
   cinemas: Cinema[] = [];
@@ -43,6 +44,12 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // Check if user is already logged in, redirect if needed
+    if (this._userService.isLoggedIn()) {
+      this.redirectBasedOnRole();
+      return;
+    }
+    
     // Load cinemas when component initializes
     this.loadCinemas();
   }
@@ -70,9 +77,9 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  /* === VALIDATE MỚI === */
   /**
-   * Chỉ cho phép username 3-50 ký tự (a-z, 0-9) + '@gmail.com'
+   * Validates email format
+   * Only allows emails with 3-50 characters (a-z, 0-9) + '@gmail.com'
    */
   validateEmail(email: string): boolean {
     const regex = /^[a-z0-9]{3,50}@gmail\.com$/;
@@ -95,11 +102,56 @@ export class LoginComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
+  /**
+   * Handles the login form submission
+   */
   handleSubmit(e: Event): void {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (this.isSubmitting) {
+      return;
+    }
+    
+    let isValid = this.validateForm();
+
+    if (isValid) {
+      this.isSubmitting = true;
+      
+      // Create login object with location
+      const user = new UserLoginDto({
+        email: this.email,
+        password: this.password,
+        location: this.selectedCinema
+      });
+
+      // Call login service with location
+      this._userService.loginWithLocation(user).subscribe({
+        next: (response) => {
+          console.log('Login successful:', response);
+          
+          // Allow UI to update before redirect
+          setTimeout(() => {
+            this.redirectBasedOnRole();
+            this.isSubmitting = false;
+          }, 100);
+        },
+        error: (err) => {
+          console.error('Login error:', err);
+          this.emailError = 'Đăng nhập thất bại. Vui lòng thử lại.';
+          this.isSubmitting = false;
+        }
+      });
+    }
+  }
+  
+  /**
+   * Validates all form fields and returns validation status
+   */
+  private validateForm(): boolean {
     let isValid = true;
 
-    /* --- validate tài khoản --- */
+    /* --- Validate email --- */
     if (!this.email) {
       this.emailError = 'Vui lòng nhập tài khoản';
       isValid = false;
@@ -108,7 +160,7 @@ export class LoginComponent implements OnInit {
       isValid = false;
     }
 
-    /* --- validate mật khẩu --- */
+    /* --- Validate password --- */
     if (!this.password) {
       this.passwordError = 'Vui lòng nhập mật khẩu';
       isValid = false;
@@ -117,52 +169,37 @@ export class LoginComponent implements OnInit {
       isValid = false;
     }
 
-    /* --- validate location --- */
+    /* --- Validate location --- */
     if (!this.selectedCinema) {
       this.locationError = 'Vui lòng chọn rạp phim';
       isValid = false;
     }
-
-    if (isValid) {
-      // Tạo đối tượng đăng nhập với location
-      const user = new UserLoginDto({
-        email: this.email,
-        password: this.password,
-        location: this.selectedCinema
-      });
-
-      // Gọi service đăng nhập với location
-      this._userService.loginWithLocation(user).subscribe({
-        next: (response) => {
-          console.log('Đăng nhập thành công:', response);
-
-          setTimeout(() => {
-            // Điều hướng dựa trên vai trò người dùng
-            const currentUser = this._userService.getCurrentUser();
-            if (currentUser && currentUser.role) {
-              switch (currentUser.role) {
-                case 4: // Quản trị hệ thống
-                  this.router.navigateByUrl('/layout/admin');
-                  break;
-                case 3: // Quản trị rạp
-                  this.router.navigateByUrl('/layout/cinema-admin');
-                  break;
-                case 2: // Nhân viên
-                  this.router.navigateByUrl('/layout/staff');
-                  break;
-                default:
-                  this.router.navigateByUrl('/layout');
-              }
-            } else {
-              this.router.navigateByUrl('/layout');
-            }
-          }, 100);
-        },
-        error: (err) => {
-          console.error('Lỗi đăng nhập:', err);
-          this.emailError = 'Đăng nhập thất bại. Vui lòng thử lại.';
-        }
-      });
+    
+    return isValid;
+  }
+  
+  /**
+   * Redirects user to appropriate page based on role
+   */
+  private redirectBasedOnRole(): void {
+    const currentUser = this._userService.getCurrentUser();
+    
+    if (currentUser && currentUser.role) {
+      switch (currentUser.role) {
+        case 4: // System Administrator
+          this.router.navigateByUrl('/layout/admin');
+          break;
+        case 3: // Staff
+          this.router.navigateByUrl('/layout/giaodich');
+          break;
+        case 2: // Cinema Manager
+          this.router.navigateByUrl('/layout/phim');
+          break;
+        default:
+          this.router.navigateByUrl('/layout');
+      }
+    } else {
+      this.router.navigateByUrl('/layout');
     }
   }
 }
