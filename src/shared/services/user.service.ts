@@ -56,15 +56,36 @@ export class UserService {
     );
   }
 
+  // Đăng nhập với location (mới thêm)
+  loginWithLocation(user: UserLoginDto): Observable<any> {
+    // Sử dụng endpoint mới cho login với location
+    return this.http.post<any>(`${this.baseUrl}/loginWebByLocation`, user.toJSON()).pipe(
+      tap(response => {
+        // Lưu thông tin người dùng vào localStorage
+        if (response && response.data) {
+          localStorage.setItem('currentUser', JSON.stringify(response.data));
+          localStorage.setItem('token', response.data.token || '');
+          // Lưu thêm thông tin location để sử dụng sau này nếu cần
+          if (user.location) {
+            localStorage.setItem('userLocation', user.location);
+          }
+        } else if (response) {
+          localStorage.setItem('currentUser', JSON.stringify(response));
+        }
+      }),
+      catchError(error => {
+        console.error('LoginService Error:', error);
+        return throwError(() => new Error(error.message || 'Server error'));
+      })
+    );
+  }
+
   // Đăng xuất
   logout(): void {
     // Xóa thông tin người dùng và token khỏi localStorage
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
-
-    // Có thể thêm API call để invalidate token phía server nếu cần
-    // const headers = this.getHeaders();
-    // this.http.post(`${this.baseUrl}/logout`, {}, { headers }).subscribe();
+    localStorage.removeItem('userLocation');
 
     // Điều hướng về trang đăng nhập
     this.router.navigate(['/login']);
@@ -111,27 +132,32 @@ export class UserService {
     return user ? user._id || user.userId : null;
   }
 
+  // Lấy location của người dùng hiện tại
+  getCurrentUserLocation(): string | null {
+    return localStorage.getItem('userLocation');
+  }
+
   // Kiểm tra người dùng đã đăng nhập
   isLoggedIn(): boolean {
     return !!this.getCurrentUser();
   }
 
-  // Kiểm tra vai trò standard user (role 1)
-  isStandardUser(): boolean {
-    const user = this.getCurrentUser();
-    return user ? user.role === 1 : false;
-  }
-
-  // Kiểm tra vai trò admin (role 2)
-  isAdmin(): boolean {
+  // Kiểm tra vai trò nhân viên (role 2)
+  isStaff(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 2 : false;
   }
 
-  // Kiểm tra vai trò super admin hoặc manager (role 3)
-  isStaff(): boolean {
+  // Kiểm tra vai trò quản trị rạp (role 3)
+  isCinemaAdmin(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 3 : false;
+  }
+
+  // Kiểm tra vai trò quản trị hệ thống (role 4)
+  isSystemAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user ? user.role === 4 : false;
   }
 
   // Kiểm tra role theo số

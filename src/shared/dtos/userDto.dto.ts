@@ -1,12 +1,14 @@
 export interface IUserLoginDto {
     email: string;
     password: string;
+    location?: string; // Added location field as optional
 }
+
 export class UserLoginDto implements IUserLoginDto {
     email!: string;
     password!: string;
-
-
+    location?: string; // Added location field as optional
+    
     constructor(data?: IUserLoginDto) {
         if (data) {
             for (var property in data) {
@@ -15,30 +17,33 @@ export class UserLoginDto implements IUserLoginDto {
             }
         }
     }
+
     init(_data?: any) {
         if (_data) {
             this.email = _data["email"];
             this.password = _data["password"];
-
+            this.location = _data["location"];
         }
     }
+
     static fromJS(data: any): UserLoginDto {
         data = typeof data === 'object' ? data : {};
         let result = new UserLoginDto();
         result.init(data);
         return result;
     }
+
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["email"] = this.email;
         data["password"] = this.password;
-
-
+        if (this.location !== undefined)
+            data["location"] = this.location;
+        
         return data;
     }
+
     clone(): UserLoginDto {
         return UserLoginDto.fromJS(this.toJSON());
     }
-
-
 }
