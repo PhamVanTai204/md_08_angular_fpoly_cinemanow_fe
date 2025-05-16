@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../shared/services/user.service';
 import { UserLoginDto } from '../../../shared/dtos/userDto.dto';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
 interface Cinema {
@@ -31,6 +31,7 @@ export class LoginComponent implements OnInit {
   passwordError: string = '';
   locationError: string = '';
   isSubmitting: boolean = false;
+  errorMessage: string = '';
   
   // Cinema related properties
   cinemas: Cinema[] = [];
@@ -40,10 +41,20 @@ export class LoginComponent implements OnInit {
   constructor(
     public _userService: UserService,
     private router: Router,
+    private route: ActivatedRoute,
     private http: HttpClient
   ) { }
 
   ngOnInit(): void {
+    // Check for error parameters in URL
+    this.route.queryParams.subscribe(params => {
+      if (params['error'] === 'cinema-access-denied') {
+        this.errorMessage = 'Bạn không có quyền truy cập vào rạp này. Vui lòng chọn rạp phù hợp.';
+      } else if (params['error']) {
+        this.errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại.';
+      }
+    });
+    
     // Check if user is already logged in, redirect if needed
     if (this._userService.isLoggedIn()) {
       this.redirectBasedOnRole();
@@ -76,9 +87,8 @@ export class LoginComponent implements OnInit {
         
         // For demo purposes, add some dummy cinemas if API fails
         this.cinemas = [
-          { _id: '1', cinema_name: 'Beta Giải Phóng', location: 'Hà Nội', total_room: 5, createdAt: '', updatedAt: '', __v: 0 },
-          { _id: '2', cinema_name: 'Beta Thanh Xuân', location: 'Hà Nội', total_room: 4, createdAt: '', updatedAt: '', __v: 0 },
-          { _id: '3', cinema_name: 'Beta Đà Nẵng', location: 'Đà Nẵng', total_room: 6, createdAt: '', updatedAt: '', __v: 0 }
+          { _id: '682618a044e3d2514d9a6621', cinema_name: 'Beta Giải Phóng', location: 'Hà Nội', total_room: 5, createdAt: '', updatedAt: '', __v: 0 },
+          { _id: '682619bb44e3d2514d9a662c', cinema_name: 'Beta Thanh Xuân', location: 'Hồ Chí Minh', total_room: 4, createdAt: '', updatedAt: '', __v: 0 }
         ];
         this.selectedCinema = this.cinemas[0].cinema_name;
         this.isLoadingCinemas = false;
@@ -133,45 +143,82 @@ export class LoginComponent implements OnInit {
       this.isSubmitting = true;
       
       // Special handling for system admin login
-      if (this.email === 'quantrihethong@gmail.com' && this.password === '123456789Abcd') {
-        // Create a mock system admin user
-        const sysAdminUser = {
-          _id: 'sysadmin123',
-          user_name: 'Quản trị hệ thống',
-          email: 'quantrihethong@gmail.com',
-          role: 4, // System admin role
-          token: 'mock-token-admin',
-          url_image: 'https://example.com/admin.jpg'
-        };
-        
-        localStorage.setItem('currentUser', JSON.stringify(sysAdminUser));
-        localStorage.setItem('token', sysAdminUser.token);
-        
-        // Redirect to layout after a short delay
-        setTimeout(() => {
-          this.router.navigateByUrl('/layout/rap');
+      if (this.email === 'quantrihethong@gmail.com') {
+        // Hard-coded password check for system admin
+        if (this.password === '123456789Abcd') {
+          // Create a mock system admin user
+          const sysAdminUser = {
+            _id: 'sysadmin123',
+            userId: 'sysadmin123',
+            user_name: 'Quản trị hệ thống',
+            email: 'quantrihethong@gmail.com',
+            role: 4, // System admin role
+            token: 'mock-token-admin',
+            url_image: 'https://example.com/admin.jpg'
+          };
+          
+          localStorage.setItem('currentUser', JSON.stringify(sysAdminUser));
+          localStorage.setItem('token', sysAdminUser.token);
+          
+          // Redirect to layout after a short delay
+          setTimeout(() => {
+            this.router.navigateByUrl('/layout/rap');
+            this.isSubmitting = false;
+          }, 500);
+        } else {
+          // Wrong password for system admin
+          this.passwordError = 'Mật khẩu không đúng';
           this.isSubmitting = false;
-        }, 500);
+        }
         return;
       }
       
-      // Normal login flow with location
+      // For regular users, send the selected cinema with the login request
+      // Create login DTO with location
       const user = new UserLoginDto({
         email: this.email,
         password: this.password,
-        location: this.selectedCinema || undefined
+        location: this.selectedCinema
       });
 
       // Call login service with location
-      this._userService.loginWithLocation(user).subscribe({
+      this._userService.login(user).subscribe({
         next: (response) => {
-          console.log('Login successful:', response);
-          
-          // Allow UI to update before redirect
-          setTimeout(() => {
-            this.redirectBasedOnRole();
+          if (response && response.data) {
+            console.log('Login successful:', response);
+            
+            // Critical check: Verify that the user's assigned cinema in MongoDB matches the selected cinema
+            if (response.data.cinema_name && response.data.cinema_name !== this.selectedCinema) {
+              // Cinema mismatch - clear auth data and show error
+              localStorage.removeItem('currentUser');
+              localStorage.removeItem('token');
+              localStorage.removeItem('userCinema');
+              localStorage.removeItem('userCinemaId');
+              
+              this.emailError = `Bạn chỉ có thể đăng nhập vào rạp "${response.data.cinema_name}"`;
+              this.isSubmitting = false;
+              return;
+            }
+            
+            // Find the cinema ID from the selected cinema name
+            const selectedCinemaObj = this.cinemas.find(c => c.cinema_name === this.selectedCinema);
+            
+            // Save the cinema info
+            if (selectedCinemaObj && selectedCinemaObj._id) {
+              localStorage.setItem('userCinemaId', selectedCinemaObj._id);
+              localStorage.setItem('userCinema', this.selectedCinema);
+            }
+            
+            // Successful login - redirect based on role
+            setTimeout(() => {
+              this.redirectBasedOnRole();
+              this.isSubmitting = false;
+            }, 300);
+          } else {
+            // Response format error
+            this.emailError = 'Đăng nhập thất bại. Phản hồi không hợp lệ.';
             this.isSubmitting = false;
-          }, 100);
+          }
         },
         error: (err) => {
           console.error('Login error:', err);
@@ -207,7 +254,6 @@ export class LoginComponent implements OnInit {
     }
 
     /* --- Validate location for non-system admin login --- */
-    // Only check location for non-system admin accounts
     if (this.email !== 'quantrihethong@gmail.com' && !this.selectedCinema) {
       this.locationError = 'Vui lòng chọn rạp phim';
       isValid = false;

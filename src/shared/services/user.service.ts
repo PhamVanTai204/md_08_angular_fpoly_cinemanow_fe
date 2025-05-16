@@ -5,13 +5,21 @@ import { catchError, Observable, tap, throwError } from "rxjs";
 import { Router } from "@angular/router";
 
 export interface User {
-  _id: string;
+  userId: string;
+  _id?: string;
   user_name: string;
   email: string;
   password?: string;
   url_image?: string;
   role: number;
   isActive?: boolean;
+  cinema_id?: string;
+  cinema_name?: string;
+  location?: string;
+  phone_number?: string;
+  date_of_birth?: string;
+  gender?: number | null;
+  token?: string;
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
@@ -37,47 +45,44 @@ export class UserService {
     });
   }
 
-  // Standard login
+  // Primary login method that sends location to the backend
   login(user: UserLoginDto): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/login`, user.toJSON()).pipe(
+    // Ensure we're using the correct endpoint that validates location
+    return this.http.post<any>(`${this.baseUrl}/loginWebByLocation`, user.toJSON()).pipe(
       tap(response => {
-        // Save user info to localStorage
+        // Only save user info if there's a successful login with data
         if (response && response.data) {
           localStorage.setItem('currentUser', JSON.stringify(response.data));
           localStorage.setItem('token', response.data.token || '');
-        } else if (response) {
-          localStorage.setItem('currentUser', JSON.stringify(response));
+          
+          // Save location info if available
+          if (response.data.cinema_name) {
+            localStorage.setItem('userCinema', response.data.cinema_name);
+          }
+          
+          // Save cinema ID if available
+          if (response.data.cinema_id) {
+            localStorage.setItem('userCinemaId', response.data.cinema_id);
+          }
         }
       }),
       catchError(error => {
-        console.error('LoginService Error:', error);
+        console.error('Login Error:', error);
+        
+        // Clear any partial authentication data on error
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('token');
+        localStorage.removeItem('userCinema');
+        localStorage.removeItem('userCinemaId');
+        
         return throwError(() => new Error(error.message || 'Server error'));
       })
     );
   }
-
-  // Login with location
+  
+  // Maintains compatibility with older code
   loginWithLocation(user: UserLoginDto): Observable<any> {
-    // Use the location-specific endpoint
-    return this.http.post<any>(`${this.baseUrl}/loginWebByLocation`, user.toJSON()).pipe(
-      tap(response => {
-        // Save user info to localStorage
-        if (response && response.data) {
-          localStorage.setItem('currentUser', JSON.stringify(response.data));
-          localStorage.setItem('token', response.data.token || '');
-          // Save location info for later use if needed
-          if (user.location) {
-            localStorage.setItem('userLocation', user.location);
-          }
-        } else if (response) {
-          localStorage.setItem('currentUser', JSON.stringify(response));
-        }
-      }),
-      catchError(error => {
-        console.error('LoginService Error:', error);
-        return throwError(() => new Error(error.message || 'Server error'));
-      })
-    );
+    return this.login(user);
   }
 
   // Logout
@@ -85,42 +90,23 @@ export class UserService {
     // Remove user info and token from localStorage
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
-    localStorage.removeItem('userLocation');
+    localStorage.removeItem('userCinema');
+    localStorage.removeItem('userCinemaId');
 
     // Navigate to login page
     this.router.navigate(['/login']);
-  }
-
-  // Get all users
-  getAllUsers(): Observable<User[]> {
-    const headers = this.getHeaders();
-    return this.http.get<User[]>(`${this.baseUrl}/getAll`, { headers }).pipe(
-      catchError(error => {
-        console.error('Error fetching users:', error);
-        return throwError(() => new Error(error.message || 'Server error'));
-      })
-    );
-  }
-
-  // Toggle user status (active/inactive)
-  toggleUserStatus(userId: string, isActive: boolean): Observable<any> {
-    const headers = this.getHeaders();
-    return this.http.patch<any>(`${this.baseUrl}/toggleStatus/${userId}`,
-      { isActive },
-      { headers }
-    ).pipe(
-      catchError(error => {
-        console.error('Error toggling user status:', error);
-        return throwError(() => new Error(error.message || 'Server error'));
-      })
-    );
   }
 
   // Get current user from localStorage
   getCurrentUser(): any {
     const userStr = localStorage.getItem('currentUser');
     if (userStr) {
-      return JSON.parse(userStr);
+      try {
+        return JSON.parse(userStr);
+      } catch (e) {
+        console.error('Error parsing currentUser from localStorage:', e);
+        return null;
+      }
     }
     return null;
   }
@@ -128,12 +114,25 @@ export class UserService {
   // Get current user ID
   getCurrentUserId(): string | null {
     const user = this.getCurrentUser();
-    return user ? user._id || user.userId : null;
+    return user ? user.userId || user._id : null;
   }
 
-  // Get current user location
-  getCurrentUserLocation(): string | null {
-    return localStorage.getItem('userLocation');
+  // Get current user cinema ID
+  getCurrentUserCinemaId(): string | null {
+    const user = this.getCurrentUser();
+    if (user && user.cinema_id) {
+      return user.cinema_id;
+    }
+    return localStorage.getItem('userCinemaId');
+  }
+
+  // Get current user cinema name
+  getCurrentUserCinema(): string | null {
+    const user = this.getCurrentUser();
+    if (user && user.cinema_name) {
+      return user.cinema_name;
+    }
+    return localStorage.getItem('userCinema');
   }
 
   // Check if user is logged in
@@ -157,9 +156,14 @@ export class UserService {
     return user ? user.role === 4 : false;
   }
 
-  // Generic role checking
-  hasRole(roleNumber: number): boolean {
-    const user = this.getCurrentUser();
-    return user ? user.role === roleNumber : false;
+  // Check if user has access to a specific cinema
+  hasAccessToCinema(cinemaId: string): boolean {
+    // System admin has access to all cinemas
+    if (this.isSystemAdmin()) {
+      return true;
+    }
+    
+    const userCinemaId = this.getCurrentUserCinemaId();
+    return userCinemaId === cinemaId;
   }
 }

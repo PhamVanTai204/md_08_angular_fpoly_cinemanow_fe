@@ -1,7 +1,7 @@
 export interface IUserLoginDto {
     email: string;
     password: string;
-    location?: string; // Added location field for cinema-specific login
+    location: string; // Required for cinema-specific login
 }
 
 /**
@@ -12,7 +12,7 @@ export interface IUserLoginDto {
 export class UserLoginDto implements IUserLoginDto {
     email!: string;
     password!: string;
-    location?: string;
+    location!: string; // Changed to required
     
     /**
      * Constructor that accepts an optional data object
@@ -63,10 +63,8 @@ export class UserLoginDto implements IUserLoginDto {
         data["email"] = this.email;
         data["password"] = this.password;
         
-        // Only include location if it's defined
-        if (this.location !== undefined) {
-            data["location"] = this.location;
-        }
+        // Always include location in the request
+        data["location"] = this.location || '';
         
         return data;
     }

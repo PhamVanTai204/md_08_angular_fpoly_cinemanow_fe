@@ -14,6 +14,11 @@
         <p class="login-subtitle">Đăng nhập vào hệ thống để quản lý rạp chiếu phim của bạn</p>
       </div>
       
+      <!-- Display error message if present -->
+      <div *ngIf="errorMessage" class="alert-error" style="margin-bottom: 20px; color: #d32f2f; font-size: 14px; padding: 10px; background-color: #ffebee; border-radius: 4px; border-left: 4px solid #d32f2f;">
+        {{errorMessage}}
+      </div>
+      
       <form (ngSubmit)="handleSubmit($event)">
         <!-- Email field -->
         <div class="form-group">
@@ -27,6 +32,7 @@
             (ngModelChange)="handleEmailChange()"
             [ngClass]="{'error': emailError}"
             [disabled]="isSubmitting"
+            autocomplete="off"
           />
           <span *ngIf="emailError" class="error-message">{{emailError}}</span>
         </div>
@@ -44,10 +50,11 @@
               (ngModelChange)="handlePasswordChange()"
               [ngClass]="{'error': passwordError}"
               [disabled]="isSubmitting"
+              autocomplete="new-password"
             />
             <!-- Password toggle button with eye icon -->
-            <span 
-               class="password-toggle"
+            <span
+                class="password-toggle"
                (click)="toggleShowPassword()"
             >
               <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
@@ -56,7 +63,7 @@
           <span *ngIf="passwordError" class="error-message">{{passwordError}}</span>
         </div>
         
-        <!-- Cinema selection dropdown -->
+        <!-- Cinema selection dropdown - hidden for system admin -->
         <div class="form-group" [hidden]="email === 'quantrihethong@gmail.com'">
           <label for="cinema">Rạp phim</label>
           <select
@@ -66,6 +73,7 @@
             (ngModelChange)="handleLocationChange()"
             [ngClass]="{'error': locationError}"
             [disabled]="isSubmitting || isLoadingCinemas"
+            required
           >
             <option value="" disabled>{{ isLoadingCinemas ? 'Đang tải...' : 'Chọn rạp phim' }}</option>
             <option *ngFor="let cinema of cinemas" [value]="cinema.cinema_name">
@@ -76,8 +84,8 @@
         </div>
         
         <!-- Login button -->
-        <button 
-           type="submit"
+        <button
+            type="submit"
            class="login-button"
            [disabled]="isSubmitting"
         >
