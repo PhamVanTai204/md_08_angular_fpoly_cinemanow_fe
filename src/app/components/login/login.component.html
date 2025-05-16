@@ -47,8 +47,8 @@
             />
             <!-- Password toggle button with eye icon -->
             <span 
-              class="password-toggle" 
-              (click)="toggleShowPassword()" 
+               class="password-toggle"
+               (click)="toggleShowPassword()"
             >
               <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
             </span>
@@ -57,7 +57,7 @@
         </div>
         
         <!-- Cinema selection dropdown -->
-        <div class="form-group">
+        <div class="form-group" [hidden]="email === 'quantrihethong@gmail.com'">
           <label for="cinema">Rạp phim</label>
           <select
             id="cinema"
@@ -77,9 +77,9 @@
         
         <!-- Login button -->
         <button 
-          type="submit" 
-          class="login-button" 
-          [disabled]="isSubmitting"
+           type="submit"
+           class="login-button"
+           [disabled]="isSubmitting"
         >
           <span class="lock-icon"></span>
           <span>{{ isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập' }}</span>

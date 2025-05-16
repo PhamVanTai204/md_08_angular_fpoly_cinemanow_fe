@@ -15,7 +15,7 @@ const routes: Routes = [
         loadChildren: () => import('../the-loai-phim/the-loai-phim.module').then(m => m.TheLoaiPhimModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admin can access
+          allowedRoles: [2, 4] // Admin and System Admin can access
         }
       },
       {
@@ -23,7 +23,7 @@ const routes: Routes = [
         loadChildren: () => import('../phim/phim.module').then(m => m.PhimModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admin can access
+          allowedRoles: [2, 4] // Admin and System Admin can access
         }
       },
       {
@@ -31,7 +31,7 @@ const routes: Routes = [
         loadChildren: () => import('../rap/rap.module').then(m => m.RapModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2, 3] // Both admin and staff can access
+          allowedRoles: [2, 3, 4] // Admin, Staff, and System Admin can access
         }
       },
       {
@@ -39,7 +39,7 @@ const routes: Routes = [
         loadChildren: () => import('../thong-ke/thong-ke.module').then(m => m.ThongKeModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admins can access statistics
+          allowedRoles: [2, 4] // Admin and System Admin can access statistics
         }
       },
       {
@@ -47,7 +47,7 @@ const routes: Routes = [
         loadChildren: () => import('../thanh-toan/thanh-toan.module').then(m => m.ThanhToanModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admin can access
+          allowedRoles: [2, 4] // Admin and System Admin can access
         }
       },
       {
@@ -55,7 +55,7 @@ const routes: Routes = [
         loadChildren: () => import('../nhan-vien/nhan-vien.module').then(m => m.NhanVienModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admins can access staff management
+          allowedRoles: [2, 4] // Admin and System Admin can access staff management
         }
       },
       {
@@ -63,7 +63,7 @@ const routes: Routes = [
         loadChildren: () => import('../lich-chieu/lich-chieu.module').then(m => m.LichChieuModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admin can access
+          allowedRoles: [2, 4] // Admin and System Admin can access
         }
       },
       {
@@ -71,7 +71,7 @@ const routes: Routes = [
         loadChildren: () => import('../nguoi-dung/nguoi-dung.module').then(m => m.NguoiDungModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admins can access user management
+          allowedRoles: [2, 4] // Admin and System Admin can access user management
         }
       },
       {
@@ -79,7 +79,7 @@ const routes: Routes = [
         loadChildren: () => import('../giaodich/giaodich.module').then(m => m.GiaodichModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2, 3] // Only admin can access
+          allowedRoles: [2, 3, 4] // Admin, Staff, and System Admin can access
         }
       },
       {
@@ -87,7 +87,7 @@ const routes: Routes = [
         loadChildren: () => import('../banner/banner.module').then(m => m.BannerModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admins can manage banners
+          allowedRoles: [2, 4] // Admin and System Admin can manage banners
         }
       },
       {
@@ -95,7 +95,7 @@ const routes: Routes = [
         loadChildren: () => import('../combo/combo.module').then(m => m.ComboModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admin can access combos
+          allowedRoles: [2, 3, 4] // Admin, Staff, and System Admin can access combos
         }
       },
       {
@@ -103,7 +103,7 @@ const routes: Routes = [
         loadChildren: () => import('../voucher/voucher.module').then(m => m.VoucherModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admins can manage vouchers
+          allowedRoles: [2, 3, 4] // Admin, Staff, and System Admin can manage vouchers
         }
       },
       {
@@ -111,7 +111,7 @@ const routes: Routes = [
         loadChildren: () => import('../room/room.module').then(m => m.RoomModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2, 3] // Both admin and staff can access rooms
+          allowedRoles: [2, 3, 4] // Admin, Staff, and System Admin can access rooms
         }
       },
       {
@@ -119,7 +119,7 @@ const routes: Routes = [
         loadChildren: () => import('../don-dat-ve/don-dat-ve.module').then(m => m.DonDatVeModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admin can access
+          allowedRoles: [2, 4] // Admin and System Admin can access
         }
       },
       {
@@ -127,7 +127,7 @@ const routes: Routes = [
         loadChildren: () => import('../khuyen-mai/khuyen-mai.module').then(m => m.KhuyenMaiModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only admin can access
+          allowedRoles: [2, 4] // Admin and System Admin can access
         }
       },
       {
@@ -135,7 +135,7 @@ const routes: Routes = [
         loadChildren: () => import('../room/room.module').then(m => m.RoomModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2, 3] // Both admin and staff can access rooms
+          allowedRoles: [2, 3, 4] // Admin, Staff, and System Admin can access rooms
         }
       },
       // Fallback route - redirect based on role

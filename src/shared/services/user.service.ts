@@ -1,5 +1,5 @@
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Injectable } from "@angular/core";
 import { UserLoginDto } from "../dtos/userDto.dto";
 import { catchError, Observable, tap, throwError } from "rxjs";
 import { Router } from "@angular/router";
@@ -28,7 +28,7 @@ export class UserService {
     private router: Router
   ) { }
 
-  // Lấy headers với token xác thực
+  // Get authentication headers with token
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({
@@ -37,11 +37,11 @@ export class UserService {
     });
   }
 
-  // Đăng nhập
+  // Standard login
   login(user: UserLoginDto): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/login`, user.toJSON()).pipe(
       tap(response => {
-        // Lưu thông tin người dùng vào localStorage
+        // Save user info to localStorage
         if (response && response.data) {
           localStorage.setItem('currentUser', JSON.stringify(response.data));
           localStorage.setItem('token', response.data.token || '');
@@ -56,16 +56,16 @@ export class UserService {
     );
   }
 
-  // Đăng nhập với location (mới thêm)
+  // Login with location
   loginWithLocation(user: UserLoginDto): Observable<any> {
-    // Sử dụng endpoint mới cho login với location
+    // Use the location-specific endpoint
     return this.http.post<any>(`${this.baseUrl}/loginWebByLocation`, user.toJSON()).pipe(
       tap(response => {
-        // Lưu thông tin người dùng vào localStorage
+        // Save user info to localStorage
         if (response && response.data) {
           localStorage.setItem('currentUser', JSON.stringify(response.data));
           localStorage.setItem('token', response.data.token || '');
-          // Lưu thêm thông tin location để sử dụng sau này nếu cần
+          // Save location info for later use if needed
           if (user.location) {
             localStorage.setItem('userLocation', user.location);
           }
@@ -80,18 +80,18 @@ export class UserService {
     );
   }
 
-  // Đăng xuất
+  // Logout
   logout(): void {
-    // Xóa thông tin người dùng và token khỏi localStorage
+    // Remove user info and token from localStorage
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
     localStorage.removeItem('userLocation');
 
-    // Điều hướng về trang đăng nhập
+    // Navigate to login page
     this.router.navigate(['/login']);
   }
 
-  // Lấy danh sách người dùng
+  // Get all users
   getAllUsers(): Observable<User[]> {
     const headers = this.getHeaders();
     return this.http.get<User[]>(`${this.baseUrl}/getAll`, { headers }).pipe(
@@ -102,10 +102,9 @@ export class UserService {
     );
   }
 
-  // Khoá/mở khoá người dùng (giả lập vì API chưa có endpoint này)
+  // Toggle user status (active/inactive)
   toggleUserStatus(userId: string, isActive: boolean): Observable<any> {
     const headers = this.getHeaders();
-    // Giả sử API endpoint có dạng /users/toggleStatus/{id}
     return this.http.patch<any>(`${this.baseUrl}/toggleStatus/${userId}`,
       { isActive },
       { headers }
@@ -117,7 +116,7 @@ export class UserService {
     );
   }
 
-  // Lấy người dùng hiện tại từ localStorage
+  // Get current user from localStorage
   getCurrentUser(): any {
     const userStr = localStorage.getItem('currentUser');
     if (userStr) {
@@ -126,41 +125,39 @@ export class UserService {
     return null;
   }
 
-  // Lấy ID người dùng hiện tại
+  // Get current user ID
   getCurrentUserId(): string | null {
     const user = this.getCurrentUser();
     return user ? user._id || user.userId : null;
   }
 
-  // Lấy location của người dùng hiện tại
+  // Get current user location
   getCurrentUserLocation(): string | null {
     return localStorage.getItem('userLocation');
   }
 
-  // Kiểm tra người dùng đã đăng nhập
+  // Check if user is logged in
   isLoggedIn(): boolean {
     return !!this.getCurrentUser();
   }
 
-  // Kiểm tra vai trò nhân viên (role 2)
+  // Role checking methods
   isStaff(): boolean {
-    const user = this.getCurrentUser();
-    return user ? user.role === 2 : false;
-  }
-
-  // Kiểm tra vai trò quản trị rạp (role 3)
-  isCinemaAdmin(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 3 : false;
   }
 
-  // Kiểm tra vai trò quản trị hệ thống (role 4)
+  isCinemaAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user ? user.role === 2 : false;
+  }
+
   isSystemAdmin(): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === 4 : false;
   }
 
-  // Kiểm tra role theo số
+  // Generic role checking
   hasRole(roleNumber: number): boolean {
     const user = this.getCurrentUser();
     return user ? user.role === roleNumber : false;

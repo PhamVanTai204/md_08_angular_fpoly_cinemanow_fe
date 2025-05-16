@@ -24,80 +24,87 @@ export class RoleGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    // Lấy danh sách vai trò được phép từ dữ liệu route
+    // Get allowed roles from route data
     const allowedRoles = route.data['allowedRoles'];
-
+    
     if (!allowedRoles) {
-      console.warn('Không có vai trò nào được chỉ định cho RoleGuard. Từ chối truy cập theo mặc định.');
+      console.warn('No roles specified for RoleGuard. Denying access by default.');
       this.router.navigate(['/']);
       return of(false);
     }
-
-    // Chuyển đổi thành mảng nếu nó là một vai trò đơn
+    
+    // Convert to array if it's a single role
     const requiredRoles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-
-    // Lấy thông tin người dùng hiện tại một cách đồng bộ (để phản hồi nhanh hơn)
+    
+    // Get current user synchronously (for faster response)
     const currentUser = this.userService.getCurrentUser();
-
-    // Nếu không có người dùng đăng nhập, chuyển hướng đến trang đăng nhập
+    
+    // If no user is logged in, redirect to login page
     if (!currentUser) {
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: state.url }
       });
       return of(false);
     }
-
-    // Xử lý đặc biệt cho nhân viên (role 3)
+    
+    // Special handling for role 4 (System Administrator)
+    if (currentUser.role === 4) {
+      // System administrators have access to everything
+      return of(true);
+    }
+    
+    // Special handling for staff (role 3)
     if (currentUser.role === 3) {
-      // Kiểm tra xem đây có phải là các route được phép
+      // Check if this is a permitted route
       const path = route.routeConfig?.path || '';
       
-      // Danh sách các route được phép cho nhân viên
+      // List of routes permitted for staff
       const allowedStaffRoutes = ['rap', 'giaodich', 'combo', 'voucher'];
       const isRoomRoute = path.startsWith('room');
       
-      // Kiểm tra xem route hiện tại có nằm trong danh sách route được phép không
+      // Check if current route is in the list of permitted routes
       if (allowedStaffRoutes.includes(path) || isRoomRoute) {
         return of(true);
       } else {
-        console.log('Nhân viên đang cố gắng truy cập route bị hạn chế:', path);
+        console.log('Staff attempting to access restricted route:', path);
         this.router.navigate(['/giaodich']);
         return of(false);
       }
     }
-
-    // Kiểm tra nhanh nếu người dùng có vai trò phù hợp
+    
+    // Quick check if user has appropriate role
     if (requiredRoles.includes(currentUser.role)) {
       return of(true);
     } else {
-      // Điều hướng đến trang thích hợp dựa trên vai trò
+      // Navigate to appropriate page based on role
       this.navigateToDefaultPage(currentUser.role, state.url);
       return of(false);
     }
   }
 
   /**
-   * Điều hướng đến trang mặc định dựa trên vai trò người dùng
-   * @param userRole ID vai trò của người dùng
-   * @param currentUrl URL hiện tại mà người dùng đang cố gắng truy cập
+   * Navigate to default page based on user role
+   * @param userRole User role ID
+   * @param currentUrl Current URL user is trying to access
    */
   private navigateToDefaultPage(userRole: number, currentUrl: string): void {
-    // Lưu URL hiện tại để sử dụng sau này nếu cần
+    // Save current URL for later use if needed
     sessionStorage.setItem('returnUrl', currentUrl);
-
+    
     switch (userRole) {
-      case 2: // Quản trị viên
-        // Quản trị viên có thể chuyển đến theloaiphim mặc định
+      case 4: // System Administrator
+        this.router.navigate(['/rap']);
+        break;
+      case 2: // Cinema Admin
         this.router.navigate(['/theloaiphim']);
         break;
-      case 3: // Nhân viên
-        // Nhân viên chỉ có thể chuyển đến giaodich mặc định
+      case 3: // Staff
         this.router.navigate(['/giaodich']);
         break;
-      case 1: // Người dùng thông thường
+      case 1: // Regular user
       default:
-        // Người dùng thông thường không nên ở trong phần quản trị
-        // Chuyển hướng đến trang chủ công khai hoặc dashboard người dùng
+        // Regular users should not be in admin section
+        // Redirect to public home or user dashboard
         this.router.navigate(['/']);
         break;
     }

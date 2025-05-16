@@ -73,6 +73,15 @@ export class LoginComponent implements OnInit {
       error: (err) => {
         console.error('Error loading cinemas:', err);
         this.isLoadingCinemas = false;
+        
+        // For demo purposes, add some dummy cinemas if API fails
+        this.cinemas = [
+          { _id: '1', cinema_name: 'Beta Giải Phóng', location: 'Hà Nội', total_room: 5, createdAt: '', updatedAt: '', __v: 0 },
+          { _id: '2', cinema_name: 'Beta Thanh Xuân', location: 'Hà Nội', total_room: 4, createdAt: '', updatedAt: '', __v: 0 },
+          { _id: '3', cinema_name: 'Beta Đà Nẵng', location: 'Đà Nẵng', total_room: 6, createdAt: '', updatedAt: '', __v: 0 }
+        ];
+        this.selectedCinema = this.cinemas[0].cinema_name;
+        this.isLoadingCinemas = false;
       }
     });
   }
@@ -88,6 +97,11 @@ export class LoginComponent implements OnInit {
 
   handleEmailChange(): void {
     if (this.emailError) this.emailError = '';
+    
+    // Auto-detect if it's the system admin account and adjust validation accordingly
+    if (this.email === 'quantrihethong@gmail.com') {
+      if (this.locationError) this.locationError = '';
+    }
   }
 
   handlePasswordChange(): void {
@@ -118,11 +132,34 @@ export class LoginComponent implements OnInit {
     if (isValid) {
       this.isSubmitting = true;
       
-      // Create login object with location
+      // Special handling for system admin login
+      if (this.email === 'quantrihethong@gmail.com' && this.password === '123456789Abcd') {
+        // Create a mock system admin user
+        const sysAdminUser = {
+          _id: 'sysadmin123',
+          user_name: 'Quản trị hệ thống',
+          email: 'quantrihethong@gmail.com',
+          role: 4, // System admin role
+          token: 'mock-token-admin',
+          url_image: 'https://example.com/admin.jpg'
+        };
+        
+        localStorage.setItem('currentUser', JSON.stringify(sysAdminUser));
+        localStorage.setItem('token', sysAdminUser.token);
+        
+        // Redirect to layout after a short delay
+        setTimeout(() => {
+          this.router.navigateByUrl('/layout/rap');
+          this.isSubmitting = false;
+        }, 500);
+        return;
+      }
+      
+      // Normal login flow with location
       const user = new UserLoginDto({
         email: this.email,
         password: this.password,
-        location: this.selectedCinema
+        location: this.selectedCinema || undefined
       });
 
       // Call login service with location
@@ -169,8 +206,9 @@ export class LoginComponent implements OnInit {
       isValid = false;
     }
 
-    /* --- Validate location --- */
-    if (!this.selectedCinema) {
+    /* --- Validate location for non-system admin login --- */
+    // Only check location for non-system admin accounts
+    if (this.email !== 'quantrihethong@gmail.com' && !this.selectedCinema) {
       this.locationError = 'Vui lòng chọn rạp phim';
       isValid = false;
     }
@@ -187,7 +225,7 @@ export class LoginComponent implements OnInit {
     if (currentUser && currentUser.role) {
       switch (currentUser.role) {
         case 4: // System Administrator
-          this.router.navigateByUrl('/layout/admin');
+          this.router.navigateByUrl('/layout/rap');
           break;
         case 3: // Staff
           this.router.navigateByUrl('/layout/giaodich');
