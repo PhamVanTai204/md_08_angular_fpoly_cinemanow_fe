@@ -1,3 +1,4 @@
+// login.component.ts - OPTIMIZED VERSION
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -46,6 +47,12 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // Clear any previous error messages
+    this.emailError = '';
+    this.passwordError = '';
+    this.locationError = '';
+    this.errorMessage = '';
+    
     // Check for error parameters in URL
     this.route.queryParams.subscribe(params => {
       if (params['error'] === 'cinema-access-denied') {
@@ -55,8 +62,10 @@ export class LoginComponent implements OnInit {
       }
     });
     
-    // Check if user is already logged in, redirect if needed
-    if (this._userService.isLoggedIn()) {
+    // Check if user is already logged in
+    const currentUser = this._userService.getCurrentUser();
+    if (currentUser) {
+      // User is already logged in, redirect based on role
       this.redirectBasedOnRole();
       return;
     }
@@ -85,7 +94,7 @@ export class LoginComponent implements OnInit {
         console.error('Error loading cinemas:', err);
         this.isLoadingCinemas = false;
         
-        // For demo purposes, add some dummy cinemas if API fails
+        // For demo or fallback purposes, use sample data
         this.cinemas = [
           { _id: '682618a044e3d2514d9a6621', cinema_name: 'Beta Giải Phóng', location: 'Hà Nội', total_room: 5, createdAt: '', updatedAt: '', __v: 0 },
           { _id: '682619bb44e3d2514d9a662c', cinema_name: 'Beta Thanh Xuân', location: 'Hồ Chí Minh', total_room: 4, createdAt: '', updatedAt: '', __v: 0 }
@@ -137,8 +146,14 @@ export class LoginComponent implements OnInit {
       return;
     }
     
+    // Reset error messages
+    this.emailError = '';
+    this.passwordError = '';
+    this.locationError = '';
+    this.errorMessage = '';
+    
     let isValid = this.validateForm();
-
+    
     if (isValid) {
       this.isSubmitting = true;
       
@@ -146,6 +161,9 @@ export class LoginComponent implements OnInit {
       if (this.email === 'quantrihethong@gmail.com') {
         // Hard-coded password check for system admin
         if (this.password === '123456789Abcd') {
+          // Clear any previous session data
+          localStorage.clear();
+          
           // Create a mock system admin user
           const sysAdminUser = {
             _id: 'sysadmin123',
