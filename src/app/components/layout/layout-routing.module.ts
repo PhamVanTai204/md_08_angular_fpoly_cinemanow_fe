@@ -47,7 +47,7 @@ const routes: Routes = [
         loadChildren: () => import('../thanh-toan/thanh-toan.module').then(m => m.ThanhToanModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2, 4] // Admin and System Admin can access
+          allowedRoles: [2, 3, 4] // Admin, Staff, and System Admin can access
         }
       },
       {

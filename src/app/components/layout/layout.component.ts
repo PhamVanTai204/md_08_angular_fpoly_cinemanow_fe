@@ -27,30 +27,30 @@ export class LayoutComponent implements OnInit, OnDestroy {
   userCinema: string | null = null;
   private subscriptions: Subscription[] = [];
 
-  // Menu lists grouped by category with primary flags for initial navigation
+  // Updated menu lists based on specific role requirements from screenshot
   contentMenuItems: MenuItem[] = [
-    { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2, 4] },
-    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2, 4], primary: true }, // Primary for Cinema Managers
-    { path: 'rap', title: 'Rạp', icon: 'store', roles: [2, 3, 4], primary: true }, // Primary for System Admin
-    { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2, 4] },
-    { path: 'danhgia', title: 'Quản lý bình luận', icon: 'reviews', roles: [2, 4] },
+    { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2] },
+    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2], primary: true }, // Primary for Cinema Managers
+    { path: 'rap', title: 'Rạp', icon: 'store', roles: [4], primary: true }, // Primary for System Admin
+    { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] },
+    { path: 'danhgia', title: 'Quản lý bình luận', icon: 'reviews', roles: [4] },
   ];
 
   businessMenuItems: MenuItem[] = [
-    { path: 'giaodich', title: 'Đặt vé', icon: 'receipt', roles: [2, 3, 4], primary: true }, // Primary for Staff
-    { path: 'thanhtoan', title: 'Thanh toán', icon: 'credit_card', roles: [2, 4] },
-    { path: 'thongke', title: 'Thống kê', icon: 'bar_chart', roles: [2, 4] }
+    { path: 'giaodich', title: 'Đặt vé', icon: 'receipt', roles: [2, 3], primary: true }, // Primary for Staff
+    { path: 'thanhtoan', title: 'Thanh toán', icon: 'credit_card', roles: [2, 3] },
+    { path: 'thongke', title: 'Thống kê', icon: 'bar_chart', roles: [2] }
   ];
 
   userMenuItems: MenuItem[] = [
-    { path: 'nhanvien', title: 'Nhân viên', icon: 'badge', roles: [2, 4] },
-    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [2, 4] }
+    { path: 'nhanvien', title: 'Nhân viên', icon: 'badge', roles: [2] },
+    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [] }
   ];
 
   marketingMenuItems: MenuItem[] = [
-    { path: 'banner', title: 'Banner', icon: 'image', roles: [2, 4] },
-    { path: 'voucher', title: 'Voucher', icon: 'card_giftcard', roles: [2, 3, 4] },
-    { path: 'combo', title: 'Combo', icon: 'fastfood', roles: [2, 3, 4] }
+    { path: 'banner', title: 'Banner', icon: 'image', roles: [2] },
+    { path: 'voucher', title: 'Voucher', icon: 'card_giftcard', roles: [2] },
+    { path: 'combo', title: 'Combo', icon: 'fastfood', roles: [2] }
   ];
 
   constructor(
@@ -134,7 +134,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     return menuItems.some(item => item.roles.includes(userRole));
   }
 
-  // Route to appropriate pages based on role
+  // Updated: Route to appropriate pages based on role
   navigateBasedOnRole(): void {
     // Only navigate if we're at the root path
     if (!this.isAtRootPath()) {

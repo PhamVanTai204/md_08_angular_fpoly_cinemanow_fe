@@ -49,17 +49,57 @@ export class RoleGuard implements CanActivate {
     
     // Special handling for role 4 (System Administrator)
     if (currentUser.role === 4) {
-      // System administrators have access to everything
-      return of(true);
+      // System administrators have access to specific routes only
+      const path = route.routeConfig?.path || '';
+      
+      // List of routes permitted for System Admin as per updated requirements
+      const allowedAdminRoutes = [
+        'rap', 'danhgia', 'nhanvien', 'nguoidung'
+      ];
+      
+      const isRoomRoute = path.startsWith('room');
+      
+      // Check if current route is in the list of permitted routes
+      if (allowedAdminRoutes.includes(path) || isRoomRoute) {
+        return of(true);
+      } else {
+        console.log('System Admin attempting to access restricted route:', path);
+        this.router.navigate(['/rap']);
+        return of(false);
+      }
+    }
+    
+    // Special handling for Cinema Manager (role 2)
+    if (currentUser.role === 2) {
+      // Check if this is a permitted route for Cinema Manager
+      const path = route.routeConfig?.path || '';
+      
+      // List of routes permitted for Cinema Manager as per updated requirements
+      const allowedManagerRoutes = [
+        'theloaiphim', 'phim', 'lichchieu', 
+        'giaodich', 'thanhtoan', 'thongke', 
+        'nhanvien', 'banner', 'voucher', 'combo'
+      ];
+      
+      const isRoomRoute = path.startsWith('room');
+      
+      // Check if current route is in the list of permitted routes
+      if (allowedManagerRoutes.includes(path) || isRoomRoute) {
+        return of(true);
+      } else {
+        console.log('Cinema Manager attempting to access restricted route:', path);
+        this.router.navigate(['/phim']);
+        return of(false);
+      }
     }
     
     // Special handling for staff (role 3)
     if (currentUser.role === 3) {
-      // Check if this is a permitted route
+      // Check if this is a permitted route for staff
       const path = route.routeConfig?.path || '';
       
-      // List of routes permitted for staff
-      const allowedStaffRoutes = ['rap', 'giaodich', 'combo', 'voucher'];
+      // List of routes permitted for staff - only giaodich and thanhtoan
+      const allowedStaffRoutes = ['giaodich', 'thanhtoan'];
       const isRoomRoute = path.startsWith('room');
       
       // Check if current route is in the list of permitted routes
@@ -96,7 +136,7 @@ export class RoleGuard implements CanActivate {
         this.router.navigate(['/rap']);
         break;
       case 2: // Cinema Admin
-        this.router.navigate(['/theloaiphim']);
+        this.router.navigate(['/phim']);
         break;
       case 3: // Staff
         this.router.navigate(['/giaodich']);
