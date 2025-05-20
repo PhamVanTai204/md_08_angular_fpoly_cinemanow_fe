@@ -41,21 +41,24 @@
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ item.showDate | date: 'yyyy-MM-dd HH:mm' }}
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+          <!-- Nút xem chi tiết - Hiển thị cho tất cả -->
           <button class="mr-3 text-blue-600 hover:text-blue-800 px-2 py-1 rounded transition-colors duration-200"
             (click)="viewSchedule(item)" title="Hiển thị chi tiết">
             <span class="flex items-center"><i class="material-icons text-sm mr-1">visibility</i> Hiển thị chi
               tiết</span>
           </button>
-          
+
           <!-- Nút Sửa - Chỉ hiển thị nếu người dùng có quyền -->
-          <button *ngIf="currentUser.role === 'admin' || (currentUser.cinemaId && item.cinemaId === currentUser.cinemaId)"
+          <button
+            *ngIf="currentUser.role === 'admin' || (currentUser.cinemaId && item.cinemaId === currentUser.cinemaId)"
             class="mr-3 text-yellow-600 hover:text-yellow-800 px-2 py-1 rounded transition-colors duration-200"
             (click)="editSchedule(item)" title="Sửa">
             <span class="flex items-center"><i class="material-icons text-sm mr-1">edit</i> Sửa</span>
           </button>
-          
+
           <!-- Nút Xóa - Chỉ hiển thị nếu người dùng có quyền -->
-          <button *ngIf="currentUser.role === 'admin' || (currentUser.cinemaId && item.cinemaId === currentUser.cinemaId)"
+          <button
+            *ngIf="currentUser.role === 'admin' || (currentUser.cinemaId && item.cinemaId === currentUser.cinemaId)"
             class="text-red-600 hover:text-red-800 px-2 py-1 rounded transition-colors duration-200"
             (click)="deleteSchedule(item)" title="Xoá">
             <span class="flex items-center"><i class="material-icons text-sm mr-1">delete</i> Xoá</span>
@@ -94,14 +97,15 @@
       </button>
     </div>
     <div class="p-6 space-y-4">
+      <!-- Mã suất chiếu -->
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Mã suất chiếu</label>
         <input [(ngModel)]="showtimeForm.showtimeId" type="text" [disabled]="isViewOnly || isEditing"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
       </div>
 
-      <!-- Dropdown chọn rạp - Chỉ hiển thị cho admin -->
-      <div *ngIf="currentUser.role === 'admin'; else userCinema">
+      <!-- CHỈ HIỂN THỊ DROPDOWN RẠP KHI LÀ ADMIN -->
+      <div *ngIf="currentUser.role === 'admin'">
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Rạp</label>
         <select [(ngModel)]="showtimeForm.cinemaId" (change)="onCinemaChange($event)" [disabled]="isViewOnly"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
@@ -115,15 +119,13 @@
         </div>
       </div>
 
-      <!-- Template cho người dùng không phải admin -->
-      <ng-template #userCinema>
-        <div class="mb-4">
-          <label class="block mb-2 text-sm font-medium text-gray-700">Rạp</label>
-          <div class="w-full border border-gray-100 rounded-lg px-4 py-2 bg-blue-50 text-gray-700">
-            {{ getCinemaName(showtimeForm.cinemaId) }}
-          </div>
+      <!-- HIỂN THỊ TÊN RẠP CHO NGƯỜI DÙNG KHÔNG PHẢI ADMIN -->
+      <div *ngIf="currentUser.role !== 'admin' && currentUser.cinemaId">
+        <label class="block mb-2 text-sm font-medium text-gray-700">Rạp</label>
+        <div class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-blue-50 text-gray-700">
+          {{ getCinemaName(currentUser.cinemaId) }}
         </div>
-      </ng-template>
+      </div>
 
       <!-- Dropdown chọn phòng chi tiết -->
       <div>
@@ -143,7 +145,8 @@
       <!-- Dropdown chọn phim -->
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phim</label>
-        <select [(ngModel)]="showtimeForm.movieId" (change)="onMovieChange(showtimeForm.movieId)" [disabled]="isViewOnly"
+        <select [(ngModel)]="showtimeForm.movieId" (change)="onMovieChange(showtimeForm.movieId)"
+          [disabled]="isViewOnly"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
           <option value="">-- Chọn Phim --</option>
           <option *ngFor="let movie of allMovies" [value]="movie._id">
@@ -155,6 +158,7 @@
         </div>
       </div>
 
+      <!-- Thời gian bắt đầu và kết thúc -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian bắt đầu</label>
@@ -169,6 +173,8 @@
             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
         </div>
       </div>
+      
+      <!-- Ngày chiếu -->
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Ngày</label>
         <input [(ngModel)]="showtimeForm.showDate" type="date" [disabled]="isViewOnly"
@@ -176,6 +182,7 @@
       </div>
     </div>
 
+    <!-- Button footer -->
     <div class="flex justify-end px-6 py-4 border-t border-gray-200 bg-gray-50">
       <button (click)="closeMainModal()"
         class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg mr-2 hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
@@ -222,7 +229,7 @@
           <span class="font-medium">Phòng:</span> {{ showtimeDangXoa?.roomName }}
         </p>
         <p *ngIf="showtimeDangXoa?.cinemaId" class="text-sm text-gray-700">
-          <span class="font-medium">Rạp:</span> {{ getCinemaName(showtimeDangXoa?.cinemaId) }}
+          <span class="font-medium">Rạp:</span> {{ getCinemaName(showtimeDangXoa?.cinemaId || '') }}
         </p>
       </div>
 
