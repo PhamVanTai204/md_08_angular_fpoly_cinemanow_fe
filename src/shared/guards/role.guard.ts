@@ -26,19 +26,19 @@ export class RoleGuard implements CanActivate {
   ): Observable<boolean> {
     // Get allowed roles from route data
     const allowedRoles = route.data['allowedRoles'];
-    
+
     if (!allowedRoles) {
       console.warn('No roles specified for RoleGuard. Denying access by default.');
       this.router.navigate(['/']);
       return of(false);
     }
-    
+
     // Convert to array if it's a single role
     const requiredRoles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-    
+
     // Get current user synchronously (for faster response)
     const currentUser = this.userService.getCurrentUser();
-    
+
     // If no user is logged in, redirect to login page
     if (!currentUser) {
       this.router.navigate(['/login'], {
@@ -46,19 +46,19 @@ export class RoleGuard implements CanActivate {
       });
       return of(false);
     }
-    
+
     // Special handling for role 4 (System Administrator)
     if (currentUser.role === 4) {
       // System administrators have access to specific routes only
       const path = route.routeConfig?.path || '';
-      
+
       // List of routes permitted for System Admin as per updated requirements
       const allowedAdminRoutes = [
-        'rap', 'danhgia', 'nhanvien', 'nguoidung'
+        'rap', 'danhgia', 'nhanvien', 'nguoidung', 'adminrap'
       ];
-      
+
       const isRoomRoute = path.startsWith('room');
-      
+
       // Check if current route is in the list of permitted routes
       if (allowedAdminRoutes.includes(path) || isRoomRoute) {
         return of(true);
@@ -68,21 +68,21 @@ export class RoleGuard implements CanActivate {
         return of(false);
       }
     }
-    
+
     // Special handling for Cinema Manager (role 2)
     if (currentUser.role === 2) {
       // Check if this is a permitted route for Cinema Manager
       const path = route.routeConfig?.path || '';
-      
+
       // List of routes permitted for Cinema Manager as per updated requirements
       const allowedManagerRoutes = [
-        'theloaiphim', 'phim', 'lichchieu', 
-        'giaodich', 'thanhtoan', 'thongke', 
+        'theloaiphim', 'phim', 'lichchieu',
+        'giaodich', 'thanhtoan', 'thongke',
         'nhanvien', 'banner', 'voucher', 'combo'
       ];
-      
+
       const isRoomRoute = path.startsWith('room');
-      
+
       // Check if current route is in the list of permitted routes
       if (allowedManagerRoutes.includes(path) || isRoomRoute) {
         return of(true);
@@ -92,16 +92,16 @@ export class RoleGuard implements CanActivate {
         return of(false);
       }
     }
-    
+
     // Special handling for staff (role 3)
     if (currentUser.role === 3) {
       // Check if this is a permitted route for staff
       const path = route.routeConfig?.path || '';
-      
+
       // List of routes permitted for staff - only giaodich and thanhtoan
       const allowedStaffRoutes = ['giaodich', 'thanhtoan'];
       const isRoomRoute = path.startsWith('room');
-      
+
       // Check if current route is in the list of permitted routes
       if (allowedStaffRoutes.includes(path) || isRoomRoute) {
         return of(true);
@@ -111,7 +111,7 @@ export class RoleGuard implements CanActivate {
         return of(false);
       }
     }
-    
+
     // Quick check if user has appropriate role
     if (requiredRoles.includes(currentUser.role)) {
       return of(true);
@@ -130,7 +130,7 @@ export class RoleGuard implements CanActivate {
   private navigateToDefaultPage(userRole: number, currentUrl: string): void {
     // Save current URL for later use if needed
     sessionStorage.setItem('returnUrl', currentUrl);
-    
+
     switch (userRole) {
       case 4: // System Administrator
         this.router.navigate(['/rap']);
