@@ -101,16 +101,16 @@
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Mã suất chiếu</label>
         <input [(ngModel)]="showtimeForm.showtimeId" type="text" [disabled]="isViewOnly || isEditing"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 disabled:bg-gray-100" />
       </div>
 
       <!-- CHỈ HIỂN THỊ DROPDOWN RẠP KHI LÀ ADMIN -->
       <div *ngIf="currentUser.role === 'admin'">
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Rạp</label>
         <select [(ngModel)]="showtimeForm.cinemaId" (change)="onCinemaChange($event)" [disabled]="isViewOnly"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 disabled:bg-gray-100">
           <option value="">-- Chọn Rạp --</option>
-          <option *ngFor="let cinema of rapList" [value]="cinema.id">
+          <option *ngFor="let cinema of rapList" [value]="cinema.id" [selected]="cinema.id === showtimeForm.cinemaId">
             {{ cinema.cinemaName }}
           </option>
         </select>
@@ -122,7 +122,7 @@
       <!-- HIỂN THỊ TÊN RẠP CHO NGƯỜI DÙNG KHÔNG PHẢI ADMIN -->
       <div *ngIf="currentUser.role !== 'admin' && currentUser.cinemaId">
         <label class="block mb-2 text-sm font-medium text-gray-700">Rạp</label>
-        <div class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-blue-50 text-gray-700">
+        <div class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-700">
           {{ getCinemaName(currentUser.cinemaId) }}
         </div>
       </div>
@@ -131,9 +131,9 @@
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phòng</label>
         <select [(ngModel)]="showtimeForm.roomId" (change)="onRoomChange(showtimeForm.roomId)" [disabled]="isViewOnly"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 disabled:bg-gray-100">
           <option value="">-- Chọn Phòng --</option>
-          <option *ngFor="let room of roomLisst" [value]="room.id">
+          <option *ngFor="let room of roomLisst" [value]="room.id" [selected]="room.id === showtimeForm.roomId">
             {{ room.room_name }}
           </option>
         </select>
@@ -147,9 +147,9 @@
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phim</label>
         <select [(ngModel)]="showtimeForm.movieId" (change)="onMovieChange(showtimeForm.movieId)"
           [disabled]="isViewOnly"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 disabled:bg-gray-100">
           <option value="">-- Chọn Phim --</option>
-          <option *ngFor="let movie of allMovies" [value]="movie._id">
+          <option *ngFor="let movie of allMovies" [value]="movie._id" [selected]="movie._id === showtimeForm.movieId">
             {{ movie.title }}
           </option>
         </select>
@@ -164,13 +164,13 @@
           <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian bắt đầu</label>
           <input [(ngModel)]="showtimeForm.startTime" (ngModelChange)="onStartTimeInput(showtimeForm.startTime)"
             type="text" placeholder="HH:MM" maxlength="5" [disabled]="isViewOnly"
-            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 disabled:bg-gray-100" />
         </div>
         <div>
           <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian kết thúc</label>
           <input [(ngModel)]="showtimeForm.endTime" (ngModelChange)="onEndTimeInput(showtimeForm.endTime)" type="text"
             placeholder="HH:MM" maxlength="5" [disabled]="isViewOnly"
-            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 disabled:bg-gray-100" />
         </div>
       </div>
       
@@ -178,7 +178,7 @@
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Ngày</label>
         <input [(ngModel)]="showtimeForm.showDate" type="date" [disabled]="isViewOnly"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 disabled:bg-gray-100" />
       </div>
     </div>
 
@@ -229,7 +229,7 @@
           <span class="font-medium">Phòng:</span> {{ showtimeDangXoa?.roomName }}
         </p>
         <p *ngIf="showtimeDangXoa?.cinemaId" class="text-sm text-gray-700">
-          <span class="font-medium">Rạp:</span> {{ getCinemaName(showtimeDangXoa?.cinemaId || '') }}
+          <span class="font-medium">Rạp:</span> {{ getCinemaName(showtimeDangXoa?.cinemaId) }}
         </p>
       </div>
 
