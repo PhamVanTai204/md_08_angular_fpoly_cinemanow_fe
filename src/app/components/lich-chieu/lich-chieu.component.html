@@ -42,10 +42,21 @@
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
           <button class="mr-3 text-blue-600 hover:text-blue-800 px-2 py-1 rounded transition-colors duration-200"
-            (click)="viewSchedule(item)" title="Hiển thị chi tiết"> 
-            <span class="flex items-center"><i class="material-icons text-sm mr-1">visibility</i> Hiển thị chi tiết</span>
+            (click)="viewSchedule(item)" title="Hiển thị chi tiết">
+            <span class="flex items-center"><i class="material-icons text-sm mr-1">visibility</i> Hiển thị chi
+              tiết</span>
           </button>
-          <button class="text-red-600 hover:text-red-800 px-2 py-1 rounded transition-colors duration-200"
+          
+          <!-- Nút Sửa - Chỉ hiển thị nếu người dùng có quyền -->
+          <button *ngIf="currentUser.role === 'admin' || (currentUser.cinemaId && item.cinemaId === currentUser.cinemaId)"
+            class="mr-3 text-yellow-600 hover:text-yellow-800 px-2 py-1 rounded transition-colors duration-200"
+            (click)="editSchedule(item)" title="Sửa">
+            <span class="flex items-center"><i class="material-icons text-sm mr-1">edit</i> Sửa</span>
+          </button>
+          
+          <!-- Nút Xóa - Chỉ hiển thị nếu người dùng có quyền -->
+          <button *ngIf="currentUser.role === 'admin' || (currentUser.cinemaId && item.cinemaId === currentUser.cinemaId)"
+            class="text-red-600 hover:text-red-800 px-2 py-1 rounded transition-colors duration-200"
             (click)="deleteSchedule(item)" title="Xoá">
             <span class="flex items-center"><i class="material-icons text-sm mr-1">delete</i> Xoá</span>
           </button>
@@ -63,8 +74,8 @@
   </table>
 </div>
 
-<!-- Nút Thêm (float button) -->
-<button (click)="openAddModal()"
+<!-- Nút Thêm (float button) - Chỉ hiển thị nếu người dùng có cinemaId hoặc là admin -->
+<button (click)="openAddModal()" *ngIf="currentUser.role === 'admin' || currentUser.cinemaId"
   class="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
   title="Thêm suất chiếu">
   <span class="material-icons">add</span>
@@ -85,16 +96,14 @@
     <div class="p-6 space-y-4">
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Mã suất chiếu</label>
-        <input [(ngModel)]="showtimeForm.showtimeId" type="text"
+        <input [(ngModel)]="showtimeForm.showtimeId" type="text" [disabled]="isViewOnly || isEditing"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
       </div>
 
-      <!-- Dropdown chọn rạp -->
-      <div>
+      <!-- Dropdown chọn rạp - Chỉ hiển thị cho admin -->
+      <div *ngIf="currentUser.role === 'admin'; else userCinema">
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Rạp</label>
-        <select
-        [(ngModel)]="showtimeForm.cinemaId" 
-        (change)="onCinemaChange($event)"
+        <select [(ngModel)]="showtimeForm.cinemaId" (change)="onCinemaChange($event)" [disabled]="isViewOnly"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
           <option value="">-- Chọn Rạp --</option>
           <option *ngFor="let cinema of rapList" [value]="cinema.id">
@@ -106,12 +115,22 @@
         </div>
       </div>
 
+      <!-- Template cho người dùng không phải admin -->
+      <ng-template #userCinema>
+        <div class="mb-4">
+          <label class="block mb-2 text-sm font-medium text-gray-700">Rạp</label>
+          <div class="w-full border border-gray-100 rounded-lg px-4 py-2 bg-blue-50 text-gray-700">
+            {{ getCinemaName(showtimeForm.cinemaId) }}
+          </div>
+        </div>
+      </ng-template>
+
       <!-- Dropdown chọn phòng chi tiết -->
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phòng</label>
-        <select [(ngModel)]="showtimeForm.roomId" (change)="onRoomChange(showtimeForm.roomId)"
+        <select [(ngModel)]="showtimeForm.roomId" (change)="onRoomChange(showtimeForm.roomId)" [disabled]="isViewOnly"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
-          <!-- <option value="">-- Chọn Phòng --</option> -->
+          <option value="">-- Chọn Phòng --</option>
           <option *ngFor="let room of roomLisst" [value]="room.id">
             {{ room.room_name }}
           </option>
@@ -124,7 +143,7 @@
       <!-- Dropdown chọn phim -->
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Chọn Phim</label>
-        <select [(ngModel)]="showtimeForm.movieId" (change)="onMovieChange(showtimeForm.movieId)"
+        <select [(ngModel)]="showtimeForm.movieId" (change)="onMovieChange(showtimeForm.movieId)" [disabled]="isViewOnly"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
           <option value="">-- Chọn Phim --</option>
           <option *ngFor="let movie of allMovies" [value]="movie._id">
@@ -140,19 +159,19 @@
         <div>
           <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian bắt đầu</label>
           <input [(ngModel)]="showtimeForm.startTime" (ngModelChange)="onStartTimeInput(showtimeForm.startTime)"
-            type="text" placeholder="HH:MM" maxlength="5"
+            type="text" placeholder="HH:MM" maxlength="5" [disabled]="isViewOnly"
             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
         </div>
         <div>
           <label class="block mb-2 text-sm font-medium text-gray-700">Thời gian kết thúc</label>
           <input [(ngModel)]="showtimeForm.endTime" (ngModelChange)="onEndTimeInput(showtimeForm.endTime)" type="text"
-            placeholder="HH:MM" maxlength="5"
+            placeholder="HH:MM" maxlength="5" [disabled]="isViewOnly"
             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
         </div>
       </div>
       <div>
         <label class="block mb-2 text-sm font-medium text-gray-700">Ngày</label>
-        <input [(ngModel)]="showtimeForm.showDate" type="date"
+        <input [(ngModel)]="showtimeForm.showDate" type="date" [disabled]="isViewOnly"
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700" />
       </div>
     </div>
@@ -201,6 +220,9 @@
         </p>
         <p *ngIf="showtimeDangXoa?.roomName" class="text-sm text-gray-700">
           <span class="font-medium">Phòng:</span> {{ showtimeDangXoa?.roomName }}
+        </p>
+        <p *ngIf="showtimeDangXoa?.cinemaId" class="text-sm text-gray-700">
+          <span class="font-medium">Rạp:</span> {{ getCinemaName(showtimeDangXoa?.cinemaId) }}
         </p>
       </div>
 

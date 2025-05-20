@@ -17,6 +17,13 @@ interface Room {
   room_name: string;
 }
 
+interface UserInfo {
+  id?: string;
+  username?: string;
+  role?: string;
+  cinemaId?: string;
+}
+
 @Component({
   selector: 'app-lich-chieu',
   templateUrl: './lich-chieu.component.html',
@@ -24,18 +31,24 @@ interface Room {
   standalone: false
 })
 export class LichChieuComponent implements OnInit {
+  // Thông tin người dùng đăng nhập
+  currentUser: UserInfo = {};
+
   searchTerm: string = '';
   dsShowtimes: ShowtimesDto[] = [];
   filteredShowtimes: ShowtimesDto[] = [];
   rapList: CinemaDto[] = [];
+
   // Danh sách phim và phòng cho dropdown
   allMovies: Movie[] = [];
   allRooms: Room[] = [];
   roomLisst: RoomDto[] = [];
+
   // Quản lý modal Thêm/Sửa
   isMainModalOpen: boolean = false;
   isEditing: boolean = false;
   showtimeForm: ShowtimesDto = new ShowtimesDto();
+
   // Quản lý modal Xoá
   isDeleteModalOpen: boolean = false;
   showtimeDangXoa: ShowtimesDto | null = null;
@@ -52,66 +65,142 @@ export class LichChieuComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // Lấy thông tin người dùng từ localStorage
+    this.getCurrentUserFromStorage();
+
     this.loadShowtimes();
     this.loadAllMovies();
     this.getAllRaps();
-    // this.loadAllRooms();
   }
 
-  // Khi chọn rạp, cập nhật cinemaId cho showtimeForm và load danh sách phòng của rạp đó
+  // Phương thức lấy thông tin người dùng từ localStorage
+  getCurrentUserFromStorage(): void {
+    console.log('Đang lấy thông tin người dùng...');
+    const userStr = localStorage.getItem('user'); // Hoặc key mà bạn đang sử dụng
+    console.log('Dữ liệu người dùng từ localStorage:', userStr);
+
+    if (userStr) {
+      try {
+        this.currentUser = JSON.parse(userStr);
+        console.log('Thông tin người dùng đã parse:', this.currentUser);
+      } catch (e) {
+        console.error('Lỗi khi parse thông tin người dùng từ localStorage:', e);
+        // Thiết lập người dùng mặc định là admin để kiểm thử
+        this.currentUser = { role: 'admin', cinemaId: '' };
+        console.log('Đã thiết lập người dùng mặc định:', this.currentUser);
+      }
+    } else {
+      console.log('Không tìm thấy thông tin người dùng trong localStorage');
+      // Thiết lập người dùng mặc định là admin để kiểm thử
+      this.currentUser = { role: 'admin', cinemaId: '' };
+      console.log('Đã thiết lập người dùng mặc định:', this.currentUser);
+    }
+  }
+  // Thêm phương thức này vào trong component
+  setTestUser(role: string, cinemaId: string = ''): void {
+    const user = { role, cinemaId };
+    localStorage.setItem('user', JSON.stringify(user));
+    this.currentUser = user;
+    console.log('Đã thiết lập người dùng kiểm thử:', user);
+
+    // Tải lại dữ liệu
+    this.loadShowtimes();
+    this.getAllRaps();
+  }
+  // Phương thức lấy tên rạp từ ID
+  getCinemaName(cinemaId: string | undefined): string {
+    if (!cinemaId) return 'Không xác định';
+
+    const cinema = this.rapList.find(rap => rap.id === cinemaId);
+    if (!cinema) {
+      console.log(`Không tìm thấy rạp với ID: ${cinemaId}`);
+      console.log('Danh sách rạp hiện tại:', this.rapList);
+    }
+    return cinema ? cinema.cinemaName : 'Không xác định';
+  }
+
+  // Phương thức khi chọn rạp, cập nhật danh sách phòng
   onCinemaChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     const selectedCinemaId: string = selectElement.value;
-    // Cập nhật cinemaId vào body của showtime
+
+    // Cập nhật cinemaId vào form
     this.showtimeForm.cinemaId = selectedCinemaId;
+
     if (selectedCinemaId) {
       this.getRoom(selectedCinemaId);
     } else {
       this.roomLisst = [];
+      this.roomErrorMessage = '';
     }
   }
 
+  // Load danh sách suất chiếu và lọc theo rạp của người dùng
   loadShowtimes(): void {
+    console.log('Đang tải danh sách suất chiếu...');
     this.showtimesService.getAllShowtimes().subscribe({
       next: (data: ShowtimesDto[]) => {
+        console.log('Dữ liệu suất chiếu nhận được:', data);
         this.dsShowtimes = data;
-        this.filteredShowtimes = [...this.dsShowtimes];
-        console.log('Loaded showtimes with names:', this.dsShowtimes);
+
+        // Lọc theo quyền
+        if (this.currentUser.role !== 'admin' && this.currentUser.cinemaId) {
+          console.log(`Lọc suất chiếu theo cinemaId: ${this.currentUser.cinemaId}`);
+          this.filteredShowtimes = this.dsShowtimes.filter(
+            showtime => showtime.cinemaId === this.currentUser.cinemaId
+          );
+          console.log('Danh sách đã lọc:', this.filteredShowtimes);
+        } else {
+          console.log('Hiển thị tất cả suất chiếu (admin hoặc không có cinemaId)');
+          this.filteredShowtimes = [...this.dsShowtimes];
+        }
       },
       error: (err: any) => {
-        console.error('Error fetching showtimes:', err);
+        console.error('Lỗi khi tải danh sách suất chiếu:', err);
+        alert('Không thể tải danh sách suất chiếu. Vui lòng thử lại sau!');
       }
     });
   }
 
+  // Load danh sách rạp và lọc theo quyền người dùng
   getAllRaps(): void {
     this.cinemasService.getCinemas().subscribe({
       next: (data: CinemaDto[]) => {
-        this.rapList = data;
+        // Nếu người dùng không phải admin và có cinemaId, chỉ hiển thị rạp của họ
+        if (this.currentUser.role !== 'admin' && this.currentUser.cinemaId) {
+          this.rapList = data.filter(rap => rap.id === this.currentUser.cinemaId);
+        } else {
+          this.rapList = data;
+        }
+        console.log('Đã load danh sách rạp:', this.rapList);
       },
       error: (err: any) => {
-        console.error('Error fetching cinemas:', err);
+        console.error('Lỗi khi load danh sách rạp:', err);
+        alert('Không thể tải danh sách rạp. Vui lòng thử lại sau!');
       }
     });
   }
 
+  // Load danh sách phim
   loadAllMovies(): void {
     this.http.get<any>('http://127.0.0.1:3000/films/getfilm').subscribe({
       next: (response: any) => {
         if (response && response.code === 200 && response.data && response.data.films) {
           this.allMovies = response.data.films;
-          console.log('Loaded movies:', this.allMovies);
+          console.log('Đã load danh sách phim:', this.allMovies);
         }
       },
       error: (err: any) => {
-        console.error('Error fetching movies:', err);
+        console.error('Lỗi khi load danh sách phim:', err);
+        alert('Không thể tải danh sách phim. Vui lòng thử lại sau!');
       }
     });
   }
 
-  getRoom(id?: string): void {
+  // Lấy danh sách phòng theo rạp
+  getRoom(cinemaId: string): void {
     this.roomErrorMessage = '';
-    this.roomService.getByCinemaId(id!).subscribe({
+    this.roomService.getByCinemaId(cinemaId).subscribe({
       next: (result: RoomDto[]) => {
         this.roomLisst = result;
         if (result.length === 0) {
@@ -119,7 +208,7 @@ export class LichChieuComponent implements OnInit {
         }
       },
       error: (error: any) => {
-        console.error('Lỗi khi lấy danh sách phòng:', error);
+        console.error('Lỗi khi load danh sách phòng:', error);
         this.roomLisst = [];
         if (error.status === 404 && error.error?.error) {
           this.roomErrorMessage = error.error.error;
@@ -130,34 +219,40 @@ export class LichChieuComponent implements OnInit {
     });
   }
 
-  loadAllRooms(): void {
-    this.http.get<any>('http://127.0.0.1:3000/room/getroom').subscribe({
-      next: (response: any) => {
-        if (response && response.code === 200 && response.data && response.data.rooms) {
-          this.allRooms = response.data.rooms;
-          console.log('Loaded rooms:', this.allRooms);
-        }
-      },
-      error: (err: any) => {
-        console.error('Error fetching rooms:', err);
-      }
-    });
-  }
-
+  // Tìm kiếm suất chiếu
   onSearch(): void {
-    console.log('Search term:', this.searchTerm);
+    console.log('Từ khóa tìm kiếm:', this.searchTerm);
     if (!this.searchTerm.trim()) {
-      this.filteredShowtimes = [...this.dsShowtimes];
+      // Nếu không có từ khóa, trả về danh sách gốc
+      if (this.currentUser.role !== 'admin' && this.currentUser.cinemaId) {
+        this.filteredShowtimes = this.dsShowtimes.filter(
+          showtime => showtime.cinemaId === this.currentUser.cinemaId
+        );
+      } else {
+        this.filteredShowtimes = [...this.dsShowtimes];
+      }
       return;
     }
+
     const term: string = this.searchTerm.toLowerCase();
-    this.filteredShowtimes = this.dsShowtimes.filter((showtime: ShowtimesDto) =>
+    // Lọc danh sách theo từ khóa
+    let filteredList = this.dsShowtimes.filter((showtime: ShowtimesDto) =>
       showtime.showtimeId.toLowerCase().includes(term) ||
       (showtime.movieName && showtime.movieName.toLowerCase().includes(term)) ||
       (showtime.roomName && showtime.roomName.toLowerCase().includes(term))
     );
+
+    // Nếu không phải admin, lọc tiếp theo rạp
+    if (this.currentUser.role !== 'admin' && this.currentUser.cinemaId) {
+      filteredList = filteredList.filter(
+        showtime => showtime.cinemaId === this.currentUser.cinemaId
+      );
+    }
+
+    this.filteredShowtimes = filteredList;
   }
 
+  // Khi chọn phim, cập nhật tên phim vào form
   onMovieChange(movieId: string): void {
     const selectedMovie: Movie | undefined = this.allMovies.find(movie => movie._id === movieId);
     if (selectedMovie) {
@@ -167,8 +262,9 @@ export class LichChieuComponent implements OnInit {
     }
   }
 
+  // Khi chọn phòng, cập nhật tên phòng vào form
   onRoomChange(roomId: string): void {
-    const selectedRoom: Room | undefined = this.allRooms.find(room => room._id === roomId);
+    const selectedRoom: RoomDto | undefined = this.roomLisst.find(room => room.id === roomId);
     if (selectedRoom) {
       this.showtimeForm.roomName = selectedRoom.room_name;
     } else {
@@ -176,6 +272,7 @@ export class LichChieuComponent implements OnInit {
     }
   }
 
+  // Định dạng thời gian bắt đầu
   onStartTimeInput(time: string): void {
     const numbersOnly: string = time.replace(/[^0-9]/g, '');
     if (numbersOnly.length >= 1 && numbersOnly.length <= 4) {
@@ -197,6 +294,7 @@ export class LichChieuComponent implements OnInit {
     }
   }
 
+  // Định dạng thời gian kết thúc
   onEndTimeInput(time: string): void {
     const numbersOnly: string = time.replace(/[^0-9]/g, '');
     if (numbersOnly.length >= 1 && numbersOnly.length <= 4) {
@@ -218,13 +316,24 @@ export class LichChieuComponent implements OnInit {
     }
   }
 
+  // Mở modal thêm mới
   openAddModal(): void {
+    // Kiểm tra quyền: người dùng phải có cinemaId hoặc là admin
+    if (this.currentUser.role !== 'admin' && !this.currentUser.cinemaId) {
+      alert('Bạn không có quyền thêm suất chiếu!');
+      return;
+    }
+
     this.isEditing = false;
-    this.isViewOnly = false; 
+    this.isViewOnly = false;
     this.isMainModalOpen = true;
+
+    // Khởi tạo form với giá trị mặc định
     const currentDate: Date = new Date();
     const formattedDate: string = currentDate.toISOString().slice(0, 10); // yyyy-MM-dd
     const randomId: string = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+
+    // Tạo thời gian mặc định với làm tròn lên 15 phút
     const currentHour: number = currentDate.getHours();
     const roundedMinutes: number = Math.ceil(currentDate.getMinutes() / 15) * 15;
     let defaultStartTime: string = '';
@@ -233,55 +342,158 @@ export class LichChieuComponent implements OnInit {
     } else {
       defaultStartTime = `${currentHour}:${roundedMinutes.toString().padStart(2, '0')}`;
     }
+
+    // Thời gian kết thúc mặc định là 2 giờ sau
     const startTimeParts: string[] = defaultStartTime.split(':');
     const startHour: number = parseInt(startTimeParts[0]);
     const startMinute: number = parseInt(startTimeParts[1]);
     const endHour: number = (startHour + 2) % 24;
     const defaultEndTime: string = `${endHour}:${startMinute.toString().padStart(2, '0')}`;
+
+    // Tự động thiết lập cinemaId nếu không phải admin
+    const userCinemaId = this.currentUser.role !== 'admin' ? this.currentUser.cinemaId : '';
+
     this.showtimeForm = new ShowtimesDto({
       showtimeId: 'ST' + randomId,
       movieId: '',
       roomId: '',
-      cinemaId: '',  // Khởi tạo rỗng
+      cinemaId: userCinemaId || '', // Tự động thiết lập rạp
       startTime: defaultStartTime,
       endTime: defaultEndTime,
       showDate: formattedDate
     });
-  }
 
-  // editSchedule(showtime: ShowtimesDto): void {
-  //   this.isEditing = true;
-  //   this.isMainModalOpen = true;
-  //   this.showtimeForm = showtime.clone();
-  //   if (this.showtimeForm.showDate) {
-  //     const date: Date = new Date(this.showtimeForm.showDate);
-  //     if (!isNaN(date.getTime())) {
-  //       this.showtimeForm.showDate = date.toISOString().slice(0, 10);
-  //     }
-  //   }
-  //   console.log('Editing showtime:', this.showtimeForm);
-  // }
-viewSchedule(showtime: ShowtimesDto): void {
-  this.isViewOnly = true;
-  this.isMainModalOpen = true;
-  this.showtimeForm = showtime.clone();
-
-  // Format ngày về yyyy-MM-dd nếu cần
-  if (this.showtimeForm.showDate) {
-    const date: Date = new Date(this.showtimeForm.showDate);
-    if (!isNaN(date.getTime())) {
-      this.showtimeForm.showDate = date.toISOString().slice(0, 10);
+    // Nếu có cinemaId, load danh sách phòng
+    if (userCinemaId) {
+      this.getRoom(userCinemaId);
     }
   }
 
-  console.log('Viewing showtime:', this.showtimeForm);
-}
+  // Mở modal sửa
+  editSchedule(showtime: ShowtimesDto): void {
+    // Kiểm tra quyền: người dùng không phải admin chỉ được sửa suất chiếu của rạp mình
+    if (this.currentUser.role !== 'admin' &&
+      this.currentUser.cinemaId &&
+      showtime.cinemaId !== this.currentUser.cinemaId) {
+      alert('Bạn không có quyền sửa suất chiếu này!');
+      return;
+    }
 
-  closeMainModal(): void {
-    this.isMainModalOpen = false;
+    this.isEditing = true;
+    this.isViewOnly = false;
+    this.isMainModalOpen = true;
+
+    // Load lại thông tin chi tiết từ server
+    this.showtimesService.getShowtimeById(showtime.id!).subscribe({
+      next: (data: ShowtimesDto) => {
+        this.showtimeForm = data.clone();
+
+        // Format ngày về yyyy-MM-dd nếu cần
+        if (this.showtimeForm.showDate) {
+          const date: Date = new Date(this.showtimeForm.showDate);
+          if (!isNaN(date.getTime())) {
+            this.showtimeForm.showDate = date.toISOString().slice(0, 10);
+          }
+        }
+
+        // Load danh sách phòng của rạp
+        if (this.showtimeForm.cinemaId) {
+          this.getRoom(this.showtimeForm.cinemaId);
+        }
+
+        console.log('Đang sửa suất chiếu:', this.showtimeForm);
+      },
+      error: (err: any) => {
+        console.error('Lỗi khi lấy thông tin chi tiết suất chiếu:', err);
+        // Sử dụng thông tin từ danh sách nếu không lấy được chi tiết
+        this.showtimeForm = showtime.clone();
+
+        // Format ngày về yyyy-MM-dd nếu cần
+        if (this.showtimeForm.showDate) {
+          const date: Date = new Date(this.showtimeForm.showDate);
+          if (!isNaN(date.getTime())) {
+            this.showtimeForm.showDate = date.toISOString().slice(0, 10);
+          }
+        }
+
+        if (this.showtimeForm.cinemaId) {
+          this.getRoom(this.showtimeForm.cinemaId);
+        }
+      }
+    });
   }
 
+  // Mở modal xem chi tiết
+  viewSchedule(showtime: ShowtimesDto): void {
+    // Người dùng không phải admin chỉ được xem suất chiếu của rạp mình
+    if (this.currentUser.role !== 'admin' &&
+      this.currentUser.cinemaId &&
+      showtime.cinemaId !== this.currentUser.cinemaId) {
+      alert('Bạn không có quyền xem chi tiết suất chiếu này!');
+      return;
+    }
+
+    this.isViewOnly = true;
+    this.isEditing = false;
+    this.isMainModalOpen = true;
+
+    // Load lại thông tin chi tiết từ server
+    this.showtimesService.getShowtimeById(showtime.id!).subscribe({
+      next: (data: ShowtimesDto) => {
+        this.showtimeForm = data.clone();
+
+        // Format ngày về yyyy-MM-dd nếu cần
+        if (this.showtimeForm.showDate) {
+          const date: Date = new Date(this.showtimeForm.showDate);
+          if (!isNaN(date.getTime())) {
+            this.showtimeForm.showDate = date.toISOString().slice(0, 10);
+          }
+        }
+
+        // Load danh sách phòng của rạp
+        if (this.showtimeForm.cinemaId) {
+          this.getRoom(this.showtimeForm.cinemaId);
+        }
+
+        console.log('Xem chi tiết suất chiếu:', this.showtimeForm);
+      },
+      error: (err: any) => {
+        console.error('Lỗi khi lấy thông tin chi tiết suất chiếu:', err);
+        // Sử dụng thông tin từ danh sách nếu không lấy được chi tiết
+        this.showtimeForm = showtime.clone();
+
+        // Format ngày về yyyy-MM-dd nếu cần
+        if (this.showtimeForm.showDate) {
+          const date: Date = new Date(this.showtimeForm.showDate);
+          if (!isNaN(date.getTime())) {
+            this.showtimeForm.showDate = date.toISOString().slice(0, 10);
+          }
+        }
+
+        if (this.showtimeForm.cinemaId) {
+          this.getRoom(this.showtimeForm.cinemaId);
+        }
+      }
+    });
+  }
+
+  // Đóng modal chính
+  closeMainModal(): void {
+    this.isMainModalOpen = false;
+    this.roomErrorMessage = '';
+  }
+
+  // Lưu suất chiếu (thêm mới hoặc cập nhật)
   saveSchedule(): void {
+    // Kiểm tra quyền: người dùng không phải admin chỉ được thêm/sửa suất chiếu của rạp mình
+    if (this.currentUser.role !== 'admin' &&
+      this.currentUser.cinemaId &&
+      this.showtimeForm.cinemaId !== this.currentUser.cinemaId) {
+      alert('Bạn không có quyền thêm/sửa suất chiếu cho rạp này!');
+      return;
+    }
+
+    // Validate form
     if (!this.showtimeForm.showtimeId) {
       alert('Vui lòng nhập mã suất chiếu!');
       return;
@@ -292,6 +504,10 @@ viewSchedule(showtime: ShowtimesDto): void {
     }
     if (!this.showtimeForm.roomId) {
       alert('Vui lòng chọn phòng!');
+      return;
+    }
+    if (!this.showtimeForm.cinemaId) {
+      alert('Vui lòng chọn rạp!');
       return;
     }
     if (!this.showtimeForm.startTime) {
@@ -306,13 +522,16 @@ viewSchedule(showtime: ShowtimesDto): void {
       alert('Vui lòng chọn ngày chiếu!');
       return;
     }
+
+    // Format thời gian nếu cần
     if (/^\d{4}$/.test(this.showtimeForm.startTime)) {
       this.onStartTimeInput(this.showtimeForm.startTime);
     }
     if (/^\d{4}$/.test(this.showtimeForm.endTime)) {
       this.onEndTimeInput(this.showtimeForm.endTime);
     }
-    // Format showDate về yyyy-MM-dd
+
+    // Format showDate về dd/MM/yyyy
     const date = new Date(this.showtimeForm.showDate);
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -321,7 +540,9 @@ viewSchedule(showtime: ShowtimesDto): void {
 
     // Debug log
     console.log('Dữ liệu gửi đi:', this.showtimeForm.toJSON());
+
     if (this.isEditing) {
+      // Cập nhật suất chiếu
       if (!this.showtimeForm.id) {
         alert('Không tìm thấy ID!');
         return;
@@ -334,7 +555,7 @@ viewSchedule(showtime: ShowtimesDto): void {
           this.loadShowtimes();
         },
         error: (err: any) => {
-          console.error('Update error:', err);
+          console.error('Lỗi cập nhật:', err);
           if (err.error && err.error.message) {
             alert(`Lỗi cập nhật: ${err.error.message}`);
           } else {
@@ -343,6 +564,7 @@ viewSchedule(showtime: ShowtimesDto): void {
         }
       });
     } else {
+      // Thêm mới suất chiếu
       this.showtimesService.createShowtime(this.showtimeForm).subscribe({
         next: (response: any) => {
           console.log('Kết quả thêm mới:', response);
@@ -351,7 +573,7 @@ viewSchedule(showtime: ShowtimesDto): void {
           this.loadShowtimes();
         },
         error: (err: any) => {
-          console.error('Creation error:', err);
+          console.error('Lỗi thêm mới:', err);
           if (err.error && err.error.message) {
             alert(`Lỗi thêm mới: ${err.error.message}`);
           } else {
@@ -362,16 +584,27 @@ viewSchedule(showtime: ShowtimesDto): void {
     }
   }
 
+  // Mở modal xóa
   deleteSchedule(showtime: ShowtimesDto): void {
+    // Kiểm tra quyền: người dùng không phải admin chỉ được xóa suất chiếu của rạp mình
+    if (this.currentUser.role !== 'admin' &&
+      this.currentUser.cinemaId &&
+      showtime.cinemaId !== this.currentUser.cinemaId) {
+      alert('Bạn không có quyền xóa suất chiếu này!');
+      return;
+    }
+
     this.showtimeDangXoa = showtime;
     this.deletePassword = '';
     this.isDeleteModalOpen = true;
   }
 
+  // Đóng modal xóa
   closeDeleteModal(): void {
     this.isDeleteModalOpen = false;
   }
 
+  // Xác nhận xóa
   confirmDelete(): void {
     if (this.deletePassword === 'hiendz') {
       if (!this.showtimeDangXoa?.id) {
@@ -385,7 +618,7 @@ viewSchedule(showtime: ShowtimesDto): void {
           this.loadShowtimes();
         },
         error: (err: any) => {
-          console.error('Deletion error:', err);
+          console.error('Lỗi xoá:', err);
           alert('Lỗi xoá!');
         }
       });
