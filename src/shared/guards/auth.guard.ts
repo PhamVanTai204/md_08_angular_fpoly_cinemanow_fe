@@ -1,4 +1,3 @@
-// auth.guard.ts - OPTIMIZED VERSION
 import { Injectable } from '@angular/core';
 import {
   CanActivate,
@@ -38,8 +37,8 @@ export class AuthGuard implements CanActivate {
     if (!currentUser && !isLoginPage) {
       // Store the attempted URL for redirection after login
       const returnUrl = state.url;
-      this.router.navigate(['/login'], { 
-        queryParams: { returnUrl } 
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl }
       });
       return false;
     }
@@ -57,13 +56,13 @@ export class AuthGuard implements CanActivate {
     }
     
     switch (user.role) {
-      case 4: // System Administrator
+      case UserService.ROLE_SYSTEM_ADMIN: // System Administrator
         this.router.navigate(['/layout/rap']);
         break;
-      case 3: // Staff
+      case UserService.ROLE_STAFF: // Staff
         this.router.navigate(['/layout/giaodich']);
         break;
-      case 2: // Cinema Manager
+      case UserService.ROLE_CINEMA_ADMIN: // Cinema Manager
         this.router.navigate(['/layout/phim']);
         break;
       default:

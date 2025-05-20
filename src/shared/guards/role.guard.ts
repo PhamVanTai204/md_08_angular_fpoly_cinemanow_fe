@@ -1,11 +1,11 @@
-// role.guard.ts - OPTIMIZED VERSION
 import { Injectable } from '@angular/core';
 import {
   CanActivate,
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
   Router
-} from '@angular/router';
+}
+from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { UserService } from '../services/user.service';
 
@@ -51,15 +51,15 @@ export class RoleGuard implements CanActivate {
     
     // Check role-specific permissions
     switch (currentUser.role) {
-      case 4: // System Administrator
+      case UserService.ROLE_SYSTEM_ADMIN: // System Administrator
         // System administrators have access to all routes
         return true;
         
-      case 2: // Cinema Manager
+      case UserService.ROLE_CINEMA_ADMIN: // Cinema Manager
         // List of routes permitted for Cinema Manager
         const allowedManagerRoutes = [
           'theloaiphim', 'phim', 'lichchieu', 
-          'giaodich', 'thanhtoan', 'thongke', 
+          'giaodich', 'thanhtoan', 'thongke',
           'nhanvien', 'banner', 'voucher', 'combo',
           'dondat', 'danhgia'
         ];
@@ -72,7 +72,7 @@ export class RoleGuard implements CanActivate {
           return false;
         }
         
-      case 3: // Staff
+      case UserService.ROLE_STAFF: // Staff
         // List of routes permitted for staff
         const allowedStaffRoutes = [
           'giaodich', 'thanhtoan', 'rap', 'combo', 'voucher'

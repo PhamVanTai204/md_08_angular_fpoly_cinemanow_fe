@@ -1,4 +1,3 @@
-// src/shared/guards/admin.guard.ts
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, RouterStateSnapshot, Router, CanActivate } from '@angular/router';
 import { Observable, of } from 'rxjs';
@@ -18,12 +17,20 @@ export class AdminGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    // Get required role from route data, default to admin (role 2)
-    const requiredRole = route.data['requiredRole'] || PermissionService.ROLE_ADMIN;
+    // Get required role from route data, default to cinema admin (role 2)
+    const requiredRole = route.data['requiredRole'] || PermissionService.ROLE_CINEMA_ADMIN;
     
     return this.permissionService.hasRole(requiredRole).pipe(
       map(hasRole => {
         if (hasRole) {
+          return true;
+        } else {
+          // Check if user is system admin, which can access any admin routes
+          return this.permissionService.isSystemAdmin().toPromise();
+        }
+      }),
+      map(hasAccess => {
+        if (hasAccess) {
           return true;
         } else {
           // User does not have required role, redirect to home
