@@ -93,25 +93,88 @@ export class LichChieuComponent implements OnInit {
   // Phương thức lấy thông tin người dùng từ localStorage
   getCurrentUserFromStorage(): void {
     console.log('Đang lấy thông tin người dùng...');
-    const userStr = localStorage.getItem('user');
-    console.log('Dữ liệu người dùng từ localStorage:', userStr);
+    
+    // Thử nhiều cách lấy thông tin user từ localStorage
+    let userStr = localStorage.getItem('user');
+    console.log('Dữ liệu từ key "user":', userStr);
+    
+    // Nếu không có, thử tìm các key khác có thể chứa thông tin user
+    if (!userStr) {
+      userStr = localStorage.getItem('currentUser');
+      console.log('Dữ liệu từ key "currentUser":', userStr);
+    }
+    
+    if (!userStr) {
+      userStr = localStorage.getItem('authUser');
+      console.log('Dữ liệu từ key "authUser":', userStr);
+    }
+    
+    // Thử lấy thông tin từ service layout (có thể user đã được lưu ở đây)
+    const layoutUser = this.getUserFromLayoutService();
+    if (layoutUser) {
+      console.log('Lấy user từ layout service:', layoutUser);
+      this.currentUser = this.mapLoginUserToComponentUser(layoutUser);
+      return;
+    }
 
     if (userStr) {
       try {
-        this.currentUser = JSON.parse(userStr);
-        console.log('Thông tin người dùng đã parse:', this.currentUser);
+        const userData = JSON.parse(userStr);
+        console.log('Thông tin người dùng đã parse:', userData);
+        
+        // Map dữ liệu từ login response về format component cần
+        this.currentUser = this.mapLoginUserToComponentUser(userData);
+        console.log('Current user sau khi map:', this.currentUser);
+        
+        // Đảm bảo có cinema_id nếu là user thường
+        if (this.currentUser.role !== 'admin' && !this.currentUser.cinemaId) {
+          console.warn('User không có cinemaId, có thể sẽ không thể thao tác');
+        }
       } catch (e) {
         console.error('Lỗi khi parse thông tin người dùng từ localStorage:', e);
         // Sử dụng giá trị mặc định
-        this.currentUser = { role: 'user', cinemaId: '682618a044e3d2514d9a6621' };
+        this.currentUser = { role: 'admin', cinemaId: '' };
         console.log('Đã thiết lập người dùng mặc định:', this.currentUser);
       }
     } else {
       console.log('Không tìm thấy thông tin người dùng trong localStorage');
       // Sử dụng giá trị mặc định
-      this.currentUser = { role: 'user', cinemaId: '682618a044e3d2514d9a6621' };
+      this.currentUser = { role: 'admin', cinemaId: '' };
       console.log('Đã thiết lập người dùng mặc định:', this.currentUser);
     }
+  }
+
+  // Thử lấy user từ service khác (nếu có)
+  private getUserFromLayoutService(): any {
+    try {
+      // Kiểm tra xem có service nào đang lưu thông tin user không
+      // Có thể user được lưu trong một service global
+      return null; // Tạm thời return null, bạn có thể inject service khác nếu cần
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Map từ structure login response về structure component cần
+  private mapLoginUserToComponentUser(loginUser: any): UserInfo {
+    console.log('Mapping user từ login response:', loginUser);
+    
+    // Xử lý role: role = 2 có thể là user thường, role = 1 có thể là admin
+    let role = 'admin';
+    if (loginUser.role === 2) {
+      role = 'user';
+    } else if (loginUser.role === 1) {
+      role = 'admin';
+    } else if (loginUser.role === 'admin' || loginUser.role === 'user') {
+      role = loginUser.role;
+    }
+
+    return {
+      id: loginUser.userId || loginUser.id,
+      username: loginUser.user_name || loginUser.username,
+      role: role,
+      cinemaId: loginUser.cinema_id || loginUser.cinemaId
+    };
   }
 
   // Phương thức thiết lập người dùng kiểm thử
@@ -168,10 +231,15 @@ export class LichChieuComponent implements OnInit {
         // Lọc theo quyền
         if (this.currentUser.role !== 'admin' && this.currentUser.cinemaId) {
           console.log(`Lọc suất chiếu theo cinemaId: ${this.currentUser.cinemaId}`);
-          this.filteredShowtimes = this.dsShowtimes.filter(
-            showtime => showtime.cinemaId === this.currentUser.cinemaId
-          );
+          console.log('Cinema ID từ localStorage:', this.currentUser.cinemaId);
+          
+          this.filteredShowtimes = this.dsShowtimes.filter(showtime => {
+            console.log(`So sánh: showtime.cinemaId(${showtime.cinemaId}) === currentUser.cinemaId(${this.currentUser.cinemaId})`);
+            return showtime.cinemaId === this.currentUser.cinemaId;
+          });
+          
           console.log('Danh sách đã lọc:', this.filteredShowtimes);
+          console.log(`Tìm thấy ${this.filteredShowtimes.length} suất chiếu cho rạp của bạn`);
         } else {
           console.log('Hiển thị tất cả suất chiếu (admin hoặc không có cinemaId)');
           this.filteredShowtimes = [...this.dsShowtimes];
@@ -273,12 +341,18 @@ export class LichChieuComponent implements OnInit {
   // Tìm kiếm suất chiếu
   onSearch(): void {
     console.log('Từ khóa tìm kiếm:', this.searchTerm);
+    console.log('Current user cinema ID:', this.currentUser.cinemaId);
+    
     if (!this.searchTerm.trim()) {
-      // Nếu không có từ khóa, trả về danh sách gốc
+      // Nếu không có từ khóa, trả về danh sách gốc theo quyền
       if (this.currentUser.role !== 'admin' && this.currentUser.cinemaId) {
         this.filteredShowtimes = this.dsShowtimes.filter(
-          showtime => showtime.cinemaId === this.currentUser.cinemaId
+          showtime => {
+            console.log(`Filter: ${showtime.cinemaId} === ${this.currentUser.cinemaId} = ${showtime.cinemaId === this.currentUser.cinemaId}`);
+            return showtime.cinemaId === this.currentUser.cinemaId;
+          }
         );
+        console.log('Filtered by cinema:', this.filteredShowtimes);
       } else {
         this.filteredShowtimes = [...this.dsShowtimes];
       }
@@ -296,8 +370,12 @@ export class LichChieuComponent implements OnInit {
     // Nếu không phải admin, lọc tiếp theo rạp
     if (this.currentUser.role !== 'admin' && this.currentUser.cinemaId) {
       filteredList = filteredList.filter(
-        showtime => showtime.cinemaId === this.currentUser.cinemaId
+        showtime => {
+          console.log(`Search filter: ${showtime.cinemaId} === ${this.currentUser.cinemaId} = ${showtime.cinemaId === this.currentUser.cinemaId}`);
+          return showtime.cinemaId === this.currentUser.cinemaId;
+        }
       );
+      console.log('Search filtered by cinema:', filteredList);
     }
 
     this.filteredShowtimes = filteredList;
