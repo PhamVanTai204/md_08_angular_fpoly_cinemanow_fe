@@ -82,15 +82,23 @@ export class ThanhToanComponent implements OnInit {
         <style>
           body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
           .ticket { border: 2px dashed #000; padding: 15px; max-width: 300px; margin: 0 auto; }
-          .header { text-align: center; font-weight: bold; margin-bottom: 10px; }
+          .header { text-align: center; font-weight: bold; margin-bottom: 3px; }
+                              .p1 { text-align: center;  margin-bottom: 3px; }
+
           .info { margin: 5px 0; }
           .divider { border-top: 1px dashed #000; margin: 10px 0; }
         </style>
       </head>
       <body>
         <div class="ticket">
-          <div class="header">${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'}</div>
-          <div class="divider"></div>
+   <div class="header">
+           ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'}
+       </div>          
+                 <p class="p1" > ${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'} </p> 
+ 
+                <div class="header"> 
+                <h4> VÉ XEM PHIM </h4>
+                </div>
           
           <div class="info"><strong>Phim:</strong> ${payment.ticket.showtime.movie.title}</div>
           <div class="info"><strong>Phòng:</strong> ${payment.ticket?.showtime?.room?.room_name || ''} - ${payment.ticket?.showtime?.room?.room_style || ''}</div>
@@ -105,13 +113,18 @@ export class ThanhToanComponent implements OnInit {
           <div class="divider"></div>
           
           <div class="info"><strong>Khách hàng:</strong> ${payment.ticket?.user?.full_name || ''}</div>
-          <div class="info"><strong>SĐT:</strong> ${payment.ticket?.user?.phone_number || ''}</div>
+          <div class="info"><strong>SĐT:</strong> 0${payment.ticket?.user?.phone_number || ''}</div>
           <div class="info"><strong>Email:</strong> ${payment.ticket?.user?.email || ''}</div>
           
           <div class="divider"></div>
           
           <div class="info"><strong>Ngày đặt:</strong> ${this.formatDate(payment.vnp_PayDate)}</div>
           <div class="info"><strong>Trạng thái:</strong> ${this.getStatusText(payment.status_order)}</div>
+                    <div class="divider"></div>
+
+           <div class="header">
+           Xin chân thành cảm ơn quý khách
+        </div> 
         </div>
       </body>
       </html>
@@ -128,31 +141,42 @@ export class ThanhToanComponent implements OnInit {
         <style>
           body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
           .ticket { border: 2px dashed #000; padding: 15px; max-width: 300px; margin: 0 auto; }
-          .header { text-align: center; font-weight: bold; margin-bottom: 10px; }
+                              .p1 { text-align: center;  margin-bottom: 3px; }
+
+          .header { text-align: center; font-weight: bold; margin-bottom: 3px; }
           .info { margin: 5px 0; }
           .divider { border-top: 1px dashed #000; margin: 10px 0; }
         </style>
       </head>
       <body>
         <div class="ticket">
-          <div class="header">${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'}</div>
-          <div class="divider"></div>
+             <div class="header">
+           ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'} 
+       </div>          
+                 <p class="p1" > ${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'} </p> 
+
+          <div class="header">                <h4> Hóa đơn bán hàng </h4>
+</div>
           
-          <div class="info"><strong>Loại:</strong> Combo</div>
-          <div class="info"><strong>Tên combo:</strong> Combo ${comboName}</div>
+           <div class="info"><strong>Tên mặt hàng:</strong>  ${comboName}</div>
           <div class="info"><strong>Số lượng:</strong> ${combo.quantity || 1}</div>
           <div class="info"><strong>Giá:</strong> ${combo.price?.toLocaleString('vi-VN') || '0'} VND</div>
           
           <div class="divider"></div>
           
           <div class="info"><strong>Khách hàng:</strong> ${payment.ticket?.user?.full_name || ''}</div>
-          <div class="info"><strong>SĐT:</strong> ${payment.ticket?.user?.phone_number || ''}</div>
+          <div class="info"><strong>SĐT:</strong> 0${payment.ticket?.user?.phone_number || ''}</div>
           <div class="info"><strong>Email:</strong> ${payment.ticket?.user?.email || ''}</div>
           
           <div class="divider"></div>
           
           <div class="info"><strong>Ngày đặt:</strong> ${this.formatDate(payment.vnp_PayDate)}</div>
           <div class="info"><strong>Trạng thái:</strong> ${this.getStatusText(payment.status_order)}</div>
+                    <div class="divider"></div>
+
+           <div class="header">
+           Xin chân thành cảm ơn quý khách
+        </div> 
         </div>
       </body>
       </html>
@@ -168,15 +192,22 @@ export class ThanhToanComponent implements OnInit {
         <style>
           body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
           .ticket { border: 2px dashed #000; padding: 15px; max-width: 300px; margin: 0 auto; }
-          .header { text-align: center; font-weight: bold; margin-bottom: 10px; }
+          .header { text-align: center; font-weight: bold; margin-bottom: 3px; }
+                    .p1 { text-align: center;  margin-bottom: 3px; }
+
           .info { margin: 5px 0; }
           .divider { border-top: 1px dashed #000; margin: 10px 0; }
         </style>
       </head>
       <body>
         <div class="ticket">
-          <div class="header">${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'}</div>
-          <div class="divider"></div>
+       <div class="header">
+           ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'} 
+       </div>          
+                 <p class="p1" > ${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'} </p> 
+
+       <div class="header">                <h4> VÉ XEM PHIM </h4>
+</div>
           
           <div class="info"><strong>Mã vé:</strong> ${payment.ticket?.ticket_id || ''}</div>
           <div class="info"><strong>Tổng tiền:</strong> ${payment.ticket?.total_amount?.toLocaleString('vi-VN') || '0'} VND</div>
@@ -184,13 +215,19 @@ export class ThanhToanComponent implements OnInit {
           <div class="divider"></div>
           
           <div class="info"><strong>Khách hàng:</strong> ${payment.ticket?.user?.full_name || ''}</div>
-          <div class="info"><strong>SĐT:</strong> ${payment.ticket?.user?.phone_number || ''}</div>
+          <div class="info"><strong>SĐT:</strong> 0${payment.ticket?.user?.phone_number || ''}</div>
           <div class="info"><strong>Email:</strong> ${payment.ticket?.user?.email || ''}</div>
           
           <div class="divider"></div>
           
           <div class="info"><strong>Ngày đặt:</strong> ${this.formatDate(payment.vnp_PayDate)}</div>
           <div class="info"><strong>Trạng thái:</strong> ${this.getStatusText(payment.status_order)}</div>
+                    <div class="divider"></div>
+
+          
+           <div class="header">
+           Xin chân thành cảm ơn quý khách
+        </div> 
         </div>
       </body>
       </html>
