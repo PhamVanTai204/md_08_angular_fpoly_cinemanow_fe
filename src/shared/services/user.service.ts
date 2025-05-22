@@ -31,6 +31,12 @@ export interface User {
 export class UserService {
   private baseUrl = 'http://127.0.0.1:3000/users';
 
+  // Role constants for better readability
+  
+  public static readonly ROLE_CINEMA_ADMIN = 2;  // Cinema Manager
+  public static readonly ROLE_STAFF = 3;         // Staff member
+  public static readonly ROLE_SYSTEM_ADMIN = 4;  // System Administrator
+
   constructor(
     private http: HttpClient,
     private router: Router
@@ -54,12 +60,12 @@ export class UserService {
         if (response && response.data) {
           localStorage.setItem('currentUser', JSON.stringify(response.data));
           localStorage.setItem('token', response.data.token || '');
-          
+
           // Save location info if available
           if (response.data.cinema_name) {
             localStorage.setItem('userCinema', response.data.cinema_name);
           }
-          
+
           // Save cinema ID if available
           if (response.data.cinema_id) {
             localStorage.setItem('userCinemaId', response.data.cinema_id);
@@ -68,18 +74,18 @@ export class UserService {
       }),
       catchError(error => {
         console.error('Login Error:', error);
-        
+
         // Clear any partial authentication data on error
         localStorage.removeItem('currentUser');
         localStorage.removeItem('token');
         localStorage.removeItem('userCinema');
         localStorage.removeItem('userCinemaId');
-        
+
         return throwError(() => new Error(error.message || 'Server error'));
       })
     );
   }
-  
+
   // Maintains compatibility with older code
   loginWithLocation(user: UserLoginDto): Observable<any> {
     return this.login(user);
@@ -140,20 +146,31 @@ export class UserService {
     return !!this.getCurrentUser();
   }
 
-  // Role checking methods
+  // Role checking methods - updated to match the correct role IDs
   isStaff(): boolean {
     const user = this.getCurrentUser();
-    return user ? user.role === 3 : false;
+    return user ? user.role === UserService.ROLE_STAFF : false;
   }
 
   isCinemaAdmin(): boolean {
     const user = this.getCurrentUser();
-    return user ? user.role === 2 : false;
+    return user ? user.role === UserService.ROLE_CINEMA_ADMIN : false;
   }
 
   isSystemAdmin(): boolean {
     const user = this.getCurrentUser();
-    return user ? user.role === 4 : false;
+    return user ? user.role === UserService.ROLE_SYSTEM_ADMIN : false;
+  }
+
+  // Get role name for display
+  getRoleName(roleId: number): string {
+    switch (Number(roleId)) {
+      
+      case UserService.ROLE_CINEMA_ADMIN: return 'Quản trị rạp';
+      case UserService.ROLE_STAFF: return 'Nhân viên rạp';
+      case UserService.ROLE_SYSTEM_ADMIN: return 'Quản trị hệ thống';
+      default: return 'Không xác định';
+    }
   }
 
   // Check if user has access to a specific cinema
@@ -162,7 +179,7 @@ export class UserService {
     if (this.isSystemAdmin()) {
       return true;
     }
-    
+
     const userCinemaId = this.getCurrentUserCinemaId();
     return userCinemaId === cinemaId;
   }

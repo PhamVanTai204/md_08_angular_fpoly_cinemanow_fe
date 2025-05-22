@@ -14,10 +14,11 @@ import { User } from '../dtos/phanquyenDto.dto';
 })
 export class PermissionService {
     // Role constants for better readability
-    public static readonly ROLE_USER = 1;     // Regular user
+     public static readonly ROLE_USER = 1;     // Regular user
     public static readonly ROLE_ADMIN = 2;    // Administrator
     public static readonly ROLE_STAFF = 3;    // Staff member
     public static readonly ROLE_SUPER_ADMIN = 4; // Super Administrator
+ 
 
     // Role names for display - fix by adding index signature
     private roleNames: {[key: number]: string} = {
@@ -25,6 +26,7 @@ export class PermissionService {
         2: 'Quản trị viên',
         3: 'Nhân viên rạp',
         4: 'Super Admin'
+ 
     };
 
     constructor(
@@ -72,10 +74,17 @@ export class PermissionService {
     }
 
     /**
-     * Check if the current user is an admin
+     * Check if the current user is a system administrator
      */
-    isAdmin(): Observable<boolean> {
-        return this.hasRole(PermissionService.ROLE_ADMIN);
+    isSystemAdmin(): Observable<boolean> {
+        return this.hasRole(PermissionService.ROLE_SYSTEM_ADMIN);
+    }
+
+    /**
+     * Check if the current user is a cinema administrator
+     */
+    isCinemaAdmin(): Observable<boolean> {
+        return this.hasRole(PermissionService.ROLE_CINEMA_ADMIN);
     }
 
     /**
@@ -92,11 +101,19 @@ export class PermissionService {
         return this.hasRole(PermissionService.ROLE_STAFF);
     }
 
+
     /**
-     * Check if the current user is a regular user
+     * Check if the current user is any type of admin (system or cinema)
      */
-    isRegularUser(): Observable<boolean> {
-        return this.hasRole(PermissionService.ROLE_USER);
+    isAdmin(): Observable<boolean> {
+        return this.getCurrentUser().pipe(
+            map(user => {
+                if (!user) return false;
+                const role = Number(user.role);
+                return role === PermissionService.ROLE_SYSTEM_ADMIN || 
+                       role === PermissionService.ROLE_CINEMA_ADMIN;
+            })
+        );
     }
 
     /**

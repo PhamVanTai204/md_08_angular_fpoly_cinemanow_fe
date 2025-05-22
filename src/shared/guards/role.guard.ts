@@ -4,10 +4,9 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
   Router
-} from '@angular/router';
+}
+from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
-import { PermissionService } from '../services/permission.service';
 import { UserService } from '../services/user.service';
 
 @Injectable({
@@ -15,7 +14,6 @@ import { UserService } from '../services/user.service';
 })
 export class RoleGuard implements CanActivate {
   constructor(
-    private permissionService: PermissionService,
     private userService: UserService,
     private router: Router
   ) { }
@@ -23,20 +21,19 @@ export class RoleGuard implements CanActivate {
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): Observable<boolean> {
+  ): Observable<boolean> | boolean {
     // Get allowed roles from route data
     const allowedRoles = route.data['allowedRoles'];
 
     if (!allowedRoles) {
       console.warn('No roles specified for RoleGuard. Denying access by default.');
-      this.router.navigate(['/']);
-      return of(false);
+      this.router.navigate(['/login']);
+      return false;
     }
 
     // Convert to array if it's a single role
     const requiredRoles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-
-    // Get current user synchronously (for faster response)
+ 
     const currentUser = this.userService.getCurrentUser();
 
     // If no user is logged in, redirect to login page
@@ -44,9 +41,9 @@ export class RoleGuard implements CanActivate {
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: state.url }
       });
-      return of(false);
+      return false;
     }
-
+ 
     // Special handling for role 4 (System Administrator)
     if (currentUser.role === 4) {
       // System administrators have access to specific routes only
@@ -142,11 +139,12 @@ export class RoleGuard implements CanActivate {
         this.router.navigate(['/giaodich']);
         break;
       case 1: // Regular user
+ 
       default:
-        // Regular users should not be in admin section
-        // Redirect to public home or user dashboard
-        this.router.navigate(['/']);
-        break;
+        // Unknown role - redirect to login
+        this.userService.logout();
+        this.router.navigate(['/login']);
+        return false;
     }
   }
 }

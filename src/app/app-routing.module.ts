@@ -1,6 +1,7 @@
+// app-routing.module.ts - OPTIMIZED VERSION
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AdminGuard } from '../shared/guards/admin.guard';
+ import { AdminGuard } from '../shared/guards/admin.guard';
 
 const routes: Routes = [
   // The layout route should be the only one that loads admin components
@@ -18,6 +19,7 @@ const routes: Routes = [
 
   // Catch all other routes and redirect to layout
   { path: '**', redirectTo: 'layout' }
+
 ];
 
 @NgModule({

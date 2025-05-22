@@ -1,4 +1,3 @@
-// Update imports at the top of PhanQuyenService
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -17,6 +16,12 @@ import {
 })
 export class PhanQuyenService {
   private baseUrl = 'http://127.0.0.1:3000/users';
+
+  // Role constants for better readability
+  public static readonly ROLE_USER = 1;          // Regular user
+  public static readonly ROLE_CINEMA_ADMIN = 2;  // Cinema Manager
+  public static readonly ROLE_STAFF = 3;         // Staff member
+  public static readonly ROLE_SYSTEM_ADMIN = 4;  // System Administrator
 
   constructor(private http: HttpClient) { }
 
@@ -127,12 +132,13 @@ export class PhanQuyenService {
     );
   }
 
-  // Các hàm tiện ích
+  // Các hàm tiện ích - updated to match the correct role IDs
   getRoleName(roleId: number): string {
     switch (Number(roleId)) {
-      case 1: return 'Thành viên';
-      case 2: return 'Quản trị viên';
-      case 3: return 'Nhân viên rạp';
+      
+      case PhanQuyenService.ROLE_CINEMA_ADMIN: return 'Quản trị rạp';
+      case PhanQuyenService.ROLE_STAFF: return 'Nhân viên rạp';
+      case PhanQuyenService.ROLE_SYSTEM_ADMIN: return 'Quản trị hệ thống';
       default: return 'Không xác định';
     }
   }
@@ -155,8 +161,26 @@ export class PhanQuyenService {
     return null;
   }
 
-  // Kiểm tra người dùng hiện tại có phải admin không
+  // Kiểm tra người dùng hiện tại có phải admin không - updated for different admin types
   isUserAdmin(user: User | null): boolean {
-    return user ? Number(user.role) === 2 : false;
+    if (!user) return false;
+    
+    const role = Number(user.role);
+    return role === PhanQuyenService.ROLE_CINEMA_ADMIN || role === PhanQuyenService.ROLE_SYSTEM_ADMIN;
   }
-}   
+  
+  // Check if user is system admin
+  isSystemAdmin(user: User | null): boolean {
+    return user ? Number(user.role) === PhanQuyenService.ROLE_SYSTEM_ADMIN : false;
+  }
+  
+  // Check if user is cinema admin
+  isCinemaAdmin(user: User | null): boolean {
+    return user ? Number(user.role) === PhanQuyenService.ROLE_CINEMA_ADMIN : false;
+  }
+  
+  // Check if user is staff
+  isStaff(user: User | null): boolean {
+    return user ? Number(user.role) === PhanQuyenService.ROLE_STAFF : false;
+  }
+}
