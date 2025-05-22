@@ -14,19 +14,19 @@ import { User } from '../dtos/phanquyenDto.dto';
 })
 export class PermissionService {
     // Role constants for better readability
-     public static readonly ROLE_USER = 1;     // Regular user
+    public static readonly ROLE_USER = 1;     // Regular user
     public static readonly ROLE_ADMIN = 2;    // Administrator
     public static readonly ROLE_STAFF = 3;    // Staff member
     public static readonly ROLE_SUPER_ADMIN = 4; // Super Administrator
- 
+
 
     // Role names for display - fix by adding index signature
-    private roleNames: {[key: number]: string} = {
+    private roleNames: { [key: number]: string } = {
         1: 'Thành viên',
         2: 'Quản trị viên',
         3: 'Nhân viên rạp',
         4: 'Super Admin'
- 
+
     };
 
     constructor(
@@ -77,14 +77,14 @@ export class PermissionService {
      * Check if the current user is a system administrator
      */
     isSystemAdmin(): Observable<boolean> {
-        return this.hasRole(PermissionService.ROLE_SYSTEM_ADMIN);
+        return this.hasRole(PermissionService.ROLE_SUPER_ADMIN);
     }
 
     /**
      * Check if the current user is a cinema administrator
      */
     isCinemaAdmin(): Observable<boolean> {
-        return this.hasRole(PermissionService.ROLE_CINEMA_ADMIN);
+        return this.hasRole(PermissionService.ROLE_ADMIN);
     }
 
     /**
@@ -110,8 +110,8 @@ export class PermissionService {
             map(user => {
                 if (!user) return false;
                 const role = Number(user.role);
-                return role === PermissionService.ROLE_SYSTEM_ADMIN || 
-                       role === PermissionService.ROLE_CINEMA_ADMIN;
+                return role === PermissionService.ROLE_SUPER_ADMIN ||
+                    role === PermissionService.ROLE_ADMIN;
             })
         );
     }

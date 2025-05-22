@@ -11,15 +11,15 @@ export class AdminGuard implements CanActivate {
   constructor(
     private permissionService: PermissionService,
     private router: Router
-  ) {}
+  ) { }
 
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
     // Get required role from route data, default to cinema admin (role 2)
-    const requiredRole = route.data['requiredRole'] || PermissionService.ROLE_CINEMA_ADMIN;
-    
+    const requiredRole = route.data['requiredRole'] || PermissionService.ROLE_ADMIN;
+
     return this.permissionService.hasRole(requiredRole).pipe(
       map(hasRole => {
         if (hasRole) {
