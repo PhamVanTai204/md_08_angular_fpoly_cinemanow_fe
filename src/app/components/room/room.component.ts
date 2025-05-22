@@ -317,6 +317,14 @@ export class RoomComponent implements OnInit {
 
       return;
     }
+    // **THÊM BƯỚC VALIDATE Ở ĐÂY**
+    const seatValidationResult = this.validateSeatSelectionRules();
+    if (!seatValidationResult.isValid) {
+      alert(seatValidationResult.message || "Lựa chọn ghế không hợp lệ. Vui lòng kiểm tra lại.");
+      this.errorMessage = seatValidationResult.message || "Lựa chọn ghế không hợp lệ."; // Hiển thị lỗi nếu có
+      return; // Dừng việc tạo vé
+    }
+    // **KẾT THÚC PHẦN VALIDATE**
 
     try {
       // Tạo đối tượng TicketDto từ dữ liệu
@@ -416,5 +424,75 @@ export class RoomComponent implements OnInit {
     return seatTotal + comboTotal;
   }
 
+  private getSeatColumn(seat: SeatDto): number {
+    return parseInt(seat.column_of_seat); // Nếu column_of_pseat là string '1', '2', thì cần parseInt
+  }
 
+  // Helper để tạo định danh ghế dạng 'A1', 'B5'
+  private getSeatIdentifier(seat: SeatDto): string {
+    return `${seat.row_of_seat}${seat.column_of_seat}`;
+  }
+
+  /**
+   * Kiểm tra logic chọn ghế theo yêu cầu.
+   * Trả về một object: { isValid: boolean, message?: string }
+   */
+  private validateSeatSelectionRules(): { isValid: boolean; message?: string } {
+    if (!this.selectedSeats || this.selectedSeats.length === 0) {
+      return { isValid: true }; // Không có ghế nào được chọn, không cần validate
+    }
+
+    // Lấy tất cả các hàng có ghế được người dùng chọn
+    const uniqueRowsSelected = [...new Set(this.selectedSeats.map(s => s.row_of_seat))];
+
+    for (const row of uniqueRowsSelected) {
+      // 1. Lấy tất cả ghế trong hàng hiện tại từ groupedSeats
+      const allSeatsInCurrentRow = (this.groupedSeats[row] || [])
+        .sort((a, b) => this.getSeatColumn(a) - this.getSeatColumn(b));
+
+      if (allSeatsInCurrentRow.length === 0) continue; // Bỏ qua nếu hàng không có ghế (lỗi dữ liệu?)
+
+      // 2. Tạo danh sách "ghế bị chiếm" trong hàng này:
+      // bao gồm ghế người dùng đang chọn VÀ ghế đã được đặt trước đó ('booked')
+      const occupiedSeatsInRow = allSeatsInCurrentRow
+        .filter(s =>
+          s.seat_status === 'booked' || // Ghế đã đặt trước
+          this.selectedSeats.some(selected => selected._id === s._id) // Ghế người dùng đang chọn
+        )
+        .sort((a, b) => this.getSeatColumn(a) - this.getSeatColumn(b));
+
+      // 3. Kiểm tra khoảng trống giữa các "ghế bị chiếm"
+      // Chỉ cần kiểm tra nếu có ít nhất 2 ghế bị chiếm trong hàng
+      if (occupiedSeatsInRow.length >= 2) {
+        for (let i = 0; i < occupiedSeatsInRow.length - 1; i++) {
+          const seat1 = occupiedSeatsInRow[i];
+          const seat2 = occupiedSeatsInRow[i + 1];
+
+          const col1 = this.getSeatColumn(seat1);
+          const col2 = this.getSeatColumn(seat2);
+
+          // Số ghế ở giữa seat1 và seat2
+          const numberOfSeatsBetween = col2 - col1 - 1;
+
+          if (numberOfSeatsBetween === 1) {
+            // Có đúng 1 ghế ở giữa. Kiểm tra xem ghế đó có trống thực sự không.
+            const middleSeatColumn = col1 + 1;
+            const middleSeat = allSeatsInCurrentRow.find(s => this.getSeatColumn(s) === middleSeatColumn);
+
+            if (middleSeat &&
+              middleSeat.seat_status !== 'booked' && // Không phải ghế đã đặt
+              !this.selectedSeats.some(selected => selected._id === middleSeat._id) // Không phải ghế người dùng đang chọn
+            ) {
+              // Đây là trường hợp vi phạm: A1 (đặt/chọn), A2 (trống), A3 (đặt/chọn)
+              return {
+                isValid: false,
+                message: `Không thể để trống ghế ${this.getSeatIdentifier(middleSeat)} giữa ghế ${this.getSeatIdentifier(seat1)} và ${this.getSeatIdentifier(seat2)} trên cùng hàng ${row}.`
+              };
+            }
+          }
+        }
+      }
+    }
+    return { isValid: true }; // Tất cả các hàng đều hợp lệ
+  }
 }
