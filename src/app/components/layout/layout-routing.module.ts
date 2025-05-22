@@ -36,6 +36,14 @@ const routes: Routes = [
         }
       },
       {
+        path: 'adminrap',
+        loadChildren: () => import('../admin-rap/admin-rap.module').then(m => m.AdminRapModule),
+        canActivate: [RoleGuard],
+        data: {
+          allowedRoles: [4] // Only System Admin can access
+        }
+      },
+      {
         path: 'thongke',
         loadChildren: () => import('../thong-ke/thong-ke.module').then(m => m.ThongKeModule),
         canActivate: [RoleGuard],

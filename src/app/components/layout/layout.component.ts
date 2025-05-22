@@ -32,6 +32,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2] },
     { path: 'phim', title: 'Phim', icon: 'movie', roles: [2], primary: true }, // Primary for Cinema Managers
     { path: 'rap', title: 'Rạp', icon: 'store', roles: [4], primary: true }, // Primary for System Admin
+    { path: 'adminrap', title: 'Quản lý Admin Rạp', icon: 'manage_accounts', roles: [4] }, // Ngay sau Rạp
     { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] },
     { path: 'danhgia', title: 'Quản lý bình luận', icon: 'reviews', roles: [4] },
   ];
@@ -76,8 +77,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
     if (!this.validateUserAccessToCinema()) {
       console.error('User does not have access to this cinema');
       this.userService.logout();
-      this.router.navigate(['/login'], { 
-        queryParams: { error: 'cinema-access-denied' } 
+      this.router.navigate(['/login'], {
+        queryParams: { error: 'cinema-access-denied' }
       });
       return;
     }
@@ -146,17 +147,17 @@ export class LayoutComponent implements OnInit, OnDestroy {
         // System admins should start with cinema management
         this.router.navigate(['/layout/rap']);
         break;
-        
+
       case 3: // Staff
         // Staff should start with transaction management (giaodich)
         this.router.navigate(['/layout/giaodich']);
         break;
-        
+
       case 2: // Cinema Manager
         // Cinema Managers should start with movie management
         this.router.navigate(['/layout/phim']);
         break;
-        
+
       default:
         // If role is unknown, logout and redirect to login
         this.userService.logout();
@@ -177,11 +178,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
     const primaryItem = allMenuItems.find(
       item => item.primary && item.roles.includes(this.currentUser.role)
     );
-    
+
     if (primaryItem) {
       return primaryItem;
     }
-    
+
     // If no primary item found, fall back to first accessible item
     return allMenuItems.find(item => this.canShowMenuItem(item));
   }
@@ -209,7 +210,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       case 3:
         roleLabel = 'Nhân viên rạp';
         break;
-      case 4: 
+      case 4:
         roleLabel = 'Quản trị viên hệ thống';
         break;
       default:
@@ -228,5 +229,12 @@ export class LayoutComponent implements OnInit, OnDestroy {
   logout(): void {
     this.userService.logout();
     this.router.navigate(['/login']);
+  }
+
+  // Handle image loading errors
+  handleImageError(): void {
+    if (this.currentUser) {
+      this.currentUser.url_image = 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc';
+    }
   }
 }

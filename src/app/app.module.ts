@@ -1,18 +1,19 @@
-import { NgModule } from '@angular/core'; 
-import { BrowserModule } from '@angular/platform-browser'; 
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; 
-import { AppRoutingModule } from './app-routing.module'; 
-import { AppComponent } from './app.component'; 
-import { FormsModule } from '@angular/forms'; 
-import { HttpClientModule } from '@angular/common/http'; 
-import { ButtonModule } from 'primeng/button'; 
-import { CommonModule } from '@angular/common'; 
-import { ModalModule } from 'ngx-bootstrap/modal'; 
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { ButtonModule } from 'primeng/button';
+import { CommonModule } from '@angular/common';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 // Guards
 import { AuthGuard } from '../shared/guards/auth.guard';
 import { AdminGuard } from '../shared/guards/admin.guard';
 import { RoleGuard } from '../shared/guards/role.guard';
+import { SuperAdminGuard } from '../shared/guards/super-admin.guard';
 
 // Services
 import { UserService } from '../shared/services/user.service';
@@ -29,6 +30,7 @@ import { PermissionService } from '../shared/services/permission.service';
     BrowserAnimationsModule,
     AppRoutingModule,
     FormsModule,
+    ReactiveFormsModule,
     HttpClientModule,
     ButtonModule,
     CommonModule,
@@ -39,7 +41,8 @@ import { PermissionService } from '../shared/services/permission.service';
     AuthGuard,
     AdminGuard,
     RoleGuard,
-    
+    SuperAdminGuard,
+
     // Services
     UserService,
     PhanQuyenService,
