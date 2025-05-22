@@ -1,5 +1,7 @@
 /* login.component.css */
+/* Make sure Material Icons font is properly imported */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 * {
   box-sizing: border-box;
@@ -15,6 +17,7 @@
   height: 100vh;
   width: 100vw;
   position: relative;
+  overflow: hidden;
 }
 
 .background-gradient {
@@ -25,6 +28,19 @@
   bottom: 0;
   background: linear-gradient(135deg, #1c1c1c 0%, #2d132c 40%, #8b0000 100%);
   z-index: -1;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .login-box {
@@ -35,6 +51,18 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  animation: boxAppear 0.6s ease-out;
+}
+
+@keyframes boxAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .left-panel {
@@ -48,7 +76,7 @@
 .right-panel {
   flex: 1;
   background-color: rgba(0, 0, 0, 0.7);
-  background-image: url('../../../app/components/assets/image.png');
+  background-image: url('https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80');
   background-size: cover;
   background-position: center;
   background-blend-mode: darken;
@@ -105,7 +133,8 @@
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  position: relative;
 }
 
 label {
@@ -116,7 +145,7 @@ label {
   font-weight: 500;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
@@ -126,26 +155,83 @@ input {
   transition: all 0.3s ease;
 }
 
-input:focus {
+input:focus, select:focus {
   outline: none;
   border-color: #d32f2f;
   box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
   background-color: #fff;
 }
 
-input.error {
+input.error, select.error {
   border-color: #d32f2f;
   background-color: #fff6f6;
 }
 
+.error-container {
+  min-height: 18px;
+}
+
 .error-message {
+  position: absolute;
+  bottom: -18px;
+  left: 0;
   color: #d32f2f;
   font-size: 12px;
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .password-field {
   position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #777;
+  user-select: none;
+  z-index: 2;
+}
+
+.password-toggle:hover {
+  color: #d32f2f;
+}
+
+.password-toggle i.material-icons {
+  font-size: 20px;
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+}
+
+.cinema-field {
+  position: relative;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #f8f8f8;
+  transition: all 0.3s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
 }
 
 .login-button {
@@ -163,6 +249,7 @@ input.error {
   justify-content: space-between;
   transition: all 0.3s ease;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
 }
 
 .login-button:hover {
@@ -174,6 +261,13 @@ input.error {
 .login-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .lock-icon::before {
@@ -206,6 +300,7 @@ input.error {
   display: flex;
   justify-content: center;
   gap: 10px;
+  margin-top: 20px;
 }
 
 .dot {
@@ -227,15 +322,31 @@ input.error {
 @media (max-width: 1024px) {
   .login-box {
     width: 90%;
-    height: auto;
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-box {
     flex-direction: column;
+    height: auto;
+    max-height: 90vh;
+    overflow-y: auto;
   }
-  
-  .left-panel, .right-panel {
-    padding: 30px;
-  }
-  
+
   .right-panel {
-    padding: 40px 30px;
+    padding: 30px;
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-box {
+    width: 95%;
+  }
+  
+  .left-panel,
+  .right-panel {
+    padding: 20px;
   }
 }

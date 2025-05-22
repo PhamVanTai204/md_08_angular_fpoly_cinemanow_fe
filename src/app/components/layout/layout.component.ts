@@ -10,7 +10,8 @@ interface MenuItem {
   path: string;
   title: string;
   icon: string;
-  roles: number[]; // Các vai trò được phép xem menu này
+  roles: number[]; // Roles allowed to view this menu
+  primary?: boolean; // Flag for primary navigation item for a role
 }
 
 @Component({
@@ -23,27 +24,28 @@ interface MenuItem {
 export class LayoutComponent implements OnInit, OnDestroy {
   currentUser: any;
   currentRoute: string = '';
+  userCinema: string | null = null;
   private subscriptions: Subscription[] = [];
 
-  // Danh sách menu được nhóm theo danh mục
+  // Updated menu lists based on specific role requirements from screenshot
   contentMenuItems: MenuItem[] = [
     { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2] },
-    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2] },
-    { path: 'rap', title: 'Rạp', icon: 'store', roles: [2, 3] }, // Only Rap is visible to staff
+    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2], primary: true }, // Primary for Cinema Managers
+    { path: 'rap', title: 'Rạp', icon: 'store', roles: [4], primary: true }, // Primary for System Admin
+    { path: 'adminrap', title: 'Quản lý Admin Rạp', icon: 'manage_accounts', roles: [4] }, // Ngay sau Rạp
     { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] },
-    { path: 'danhgia', title: 'Đánh giá phim', icon: 'reviews', roles: [2] },
-
+    { path: 'danhgia', title: 'Quản lý bình luận', icon: 'reviews', roles: [4] },
   ];
 
   businessMenuItems: MenuItem[] = [
-    { path: 'giaodich', title: 'Đặt vé', icon: 'receipt', roles: [2, 3] },
-    { path: 'thanhtoan', title: 'Thanh toán', icon: 'credit_card', roles: [2] },
+    { path: 'giaodich', title: 'Đặt vé', icon: 'receipt', roles: [2, 3], primary: true }, // Primary for Staff
+    { path: 'thanhtoan', title: 'Thanh toán', icon: 'credit_card', roles: [2, 3] },
     { path: 'thongke', title: 'Thống kê', icon: 'bar_chart', roles: [2] }
   ];
 
   userMenuItems: MenuItem[] = [
     { path: 'nhanvien', title: 'Nhân viên', icon: 'badge', roles: [2] },
-    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [2] }
+    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [] }
   ];
 
   marketingMenuItems: MenuItem[] = [
@@ -51,7 +53,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
     { path: 'voucher', title: 'Voucher', icon: 'card_giftcard', roles: [2] },
     { path: 'combo', title: 'Combo', icon: 'fastfood', roles: [2] }
   ];
-
 
   constructor(
     private userService: UserService,
@@ -62,11 +63,23 @@ export class LayoutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Retrieve logged-in user information
     this.currentUser = this.userService.getCurrentUser();
+    this.userCinema = this.userService.getCurrentUserCinema();
     console.log('Current user:', this.currentUser);
+    console.log('User cinema:', this.userCinema);
 
     // Redirect to login if no user is found
     if (!this.currentUser) {
       this.router.navigate(['/login']);
+      return;
+    }
+
+    // Check if user has valid location for their role
+    if (!this.validateUserAccessToCinema()) {
+      console.error('User does not have access to this cinema');
+      this.userService.logout();
+      this.router.navigate(['/login'], {
+        queryParams: { error: 'cinema-access-denied' }
+      });
       return;
     }
 
@@ -80,21 +93,39 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(routeSub);
 
-    // Find first accessible menu item for this user
-    this.navigateToFirstAccessibleRoute();
+    // Navigate based on role if at root path
+    this.navigateBasedOnRole();
   }
 
   ngOnDestroy(): void {
-    // Dọn dẹp subscription để tránh memory leak
+    // Clean up subscriptions to prevent memory leaks
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  // Kiểm tra xem menu có hiển thị với vai trò hiện tại không
+  // Validate that user has appropriate access to their assigned cinema
+  validateUserAccessToCinema(): boolean {
+    // System admins (role 4) have access to all cinemas
+    if (this.currentUser.role === 4) {
+      return true;
+    }
+
+    // For other roles (cinema manager, staff), check if they have a valid cinema assignment
+    if (this.currentUser.role === 2 || this.currentUser.role === 3) {
+      // Check if cinema name/location info exists
+      if (!this.userCinema && !this.currentUser.cinema_name && !this.currentUser.location) {
+        return false;
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  // Check if menu can be displayed for current role
   canShowMenuItem(item: MenuItem): boolean {
     const userRole = this.currentUser?.role;
     if (!userRole) return false;
     return item.roles.includes(userRole);
-
   }
 
   // Check if any items in a menu group are viewable
@@ -104,62 +135,106 @@ export class LayoutComponent implements OnInit, OnDestroy {
     return menuItems.some(item => item.roles.includes(userRole));
   }
 
-  // Navigate to the first accessible route for the current user
- // Navigate to the first accessible route for the current user
-navigateToFirstAccessibleRoute(): void {
-  // Special handling for staff role
-  if (this.currentUser?.role === 3) {
+  // Updated: Route to appropriate pages based on role
+  navigateBasedOnRole(): void {
     // Only navigate if we're at the root path
-    if (this.router.url === '/' || this.router.url === '' || this.router.url === '/admin') {
-      // Chỉ giữ lại một điều hướng: đến giaodich
-      this.router.navigate(['giaodich']);
+    if (!this.isAtRootPath()) {
+      return;
     }
-    return;
+
+    switch (this.currentUser.role) {
+      case 4: // System Administrator
+        // System admins should start with cinema management
+        this.router.navigate(['/layout/rap']);
+        break;
+
+      case 3: // Staff
+        // Staff should start with transaction management (giaodich)
+        this.router.navigate(['/layout/giaodich']);
+        break;
+
+      case 2: // Cinema Manager
+        // Cinema Managers should start with movie management
+        this.router.navigate(['/layout/phim']);
+        break;
+
+      default:
+        // If role is unknown, logout and redirect to login
+        this.userService.logout();
+        this.router.navigate(['/login']);
+    }
   }
 
-  // Phần còn lại giữ nguyên
-  const allMenuItems = [
-    ...this.contentMenuItems,
-    ...this.businessMenuItems,
-    ...this.userMenuItems,
-    ...this.marketingMenuItems
-  ];
+  // Get the primary route for the current user role
+  getPrimaryMenuItem(): MenuItem | undefined {
+    const allMenuItems = [
+      ...this.contentMenuItems,
+      ...this.businessMenuItems,
+      ...this.userMenuItems,
+      ...this.marketingMenuItems
+    ];
 
-  const firstAccessibleItem = allMenuItems.find(item => this.canShowMenuItem(item));
+    // First try to find items marked as primary for this role
+    const primaryItem = allMenuItems.find(
+      item => item.primary && item.roles.includes(this.currentUser.role)
+    );
 
-  if (firstAccessibleItem) {
-    if (this.router.url === '/' || this.router.url === '' || this.router.url === '/admin') {
-      this.router.navigate([firstAccessibleItem.path]);
+    if (primaryItem) {
+      return primaryItem;
     }
-  } else {
-    this.userService.logout();
-    this.router.navigate(['/login']);
-  }
-}
 
-  // Get role label based on user role number
+    // If no primary item found, fall back to first accessible item
+    return allMenuItems.find(item => this.canShowMenuItem(item));
+  }
+
+  // Helper to check if we're at the root layout path
+  private isAtRootPath(): boolean {
+    return this.router.url === '/' || this.router.url === '' || this.router.url === '/layout';
+  }
+
+  // Get role label based on user role number with additional cinema info for non-system admins
   getUserRoleLabel(): string {
     if (!this.currentUser) return '';
 
+    let roleLabel = '';
     switch (this.currentUser.role) {
       case 0:
-        return 'Khách';
+        roleLabel = 'Khách';
+        break;
       case 1:
-        return 'Người dùng';
+        roleLabel = 'Người dùng';
+        break;
       case 2:
-        return 'Quản trị rạp';
+        roleLabel = 'Quản trị rạp';
+        break;
       case 3:
-        return 'Nhân viên rạp';
-      case 4: 
-        return 'Quản trị viên hệ thống'
+        roleLabel = 'Nhân viên rạp';
+        break;
+      case 4:
+        roleLabel = 'Quản trị viên hệ thống';
+        break;
       default:
-        return 'Không có vai trò';
+        roleLabel = 'Không có vai trò';
     }
+
+    // Add cinema name for non-system admins
+    if ((this.currentUser.role === 2 || this.currentUser.role === 3) && this.userCinema) {
+      roleLabel += ` (${this.userCinema})`;
+    }
+
+    return roleLabel;
   }
 
   // Handle logout
   logout(): void {
     this.userService.logout();
     this.router.navigate(['/login']);
+  }
+
+  // Handle image loading errors
+  handleImageError(): void {
+    if (this.currentUser) {
+      this.currentUser.url_image = 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc';
+    }
   }
 }

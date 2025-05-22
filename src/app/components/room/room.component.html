@@ -70,11 +70,10 @@
                     <h3>Tổng tiền: {{ calculateTotalAmount() | currency:'VND':'':'1.0-0' }}đ</h3>
                     <div class="breakdown">
                         <p *ngIf="selectedSeats.length > 0">Ghế: {{ selectedSeats.length }} x {{
-                            selectedSeats[0]?.price_seat | currency:'VND':'':'1.0-0' }}đ</p>
+                            selectedSeats[0].price_seat | currency:'VND':'':'1.0-0' }}đ</p>
                         <p *ngFor="let combo of selectedCombos">
                             {{ combo.name_combo }}: {{ combo.quantity }} x {{ combo.price_combo |
-                            currency:'VND':'':'1.0-0'
-                            }}đ
+                            currency:'VND':'':'1.0-0' }}đ
                         </p>
                     </div>
                 </div>

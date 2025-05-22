@@ -1,59 +1,102 @@
 <!-- login.component.html -->
 <div class="login-container">
-  <!-- Background gradient là phần nền bên ngoài -->
+  <!-- Background gradient -->
   <div class="background-gradient"></div>
   
-  <!-- Login box chính là container trắng và xanh -->
+  <!-- Login box container -->
   <div class="login-box">
-    <!-- Left panel - white background -->
+    <!-- Left panel - Form area -->
     <div class="left-panel">
       <h1 class="cinema-now">Cinema Now</h1>
       
       <div class="login-title-area">
         <h2 class="login-title">Đăng nhập</h2>
-        <p class="login-subtitle">Đăng nhập vào hệ thống bạn đã có và quản lý các chức năng của bạn</p>
+        <p class="login-subtitle">Đăng nhập vào hệ thống để quản lý rạp chiếu phim của bạn</p>
+      </div>
+      
+      <!-- Display error message if present -->
+      <div *ngIf="errorMessage" class="alert-error" style="margin-bottom: 20px; color: #d32f2f; font-size: 14px; padding: 10px; background-color: #ffebee; border-radius: 4px; border-left: 4px solid #d32f2f;">
+        {{errorMessage}}
       </div>
       
       <form (ngSubmit)="handleSubmit($event)">
+        <!-- Email field -->
         <div class="form-group">
           <label for="email">Email</label>
           <input
             type="text"
             id="email"
-            placeholder="Email"
+            placeholder="Nhập email"
             [(ngModel)]="email"
             name="email"
             (ngModelChange)="handleEmailChange()"
             [ngClass]="{'error': emailError}"
+            [disabled]="isSubmitting"
+            autocomplete="off"
           />
-          <p *ngIf="emailError" class="error-message">{{emailError}}</p>
+          <span *ngIf="emailError" class="error-message">{{emailError}}</span>
         </div>
         
+        <!-- Password field -->
         <div class="form-group">
           <label for="password">Mật khẩu</label>
           <div class="password-field">
             <input
               [type]="showPassword ? 'text' : 'password'"
               id="password"
-              placeholder="Mật khẩu"
+              placeholder="Nhập mật khẩu"
               [(ngModel)]="password"
               name="password"
               (ngModelChange)="handlePasswordChange()"
               [ngClass]="{'error': passwordError}"
+              [disabled]="isSubmitting"
+              autocomplete="new-password"
             />
+            <!-- Password toggle button with eye icon -->
+            <span
+                class="password-toggle"
+               (click)="toggleShowPassword()"
+            >
+              <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
+            </span>
           </div>
-          <p *ngIf="passwordError" class="error-message">{{passwordError}}</p>
+          <span *ngIf="passwordError" class="error-message">{{passwordError}}</span>
         </div>
         
-        <button type="submit" class="login-button">
-          <i class="lock-icon"></i>
-          Đăng nhập
-          <i class="arrow-icon"></i>
+        <!-- Cinema selection dropdown - hidden for system admin -->
+        <div class="form-group" [hidden]="email === 'quantrihethong@gmail.com'">
+          <label for="cinema">Rạp phim</label>
+          <select
+            id="cinema"
+            [(ngModel)]="selectedCinema"
+            name="cinema"
+            (ngModelChange)="handleLocationChange()"
+            [ngClass]="{'error': locationError}"
+            [disabled]="isSubmitting || isLoadingCinemas"
+            required
+          >
+            <option value="" disabled>{{ isLoadingCinemas ? 'Đang tải...' : 'Chọn rạp phim' }}</option>
+            <option *ngFor="let cinema of cinemas" [value]="cinema.cinema_name">
+              {{ cinema.cinema_name }}
+            </option>
+          </select>
+          <span *ngIf="locationError" class="error-message">{{locationError}}</span>
+        </div>
+        
+        <!-- Login button -->
+        <button
+            type="submit"
+           class="login-button"
+           [disabled]="isSubmitting"
+        >
+          <span class="lock-icon"></span>
+          <span>{{ isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập' }}</span>
+          <span class="arrow-icon"></span>
         </button>
       </form>
     </div>
     
-    <!-- Right panel - với ảnh nền -->
+    <!-- Right panel - Illustration and welcome message -->
     <div class="right-panel">
       <div class="welcome-content">
         <h2 class="welcome-title">Chào mừng bạn đã quay trở lại</h2>

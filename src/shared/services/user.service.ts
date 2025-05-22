@@ -1,17 +1,25 @@
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Injectable } from "@angular/core";
 import { UserLoginDto } from "../dtos/userDto.dto";
 import { catchError, Observable, tap, throwError } from "rxjs";
 import { Router } from "@angular/router";
 
 export interface User {
-  _id: string;
+  userId: string;
+  _id?: string;
   user_name: string;
   email: string;
   password?: string;
   url_image?: string;
   role: number;
   isActive?: boolean;
+  cinema_id?: string;
+  cinema_name?: string;
+  location?: string;
+  phone_number?: string;
+  date_of_birth?: string;
+  gender?: number | null;
+  token?: string;
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
@@ -23,12 +31,18 @@ export interface User {
 export class UserService {
   private baseUrl = 'http://127.0.0.1:3000/users';
 
+  // Role constants for better readability
+  
+  public static readonly ROLE_CINEMA_ADMIN = 2;  // Cinema Manager
+  public static readonly ROLE_STAFF = 3;         // Staff member
+  public static readonly ROLE_SYSTEM_ADMIN = 4;  // System Administrator
+
   constructor(
     private http: HttpClient,
     private router: Router
   ) { }
 
-  // Lấy headers với token xác thực
+  // Get authentication headers with token
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({
@@ -37,106 +51,136 @@ export class UserService {
     });
   }
 
-  // Đăng nhập
+  // Primary login method that sends location to the backend
   login(user: UserLoginDto): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/login`, user.toJSON()).pipe(
+    // Ensure we're using the correct endpoint that validates location
+    return this.http.post<any>(`${this.baseUrl}/loginWebByLocation`, user.toJSON()).pipe(
       tap(response => {
-        // Lưu thông tin người dùng vào localStorage
+        // Only save user info if there's a successful login with data
         if (response && response.data) {
           localStorage.setItem('currentUser', JSON.stringify(response.data));
           localStorage.setItem('token', response.data.token || '');
-        } else if (response) {
-          localStorage.setItem('currentUser', JSON.stringify(response));
+
+          // Save location info if available
+          if (response.data.cinema_name) {
+            localStorage.setItem('userCinema', response.data.cinema_name);
+          }
+
+          // Save cinema ID if available
+          if (response.data.cinema_id) {
+            localStorage.setItem('userCinemaId', response.data.cinema_id);
+          }
         }
       }),
       catchError(error => {
-        console.error('LoginService Error:', error);
+        console.error('Login Error:', error);
+
+        // Clear any partial authentication data on error
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('token');
+        localStorage.removeItem('userCinema');
+        localStorage.removeItem('userCinemaId');
+
         return throwError(() => new Error(error.message || 'Server error'));
       })
     );
   }
 
-  // Đăng xuất
+  // Maintains compatibility with older code
+  loginWithLocation(user: UserLoginDto): Observable<any> {
+    return this.login(user);
+  }
+
+  // Logout
   logout(): void {
-    // Xóa thông tin người dùng và token khỏi localStorage
+    // Remove user info and token from localStorage
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
+    localStorage.removeItem('userCinema');
+    localStorage.removeItem('userCinemaId');
 
-    // Có thể thêm API call để invalidate token phía server nếu cần
-    // const headers = this.getHeaders();
-    // this.http.post(`${this.baseUrl}/logout`, {}, { headers }).subscribe();
-
-    // Điều hướng về trang đăng nhập
+    // Navigate to login page
     this.router.navigate(['/login']);
   }
 
-  // Lấy danh sách người dùng
-  getAllUsers(): Observable<User[]> {
-    const headers = this.getHeaders();
-    return this.http.get<User[]>(`${this.baseUrl}/getAll`, { headers }).pipe(
-      catchError(error => {
-        console.error('Error fetching users:', error);
-        return throwError(() => new Error(error.message || 'Server error'));
-      })
-    );
-  }
-
-  // Khoá/mở khoá người dùng (giả lập vì API chưa có endpoint này)
-  toggleUserStatus(userId: string, isActive: boolean): Observable<any> {
-    const headers = this.getHeaders();
-    // Giả sử API endpoint có dạng /users/toggleStatus/{id}
-    return this.http.patch<any>(`${this.baseUrl}/toggleStatus/${userId}`,
-      { isActive },
-      { headers }
-    ).pipe(
-      catchError(error => {
-        console.error('Error toggling user status:', error);
-        return throwError(() => new Error(error.message || 'Server error'));
-      })
-    );
-  }
-
-  // Lấy người dùng hiện tại từ localStorage
+  // Get current user from localStorage
   getCurrentUser(): any {
     const userStr = localStorage.getItem('currentUser');
     if (userStr) {
-      return JSON.parse(userStr);
+      try {
+        return JSON.parse(userStr);
+      } catch (e) {
+        console.error('Error parsing currentUser from localStorage:', e);
+        return null;
+      }
     }
     return null;
   }
 
-  // Lấy ID người dùng hiện tại
+  // Get current user ID
   getCurrentUserId(): string | null {
     const user = this.getCurrentUser();
-    return user ? user._id || user.userId : null;
+    return user ? user.userId || user._id : null;
   }
 
-  // Kiểm tra người dùng đã đăng nhập
+  // Get current user cinema ID
+  getCurrentUserCinemaId(): string | null {
+    const user = this.getCurrentUser();
+    if (user && user.cinema_id) {
+      return user.cinema_id;
+    }
+    return localStorage.getItem('userCinemaId');
+  }
+
+  // Get current user cinema name
+  getCurrentUserCinema(): string | null {
+    const user = this.getCurrentUser();
+    if (user && user.cinema_name) {
+      return user.cinema_name;
+    }
+    return localStorage.getItem('userCinema');
+  }
+
+  // Check if user is logged in
   isLoggedIn(): boolean {
     return !!this.getCurrentUser();
   }
 
-  // Kiểm tra vai trò standard user (role 1)
-  isStandardUser(): boolean {
-    const user = this.getCurrentUser();
-    return user ? user.role === 1 : false;
-  }
-
-  // Kiểm tra vai trò admin (role 2)
-  isAdmin(): boolean {
-    const user = this.getCurrentUser();
-    return user ? user.role === 2 : false;
-  }
-
-  // Kiểm tra vai trò super admin hoặc manager (role 3)
+  // Role checking methods - updated to match the correct role IDs
   isStaff(): boolean {
     const user = this.getCurrentUser();
-    return user ? user.role === 3 : false;
+    return user ? user.role === UserService.ROLE_STAFF : false;
   }
 
-  // Kiểm tra role theo số
-  hasRole(roleNumber: number): boolean {
+  isCinemaAdmin(): boolean {
     const user = this.getCurrentUser();
-    return user ? user.role === roleNumber : false;
+    return user ? user.role === UserService.ROLE_CINEMA_ADMIN : false;
+  }
+
+  isSystemAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user ? user.role === UserService.ROLE_SYSTEM_ADMIN : false;
+  }
+
+  // Get role name for display
+  getRoleName(roleId: number): string {
+    switch (Number(roleId)) {
+      
+      case UserService.ROLE_CINEMA_ADMIN: return 'Quản trị rạp';
+      case UserService.ROLE_STAFF: return 'Nhân viên rạp';
+      case UserService.ROLE_SYSTEM_ADMIN: return 'Quản trị hệ thống';
+      default: return 'Không xác định';
+    }
+  }
+
+  // Check if user has access to a specific cinema
+  hasAccessToCinema(cinemaId: string): boolean {
+    // System admin has access to all cinemas
+    if (this.isSystemAdmin()) {
+      return true;
+    }
+
+    const userCinemaId = this.getCurrentUserCinemaId();
+    return userCinemaId === cinemaId;
   }
 }
