@@ -84,9 +84,9 @@ export class LichChieuComponent implements OnInit {
   // Thiết lập người dùng mặc định cho việc kiểm thử
   setDefaultTestUser(): void {
     if (!localStorage.getItem('user')) {
-      // Thiết lập người dùng mặc định là admin để kiểm thử
-      this.setTestUser('admin');
-      console.log('Đã thiết lập người dùng mặc định là admin');
+      // Thiết lập người dùng mặc định là user thuộc rạp Beta Giải Phóng
+      this.setTestUser('user', '682618a044e3d2514d9a6621');
+      console.log('Đã thiết lập người dùng mặc định thuộc rạp Beta Giải Phóng');
     }
   }
 
@@ -103,13 +103,13 @@ export class LichChieuComponent implements OnInit {
       } catch (e) {
         console.error('Lỗi khi parse thông tin người dùng từ localStorage:', e);
         // Sử dụng giá trị mặc định
-        this.currentUser = { role: 'admin', cinemaId: '' };
+        this.currentUser = { role: 'user', cinemaId: '682618a044e3d2514d9a6621' };
         console.log('Đã thiết lập người dùng mặc định:', this.currentUser);
       }
     } else {
       console.log('Không tìm thấy thông tin người dùng trong localStorage');
       // Sử dụng giá trị mặc định
-      this.currentUser = { role: 'admin', cinemaId: '' };
+      this.currentUser = { role: 'user', cinemaId: '682618a044e3d2514d9a6621' };
       console.log('Đã thiết lập người dùng mặc định:', this.currentUser);
     }
   }
@@ -139,7 +139,7 @@ export class LichChieuComponent implements OnInit {
     return cinema.cinemaName;
   }
 
-  // Phương thức khi chọn rạp, cập nhật danh sách phòng
+  // Phương thức khi chọn rạp, cập nhật danh sách phòng (chỉ dành cho admin)
   onCinemaChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     const selectedCinemaId: string = selectElement.value;
@@ -180,32 +180,8 @@ export class LichChieuComponent implements OnInit {
       error: (err: any) => {
         console.error('Lỗi khi tải danh sách suất chiếu:', err);
         alert('Không thể tải danh sách suất chiếu. Vui lòng thử lại sau!');
-
-        // Tạo dữ liệu mẫu để kiểm thử
-        this.dsShowtimes = this.createSampleShowtimes();
-        this.filteredShowtimes = [...this.dsShowtimes];
       }
     });
-  }
-
-  // Tạo dữ liệu suất chiếu mẫu khi không thể lấy từ API
-  createSampleShowtimes(): ShowtimesDto[] {
-    console.log('Tạo dữ liệu suất chiếu mẫu');
-    const sampleShowtimes = [
-      new ShowtimesDto({
-        id: 'sample-id-1',
-        showtimeId: 'STLWE00',
-        movieId: 'movie-id-1',
-        movieName: 'Người Giữ Ký Ức',
-        roomId: 'P001',
-        roomName: 'P001',
-        cinemaId: 'beta-giai-phong',
-        startTime: '12:30',
-        endTime: '14:30',
-        showDate: '2025-05-20'
-      })
-    ];
-    return sampleShowtimes;
   }
 
   // Load danh sách rạp và lọc theo quyền người dùng
@@ -224,10 +200,7 @@ export class LichChieuComponent implements OnInit {
       error: (err: any) => {
         console.error('Lỗi khi load danh sách rạp:', err);
         alert('Không thể tải danh sách rạp. Vui lòng thử lại sau!');
-
-        // Tạo dữ liệu rạp mẫu
-        this.rapList = [
-        ];
+        this.rapList = [];
       }
     });
   }
@@ -244,13 +217,6 @@ export class LichChieuComponent implements OnInit {
       error: (err: any) => {
         console.error('Lỗi khi load danh sách phim:', err);
         alert('Không thể tải danh sách phim. Vui lòng thử lại sau!');
-
-        // Tạo dữ liệu phim mẫu
-        this.allMovies = [
-          { _id: 'movie-id-1', title: 'Người Giữ Ký Ức' },
-          { _id: 'movie-id-2', title: 'Phim mẫu 1' },
-          { _id: 'movie-id-3', title: 'Phim mẫu 2' }
-        ];
       }
     });
   }
@@ -273,8 +239,6 @@ export class LichChieuComponent implements OnInit {
         console.log('Danh sách phòng đã tải:', result);
         if (result.length === 0) {
           this.roomErrorMessage = 'Không tìm thấy phòng nào thuộc rạp này.';
-          // Thêm phòng mẫu nếu không có dữ liệu
-          this.addSampleRooms(cinemaId);
         }
 
         // Nếu đã có roomId được chọn, cập nhật lại roomName
@@ -291,22 +255,8 @@ export class LichChieuComponent implements OnInit {
         } else {
           this.roomErrorMessage = 'Đã xảy ra lỗi khi tải danh sách phòng.';
         }
-
-        // Thêm phòng mẫu để kiểm thử
-        this.addSampleRooms(cinemaId);
       }
     });
-  }
-
-  // Phương thức thêm phòng mẫu
-  addSampleRooms(cinemaId: string): void {
-    console.log('Thêm phòng mẫu cho rạp ID:', cinemaId);
-    // Tạo một số phòng mẫu để kiểm thử
-    this.roomLisst = [
-    ];
-
-    // Cập nhật lại roomName nếu cần
-    this.updateRoomNameIfNeeded();
   }
 
   // Cập nhật roomName nếu đã có roomId
@@ -433,6 +383,76 @@ export class LichChieuComponent implements OnInit {
     }
   }
 
+  // Kiểm tra thời gian có hợp lệ không
+  private isValidTime(time: string): boolean {
+    const timePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    return timePattern.test(time);
+  }
+
+  // Chuyển đổi thời gian thành phút để so sánh
+  private timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  // Kiểm tra xung đột thời gian
+  private checkTimeConflict(): boolean {
+    if (!this.isValidTime(this.showtimeForm.startTime) || 
+        !this.isValidTime(this.showtimeForm.endTime)) {
+      alert('Vui lòng nhập thời gian đúng định dạng HH:mm!');
+      return false;
+    }
+
+    const startMinutes = this.timeToMinutes(this.showtimeForm.startTime);
+    const endMinutes = this.timeToMinutes(this.showtimeForm.endTime);
+
+    if (startMinutes >= endMinutes) {
+      alert('Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc!');
+      return false;
+    }
+
+    // Kiểm tra xung đột với các suất chiếu khác cùng phòng cùng ngày
+    const conflictingShowtimes = this.dsShowtimes.filter(showtime => {
+      // Bỏ qua chính nó khi đang sửa
+      if (this.isEditing && showtime.id === this.showtimeForm.id) {
+        return false;
+      }
+
+      // Kiểm tra cùng phòng và cùng ngày
+      if (showtime.roomId !== this.showtimeForm.roomId) {
+        return false;
+      }
+
+      // So sánh ngày (chuyển về cùng định dạng để so sánh)
+      const formDate = new Date(this.showtimeForm.showDate);
+      const existingDate = new Date(showtime.showDate);
+      if (formDate.toDateString() !== existingDate.toDateString()) {
+        return false;
+      }
+
+      if (!this.isValidTime(showtime.startTime) || 
+          !this.isValidTime(showtime.endTime)) {
+        return false;
+      }
+
+      const existingStart = this.timeToMinutes(showtime.startTime);
+      const existingEnd = this.timeToMinutes(showtime.endTime);
+
+      // Kiểm tra xung đột thời gian
+      return (startMinutes < existingEnd && endMinutes > existingStart);
+    });
+
+    if (conflictingShowtimes.length > 0) {
+      const conflictInfo = conflictingShowtimes.map(st => 
+        `${st.showtimeId}: ${st.startTime} - ${st.endTime}`
+      ).join(', ');
+      alert(`Xung đột thời gian với suất chiếu: ${conflictInfo}`);
+      return false;
+    }
+
+    return true;
+  }
+
   // Mở modal thêm mới
   openAddModal(): void {
     // Kiểm tra quyền: người dùng phải có cinemaId hoặc là admin
@@ -447,7 +467,7 @@ export class LichChieuComponent implements OnInit {
 
     // Khởi tạo form với giá trị mặc định
     const currentDate: Date = new Date();
-    const formattedDate: string = currentDate.toISOString().slice(0, 10); // yyyy-MM-dd
+    const formattedDate: string = currentDate.toISOString().slice(0, 10); 
     const randomId: string = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
 
     // Tạo thời gian mặc định với làm tròn lên 15 phút
@@ -467,7 +487,7 @@ export class LichChieuComponent implements OnInit {
     const endHour: number = (startHour + 2) % 24;
     const defaultEndTime: string = `${endHour}:${startMinute.toString().padStart(2, '0')}`;
 
-    // Tự động thiết lập cinemaId nếu không phải admin
+    // Tự động thiết lập cinemaId - nếu không phải admin thì dùng cinemaId của user
     const userCinemaId = this.currentUser.role !== 'admin' ? this.currentUser.cinemaId : '';
 
     this.showtimeForm = new ShowtimesDto({
@@ -565,6 +585,12 @@ export class LichChieuComponent implements OnInit {
     this.roomErrorMessage = '';
   }
 
+  // Kiểm tra có được phép chọn rạp không
+  canSelectCinema(): boolean {
+    // Chỉ admin mới được chọn rạp và chỉ khi thêm mới (không phải sửa)
+    return this.currentUser.role === 'admin' && !this.isEditing;
+  }
+
   // Lưu suất chiếu (thêm mới hoặc cập nhật)
   saveSchedule(): void {
     // Đảm bảo nếu không phải admin, thì cinemaId phải là của người dùng
@@ -612,6 +638,11 @@ export class LichChieuComponent implements OnInit {
       return;
     }
 
+    // Kiểm tra xung đột thời gian
+    if (!this.checkTimeConflict()) {
+      return;
+    }
+
     // Format thời gian nếu cần
     if (/^\d{4}$/.test(this.showtimeForm.startTime)) {
       this.onStartTimeInput(this.showtimeForm.startTime);
@@ -620,12 +651,16 @@ export class LichChieuComponent implements OnInit {
       this.onEndTimeInput(this.showtimeForm.endTime);
     }
 
-    // Format showDate về dd/MM/yyyy
-    const date = new Date(this.showtimeForm.showDate);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    this.showtimeForm.showDate = `${day}/${month}/${year}`;
+    // Format showDate về DD/MM/YYYY như backend yêu cầu
+    if (this.showtimeForm.showDate) {
+      const date = new Date(this.showtimeForm.showDate);
+      if (!isNaN(date.getTime())) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        this.showtimeForm.showDate = `${day}/${month}/${year}`; // DD/MM/YYYY
+      }
+    }
 
     // Debug log
     console.log('Dữ liệu gửi đi:', this.showtimeForm.toJSON());
