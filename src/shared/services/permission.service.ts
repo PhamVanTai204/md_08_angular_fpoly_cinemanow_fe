@@ -14,19 +14,20 @@ import { User } from '../dtos/phanquyenDto.dto';
 })
 export class PermissionService {
     // Role constants for better readability
-     public static readonly ROLE_USER = 1;     // Regular user
+    public static readonly ROLE_USER = 1;     // Regular user
     public static readonly ROLE_ADMIN = 2;    // Administrator
     public static readonly ROLE_STAFF = 3;    // Staff member
     public static readonly ROLE_SUPER_ADMIN = 4; // Super Administrator
- 
+    public static readonly ROLE_CINEMA_ADMIN = 2;   // Same as ROLE_ADMIN (Quản trị rạp)
+    public static readonly ROLE_SYSTEM_ADMIN = 4;   // Same as ROLE_SUPER_ADMIN (Quản trị hệ thống)
 
     // Role names for display - fix by adding index signature
-    private roleNames: {[key: number]: string} = {
+    private roleNames: { [key: number]: string } = {
         1: 'Thành viên',
         2: 'Quản trị viên',
         3: 'Nhân viên rạp',
         4: 'Super Admin'
- 
+
     };
 
     constructor(
@@ -110,8 +111,8 @@ export class PermissionService {
             map(user => {
                 if (!user) return false;
                 const role = Number(user.role);
-                return role === PermissionService.ROLE_SYSTEM_ADMIN || 
-                       role === PermissionService.ROLE_CINEMA_ADMIN;
+                return role === PermissionService.ROLE_SYSTEM_ADMIN ||
+                    role === PermissionService.ROLE_CINEMA_ADMIN;
             })
         );
     }

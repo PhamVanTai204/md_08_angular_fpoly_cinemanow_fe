@@ -5,7 +5,7 @@ import {
   RouterStateSnapshot,
   Router
 }
-from '@angular/router';
+  from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { UserService } from '../services/user.service';
 
@@ -33,7 +33,7 @@ export class RoleGuard implements CanActivate {
 
     // Convert to array if it's a single role
     const requiredRoles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
- 
+
     const currentUser = this.userService.getCurrentUser();
 
     // If no user is logged in, redirect to login page
@@ -43,7 +43,7 @@ export class RoleGuard implements CanActivate {
       });
       return false;
     }
- 
+
     // Special handling for role 4 (System Administrator)
     if (currentUser.role === 4) {
       // System administrators have access to specific routes only
@@ -139,12 +139,12 @@ export class RoleGuard implements CanActivate {
         this.router.navigate(['/giaodich']);
         break;
       case 1: // Regular user
- 
+
       default:
         // Unknown role - redirect to login
         this.userService.logout();
         this.router.navigate(['/login']);
-        return false;
+        break;
     }
   }
 }
