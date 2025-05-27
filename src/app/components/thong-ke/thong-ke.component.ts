@@ -1,4 +1,3 @@
-// thong-ke.component.ts
 import { Component, OnInit } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { ThongKeService } from '../../../shared/services/thongke.service';
@@ -6,7 +5,6 @@ import { ThongKeService } from '../../../shared/services/thongke.service';
 @Component({
   selector: 'app-thong-ke',
   standalone: false,
-
   templateUrl: './thong-ke.component.html',
   styleUrls: ['./thong-ke.component.css'],
 })
@@ -19,6 +17,8 @@ export class ThongKeComponent implements OnInit {
   selectedMovie: string = 'Tất cả';
   originalMovieRevenueData: any[] = [];
   originalCinemaRevenueData: any[] = [];
+  currentUser: any;
+  isManager: boolean = false;
 
   // Dữ liệu thống kê
   summaryData = {
@@ -38,6 +38,10 @@ export class ThongKeComponent implements OnInit {
   constructor(private thongKeService: ThongKeService) { }
 
   ngOnInit(): void {
+    // Lấy thông tin user từ localStorage
+    this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    this.isManager = this.currentUser?.role === 2;
+
     // Khởi tạo ngày bắt đầu và kết thúc mặc định (tháng hiện tại)
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -59,8 +63,11 @@ export class ThongKeComponent implements OnInit {
   handleThongKe() {
     this.isLoading = true;
 
+    // Lấy cinema_id nếu là manager
+    const cinemaId = this.isManager ? this.currentUser.cinema_id : undefined;
+
     // Gọi API để lấy dữ liệu thống kê tổng quan
-    this.thongKeService.getRevenueByDateRange(this.startDate, this.endDate).subscribe({
+    this.thongKeService.getRevenueByDateRange(this.startDate, this.endDate, cinemaId).subscribe({
       next: (data) => {
         this.summaryData = {
           dailyRevenue: data.totalRevenue,
@@ -74,7 +81,7 @@ export class ThongKeComponent implements OnInit {
     });
 
     // Gọi API để lấy dữ liệu chi tiết
-    this.thongKeService.getDetailedRevenueStats(this.startDate, this.endDate).subscribe({
+    this.thongKeService.getDetailedRevenueStats(this.startDate, this.endDate, cinemaId).subscribe({
       next: (data) => {
         // Xử lý dữ liệu thống kê theo phim
         this.movieRevenueData = data.movies.map((movie: any) => ({
@@ -82,11 +89,8 @@ export class ThongKeComponent implements OnInit {
           tickets: movie.ticketCount,
           revenue: movie.revenue
         }));
-        this.originalMovieRevenueData = [...this.movieRevenueData]; // Gán dữ liệu gốc cho filter
+        this.originalMovieRevenueData = [...this.movieRevenueData];
         this.filterMovieData();
-        // Xử lý dữ liệu thống kê theo rạp (cần thêm logic từ backend)
-        // Giả sử chúng ta có dữ liệu rạp từ API
-
 
         this.isLoading = false;
       },
@@ -95,30 +99,34 @@ export class ThongKeComponent implements OnInit {
         this.isLoading = false;
       }
     });
-    // Trong handleThongKe()
-    this.thongKeService.getRevenueByCinema(this.startDate, this.endDate).subscribe({
-      next: (cinemaData) => {
-        // Cập nhật theo đúng cấu trúc API trả về
-        this.cinemaRevenueData = cinemaData.cinemaStats.map((cinema: any) => ({
-          name: cinema.cinema.cinema_name, // Sử dụng cinema_name thay vì name
-          tickets: cinema.ticketCount,
-          revenue: cinema.revenue
-        }));
-        this.originalCinemaRevenueData = [...this.cinemaRevenueData]; // Gán dữ liệu gốc cho filt
-        this.filterCinemaData();
-        // Cập nhật tổng doanh thu từ API (nếu muốn dùng)
-        this.summaryData.totalRevenue = cinemaData.totalRevenue;
 
-        console.log('Dữ liệu rạp:', this.cinemaRevenueData);
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Lỗi khi lấy dữ liệu thống kê rạp:', err);
-        this.isLoading = false;
-      }
-    });
+    // Chỉ gọi API thống kê theo rạp nếu không phải là manager (role != 2)
+    if (!this.isManager) {
+      this.thongKeService.getRevenueByCinema(this.startDate, this.endDate).subscribe({
+        next: (cinemaData) => {
+          this.cinemaRevenueData = cinemaData.cinemaStats.map((cinema: any) => ({
+            name: cinema.cinema.cinema_name,
+            tickets: cinema.ticketCount,
+            revenue: cinema.revenue
+          }));
+          this.originalCinemaRevenueData = [...this.cinemaRevenueData];
+          this.filterCinemaData();
 
+          console.log('Dữ liệu rạp:', this.cinemaRevenueData);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Lỗi khi lấy dữ liệu thống kê rạp:', err);
+          this.isLoading = false;
+        }
+      });
+    } else {
+      // Nếu là manager, ẩn hoặc xử lý khác phần thống kê theo rạp
+      this.cinemaRevenueData = [];
+      this.isLoading = false;
+    }
   }
+
   onTimeFilterChange() {
     const today = new Date();
 
@@ -127,7 +135,7 @@ export class ThongKeComponent implements OnInit {
       this.endDate = this.formatDate(today);
     } else if (this.timeFilter === 'Lọc theo 1 tuần') {
       const start = new Date(today);
-      start.setDate(today.getDate() - 6); // 7 ngày bao gồm hôm nay
+      start.setDate(today.getDate() - 6);
       this.startDate = this.formatDate(start);
       this.endDate = this.formatDate(today);
     } else if (this.timeFilter === 'Lọc theo 1 tháng') {
@@ -142,7 +150,6 @@ export class ThongKeComponent implements OnInit {
       this.endDate = this.formatDate(lastDayOfYear);
     }
     this.handleThongKe();
-
   }
 
   filterMovieData() {
@@ -161,7 +168,6 @@ export class ThongKeComponent implements OnInit {
     }
   }
 
-  // Định dạng ngày thành yyyy-MM-dd để sử dụng trong input type="date"
   private formatDate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -169,26 +175,19 @@ export class ThongKeComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  // Tính tổng số vé từ dữ liệu phim
   get totalMovieTickets(): number {
     return this.movieRevenueData.reduce((total, movie) => total + movie.tickets, 0);
   }
 
-  // Tính tổng doanh thu từ dữ liệu phim
   get totalMovieRevenue(): number {
     return this.movieRevenueData.reduce((total, movie) => total + movie.revenue, 0);
   }
 
-  // Tính tổng số vé từ dữ liệu rạp
   get totalCinemaTickets(): number {
     return this.cinemaRevenueData.reduce((total, cinema) => total + cinema.tickets, 0);
   }
 
-  // Tính tổng doanh thu từ dữ liệu rạp
   get totalCinemaRevenue(): number {
     return this.cinemaRevenueData.reduce((total, cinema) => total + cinema.revenue, 0);
   }
-
-
-  // Gọi hàm này trong ngOnInit hoặc handleThongKe
 }
