@@ -21,11 +21,6 @@
         <div class="flex justify-between items-start mb-3">
           <h2 class="text-xl font-semibold text-gray-800">{{ rap.cinemaName }}</h2>
           <div class="flex space-x-2">
-            <!-- Only show edit button for System Admin (role 4) -->
-            <button *ngIf="canEditCinema" (click)="openEditModal(rap, i)" 
-              class="text-blue-500 hover:text-blue-600 p-1 rounded transition-all" title="Chỉnh sửa">
-              <i class="fas fa-pencil-alt"></i>
-            </button>
             <!-- Only show delete button for System Admin (role 4) -->
             <button *ngIf="canDeleteCinema" (click)="deleteRap(rap)" 
               class="text-red-500 hover:text-red-600 p-1 rounded transition-all" title="Xóa">
@@ -44,14 +39,6 @@
             <p class="text-gray-600">{{ rap.totalRoom }} phòng chiếu</p>
           </div>
         </div>
-      </div>
-
-      <!-- Show view details button only if user has permission -->
-      <div *ngIf="canViewCinemaDetails" class="bg-gray-50 p-3 text-center border-t border-gray-100">
-        <button (click)="openEditModal(rap, i)"
-          class="w-full py-2 text-gray-700 font-medium hover:text-gray-900 transition-colors">
-          Xem chi tiết
-        </button>
       </div>
     </div>
   </div>
@@ -72,6 +59,13 @@
     class="fixed bottom-8 right-8 bg-red-500 hover:bg-red-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition-transform hover:scale-110"
     title="Thêm rạp">
     <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- Nút Thêm phòng (floating button) - Only show for role 2 -->
+  <button *ngIf="canAddRoom" (click)="openAddRoomModal()"
+    class="fixed bottom-20 right-8 bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition-transform hover:scale-110"
+    title="Thêm phòng">
+    <i class="fas fa-door-open"></i>
   </button>
 
   <!-- ========== DIALOG THÊM RẠP MỚI ========== -->
@@ -123,149 +117,42 @@
     </div>
   </div>
 
-  <!-- ========== DIALOG CHỈNH SỬA RẠP ========== -->
-  <div *ngIf="isEditModalOpen && canViewCinemaDetails"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60 backdrop-blur-sm">
-    <div
-      class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-3xl transform transition-all max-h-[90vh] overflow-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">{{ editRapData.cinemaName }} - Thông tin chi tiết</h2>
-        <button (click)="closeEditModal()" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times text-xl"></i>
-        </button>
-      </div>
-
-      <form #editRapForm="ngForm" (ngSubmit)="saveEditRap()" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Tên rạp - Only editable for System Admin -->
-          <div>
-            <label class="block text-gray-700 font-medium mb-1">Tên rạp <span class="text-red-500">*</span></label>
-            <input type="text" name="cinemaName" [(ngModel)]="editRapData.cinemaName" 
-              [readonly]="!canEditCinema" required #editCinemaName="ngModel"
-              [class]="canEditCinema ? 'border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all' : 'border border-gray-300 rounded-lg w-full px-3 py-2 bg-gray-100 cursor-not-allowed'"
-              placeholder="Nhập tên rạp" />
-            <div *ngIf="editCinemaName.invalid && editCinemaName.touched" class="text-red-500 text-sm mt-1">Vui lòng
-              nhập tên rạp</div>
-          </div>
-
-          <!-- Địa chỉ - Only editable for System Admin -->
-          <div>
-            <label class="block text-gray-700 font-medium mb-1">Địa chỉ <span class="text-red-500">*</span></label>
-            <input type="text" name="location" [(ngModel)]="editRapData.location" 
-              [readonly]="!canEditCinema" required #editLocation="ngModel"
-              [class]="canEditCinema ? 'border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all' : 'border border-gray-300 rounded-lg w-full px-3 py-2 bg-gray-100 cursor-not-allowed'"
-              placeholder="Nhập địa chỉ" />
-            <div *ngIf="editLocation.invalid && editLocation.touched" class="text-red-500 text-sm mt-1">Vui lòng nhập
-              địa chỉ</div>
-          </div>
-
-          <!-- Số phòng -->
-          <div>
-            <label class="block text-gray-700 font-medium mb-1">Số phòng</label>
-            <div class="border border-gray-300 rounded-lg w-full px-3 py-2 bg-gray-50">
-              {{ editRapData.totalRoom || 0 }}
-            </div>
-            <small class="text-gray-500">Số phòng sẽ tự động cập nhật khi bạn thêm/xóa phòng</small>
-          </div>
-        </div>
-
-        <!-- Danh sách phòng và nút thêm mới -->
-        <div class="mt-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-semibold text-gray-800">Danh sách phòng</h3>
-            <!-- Both role 2 and 4 can add rooms -->
-            <button *ngIf="canAddRoom" (click)="openAddRoomModal()" type="button"
-              class="flex items-center bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors shadow-md">
-              <i class="fas fa-plus mr-2"></i> Thêm phòng
-            </button>
-          </div>
-
-          <!-- Card grid cho danh sách phòng -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto p-2">
-            <div *ngFor="let room of roomLisst; let i = index"
-              class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all">
-              <div class="flex justify-between items-start mb-2">
-                <h4 class="font-semibold text-gray-800">{{ room.room_name }}</h4>
-                <div class="flex space-x-1">
-                  <button (click)="showRomDialog(room.id)"
-                    class="p-1 text-blue-500 hover:bg-blue-50 rounded transition-colors">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <!-- Trong phần danh sách phòng -->
-                  <div *ngIf="deleteRoomError" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    {{ deleteRoomError }}
-                  </div>
-
-                  <!-- Trong nút xóa phòng -->
-                  <button (click)="deleteRoom(i)" class="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
-                    [disabled]="isDeletingRoom" title="Xóa phòng">
-                    <i *ngIf="!isDeletingRoom" class="fas fa-trash"></i>
-                    <i *ngIf="isDeletingRoom" class="fas fa-spinner fa-spin"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="text-sm space-y-1">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Loại:</span>
-                  <span class="font-medium">{{ room.room_style }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Số ghế:</span>
-                  <span class="font-medium">{{ room.total_seat }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Trạng thái:</span>
-                  <span
-                    [ngClass]="{'status-badge status-active': room.status === 'active', 'status-badge status-inactive': room.status === 'inactive'}"
-                    class="font-medium">
-                    {{ room.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Empty state khi không có phòng nào -->
-          <div *ngIf="roomLisst.length === 0"
-            class="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg border border-gray-200 empty-state">
-            <i class="fas fa-couch text-4xl text-gray-300 mb-3"></i>
-            <p class="text-gray-500 mb-4">Chưa có phòng nào được thêm</p>
-            <button *ngIf="canAddRoom" (click)="openAddRoomModal()" type="button"
-              class="flex items-center bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors shadow-md">
-              <i class="fas fa-plus mr-2"></i> Thêm phòng đầu tiên
-            </button>
-          </div>
-        </div>
-
-        <!-- Buttons -->
-        <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
-          <button type="button" (click)="closeEditModal()"
-            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg shadow-sm text-gray-700 font-medium transition-all">
-            Đóng
-          </button>
-          <!-- Only show save button for System Admin -->
-          <button *ngIf="canEditCinema" type="submit"
-            class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-md font-medium transition-all"
-            [disabled]="editRapForm.invalid">
-            Lưu thay đổi
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- ========== DIALOG THÊM PHÒNG ========== -->
   <div *ngIf="isAddRoomModalOpen && canAddRoom"
     class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50 backdrop-blur-sm">
     <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-gray-800">Thêm phòng mới</h2>
+        <h2 class="text-xl font-bold text-gray-800">
+          Thêm phòng mới
+          <span *ngIf="currentUser.role === 2 && userCinemaName" class="text-sm font-normal text-gray-600 block">
+            Rạp: {{ userCinemaName }}
+          </span>
+        </h2>
         <button (click)="closeAddRoomModal()" class="text-gray-500 hover:text-gray-700">
           <i class="fas fa-times"></i>
         </button>
       </div>
 
       <form (ngSubmit)="saveNewRoom()" class="space-y-4">
+        <!-- Hiển thị thông tin rạp cho Cinema Admin -->
+        <div *ngIf="currentUser.role === 2 && userCinemaName" class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div class="flex items-center">
+            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+            <span class="text-sm text-blue-700">
+              Phòng sẽ được thêm vào rạp: <strong>{{ userCinemaName }}</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- ID Rạp - Chỉ hiển thị cho System Admin hoặc khi debug -->
+        <div *ngIf="currentUser.role === 4">
+          <label for="cinema_id" class="block text-gray-700 font-medium mb-1">ID Rạp <span
+              class="text-red-500">*</span></label>
+          <input type="text" id="cinema_id" [(ngModel)]="selectedCinemaId" name="cinema_id" required
+            class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+            placeholder="Nhập ID rạp" />
+        </div>
+
         <!-- Tên phòng -->
         <div>
           <label for="room_name" class="block text-gray-700 font-medium mb-1">Tên phòng <span

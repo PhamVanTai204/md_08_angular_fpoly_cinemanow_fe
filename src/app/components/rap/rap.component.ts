@@ -23,9 +23,6 @@ export class RapComponent implements OnInit {
   isAddRoomModalOpen = false;
   newRoom: RoomDto = new RoomDto();
   selectedCinemaId: string = '';
-  isEditModalOpen = false;
-  editRapIndex: number = -1;
-  editRapData: CinemaDto = new CinemaDto();
 
   cinema_id: string = '';
   room_name: string = '';
@@ -43,11 +40,13 @@ export class RapComponent implements OnInit {
 
   // Role permissions
   currentUser: any;
+  userCinemaId: string = ''; // ID rạp mà user đang làm việc
+  userCinemaName: string = ''; // Tên rạp mà user đang làm việc
   canAddCinema: boolean = false;
   canEditCinema: boolean = false;
   canDeleteCinema: boolean = false;
   canViewCinemaDetails: boolean = false;
-  canAddRoom: boolean = true; // Both role 2 and 4 can add rooms
+  canAddRoom: boolean = false;
 
   constructor(
     private cinemasService: CinemasService,
@@ -61,8 +60,41 @@ export class RapComponent implements OnInit {
     this.currentUser = this.userService.getCurrentUser();
     this.setPermissions();
     this.getAllRaps();
+    
+    // Nếu là Cinema Admin (role 2), tự động lấy rạp của họ để thêm phòng
+    if (this.currentUser && this.currentUser.role === 2) {
+      this.getUserCinema();
+    }
   }
 
+  /**
+   * Lấy thông tin rạp mà user đang làm việc (cho role 2)
+   */
+  private getUserCinema(): void {
+    // Lấy cinema_id từ thông tin user trong localStorage
+    if (this.currentUser.cinema_id || this.currentUser.cinemaId) {
+      this.userCinemaId = this.currentUser.cinema_id || this.currentUser.cinemaId;
+      console.log('User làm việc tại rạp ID:', this.userCinemaId);
+      
+      // Tìm tên rạp từ danh sách
+      this.updateUserCinemaName();
+    } else {
+      console.warn('User role 2 nhưng không có cinema_id!');
+    }
+  }
+
+  /**
+   * Cập nhật tên rạp từ ID
+   */
+  private updateUserCinemaName(): void {
+    if (this.userCinemaId && this.rapList.length > 0) {
+      const cinema = this.rapList.find(rap => rap.id === this.userCinemaId);
+      if (cinema) {
+        this.userCinemaName = cinema.cinemaName;
+        console.log('Tên rạp của user:', this.userCinemaName);
+      }
+    }
+  }
   /**
    * Set permissions based on user role
    */
@@ -70,23 +102,28 @@ export class RapComponent implements OnInit {
     if (!this.currentUser) return;
 
     switch (this.currentUser.role) {
-      case 2: // Cinema Admin
-        this.canAddCinema = true;
-        this.canEditCinema = false; // Cannot edit cinema
-        this.canDeleteCinema = false; // Cannot delete cinema
-        this.canViewCinemaDetails = true; // Can view details
+      case 2: // Cinema Admin (Quản trị rạp)
+        // Role 2 chỉ được phép thêm phòng cho rạp của mình
+        this.canAddCinema = false; // KHÔNG được thêm rạp
+        this.canEditCinema = false; // KHÔNG được sửa rạp
+        this.canDeleteCinema = false; // KHÔNG được xóa rạp
+        this.canViewCinemaDetails = false; // KHÔNG được xem chi tiết rạp
+        this.canAddRoom = true; // Chỉ được thêm phòng cho rạp của mình
         break;
-      case 4: // System Admin
-        this.canAddCinema = true;
-        this.canEditCinema = true; // Can edit cinema
-        this.canDeleteCinema = true; // Can delete cinema
-        this.canViewCinemaDetails = true; // Can view details
+      case 4: // System Admin (Quản trị hệ thống)
+        // Role 4 chỉ được phép thêm/xóa rạp, không được thêm phòng
+        this.canAddCinema = true; // Được thêm rạp
+        this.canEditCinema = false; // KHÔNG được sửa rạp (theo yêu cầu mới)
+        this.canDeleteCinema = true; // Được xóa rạp
+        this.canViewCinemaDetails = false; // KHÔNG được xem chi tiết rạp
+        this.canAddRoom = false; // KHÔNG được thêm phòng
         break;
       default:
         this.canAddCinema = false;
         this.canEditCinema = false;
         this.canDeleteCinema = false;
         this.canViewCinemaDetails = false;
+        this.canAddRoom = false;
         break;
     }
   }
@@ -167,6 +204,25 @@ export class RapComponent implements OnInit {
   }
 
   openAddRoomModal(): void {
+    if (!this.canAddRoom) {
+      if (this.currentUser.role === 4) {
+        alert('Quản trị hệ thống chỉ được phép thêm/xóa rạp, không được thêm phòng!');
+      } else {
+        alert('Bạn không có quyền thêm phòng!');
+      }
+      return;
+    }
+    
+    // For role 2 (Cinema Admin), automatically use their cinema
+    if (this.currentUser.role === 2) {
+      if (!this.userCinemaId) {
+        alert('Không tìm thấy thông tin rạp của bạn. Vui lòng liên hệ quản trị viên!');
+        return;
+      }
+      this.selectedCinemaId = this.userCinemaId;
+      console.log('Tự động chọn rạp của Cinema Admin:', this.userCinemaId, '-', this.userCinemaName);
+    }
+    
     this.isAddRoomModalOpen = true;
     this.newRoom = new RoomDto();
   }
@@ -176,10 +232,37 @@ export class RapComponent implements OnInit {
   }
 
   saveNewRoom(): void {
-    if (!this.selectedCinemaId) {
-      console.error('Không có rạp nào được chọn để thêm phòng.');
+    if (!this.canAddRoom) {
+      if (this.currentUser.role === 4) {
+        alert('Quản trị hệ thống chỉ được phép thêm/xóa rạp, không được thêm phòng!');
+      } else {
+        alert('Bạn không có quyền thêm phòng!');
+      }
       return;
     }
+
+    // Đảm bảo Cinema Admin chỉ có thể thêm phòng cho rạp của mình
+    if (this.currentUser.role === 2) {
+      if (!this.userCinemaId) {
+        alert('Không tìm thấy thông tin rạp của bạn!');
+        return;
+      }
+      // Bắt buộc sử dụng rạp của Cinema Admin
+      this.selectedCinemaId = this.userCinemaId;
+    }
+
+    if (!this.selectedCinemaId) {
+      alert('Không có rạp nào được chọn để thêm phòng.');
+      return;
+    }
+
+    // Kiểm tra quyền: Cinema Admin chỉ được thêm phòng cho rạp của mình
+    if (this.currentUser.role === 2 && this.selectedCinemaId !== this.userCinemaId) {
+      alert('Bạn chỉ có thể thêm phòng cho rạp của mình!');
+      return;
+    }
+
+    console.log(`Cinema Admin ${this.currentUser.user_name || 'Unknown'} đang thêm phòng cho rạp: ${this.userCinemaName} (ID: ${this.selectedCinemaId})`);
 
     this.roomService.createRoom(this.selectedCinemaId, this.room_name, this.room_style, this.cols * this.rows).subscribe({
       next: (addedRoom: RoomDto) => {
@@ -189,13 +272,26 @@ export class RapComponent implements OnInit {
         this.seatService.addMultipleSeats(addedRoom.id, this.rows, this.cols, this.price_seat).subscribe({
           next: (res) => {
             console.log('Ghế đã được tạo:', res);
-            this.getRoom(this.selectedCinemaId);
+            alert(`Đã thêm phòng "${this.room_name}" thành công vào rạp ${this.userCinemaName}!`);
             this.isAddRoomModalOpen = false;
+            // Reset form fields
+            this.room_name = '';
+            this.room_style = '';
+            this.rows = 0;
+            this.cols = 0;
+            this.price_seat = 0;
+            this.selectedCinemaId = '';
           },
-          error: (err) => console.error('Lỗi khi tạo ghế:', err)
+          error: (err) => {
+            console.error('Lỗi khi tạo ghế:', err);
+            alert('Phòng đã được tạo nhưng có lỗi khi tạo ghế!');
+          }
         });
       },
-      error: (err) => console.error('Lỗi khi thêm phòng:', err)
+      error: (err) => {
+        console.error('Lỗi khi thêm phòng:', err);
+        alert('Có lỗi xảy ra khi thêm phòng!');
+      }
     });
   }
 
@@ -203,6 +299,11 @@ export class RapComponent implements OnInit {
     this.cinemasService.getCinemas().subscribe({
       next: (data) => {
         this.rapList = data;
+        
+        // Nếu là Cinema Admin (role 2), cập nhật tên rạp của họ
+        if (this.currentUser && this.currentUser.role === 2) {
+          this.updateUserCinemaName();
+        }
       },
       error: (err) => {
         console.error('Error fetching cinemas:', err);
@@ -212,7 +313,11 @@ export class RapComponent implements OnInit {
 
   openAddModal(): void {
     if (!this.canAddCinema) {
-      alert('Bạn không có quyền thêm rạp!');
+      if (this.currentUser.role === 2) {
+        alert('Quản trị rạp chỉ được phép thêm phòng, không được thêm rạp!');
+      } else {
+        alert('Bạn không có quyền thêm rạp!');
+      }
       return;
     }
     this.isAddModalOpen = true;
@@ -225,7 +330,11 @@ export class RapComponent implements OnInit {
 
   saveNewRap(): void {
     if (!this.canAddCinema) {
-      alert('Bạn không có quyền thêm rạp!');
+      if (this.currentUser.role === 2) {
+        alert('Quản trị rạp chỉ được phép thêm phòng, không được thêm rạp!');
+      } else {
+        alert('Bạn không có quyền thêm rạp!');
+      }
       return;
     }
 
@@ -242,56 +351,13 @@ export class RapComponent implements OnInit {
     });
   }
 
-  async openEditModal(rap: CinemaDto, index: number): Promise<void> {
-    if (!this.canViewCinemaDetails) {
-      alert('Bạn không có quyền xem chi tiết rạp!');
-      return;
-    }
-
-    const actualIndex = (this.currentPage - 1) * this.pageSize + index;
-    this.editRapIndex = actualIndex;
-    this.editRapData = rap.clone();
-    this.isEditModalOpen = true;
-    this.selectedCinemaId = rap.id;
-
-    try {
-      this.roomLisst = await lastValueFrom(this.roomService.getByCinemaId(rap.id));
-      console.log(this.roomLisst, 'Danh sách phòng đã tải');
-    } catch (error) {
-      console.error('Lỗi khi tải danh sách phòng:', error);
-      this.roomLisst = [];
-    }
-  }
-
-  closeEditModal(): void {
-    this.isEditModalOpen = false;
-    this.editRapIndex = -1;
-  }
-
-  saveEditRap(): void {
-    if (!this.canEditCinema) {
-      alert('Bạn không có quyền chỉnh sửa rạp!');
-      return;
-    }
-
-    // Prepare the data in the format the service expects
-    const editData = {
-      cinema_name: this.editRapData.cinemaName,
-      location: this.editRapData.location
-    };
-
-    this.cinemasService.editCinema(this.editRapData.id, editData).subscribe({
-      next: (updatedCinema: CinemaDto) => {
-        this.getAllRaps();
-        this.isEditModalOpen = false;
-      },
-      error: (err) => console.error('Error updating cinema:', err)
-    });
-  }
-
   deleteRap(rap: CinemaDto): void {
     if (!this.canDeleteCinema) {
-      alert('Bạn không có quyền xóa rạp!');
+      if (this.currentUser.role === 2) {
+        alert('Quản trị rạp chỉ được phép thêm phòng, không được xóa rạp!');
+      } else {
+        alert('Bạn không có quyền xóa rạp!');
+      }
       return;
     }
 
@@ -301,8 +367,12 @@ export class RapComponent implements OnInit {
     this.cinemasService.deleteCinema(rap.id).subscribe({
       next: () => {
         this.rapList = this.rapList.filter(item => item.id !== rap.id);
+        alert('Đã xóa rạp thành công!');
       },
-      error: (err) => console.error('Error deleting cinema:', err)
+      error: (err) => {
+        console.error('Error deleting cinema:', err);
+        alert('Có lỗi xảy ra khi xóa rạp!');
+      }
     });
   }
 
