@@ -1,223 +1,189 @@
-/* cinema-dialog.component.css */
 .dialog-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    /* Light overlay */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
     padding: 20px;
+    animation: fadeIn 0.3s ease-out;
+    backdrop-filter: blur(6px);
 }
 
 .dialog-container {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     width: 100%;
     max-width: 900px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border: 1px solid #e5e7eb;
 }
 
 .dialog-header {
-    padding: 16px 24px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 20px 32px;
+    background-color: #ffffff;
+    color: #111827;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .dialog-title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 600;
     margin: 0;
     color: #1f2937;
 }
 
 .close-button {
-    background: none;
+    background: #f3f4f6;
     border: none;
-    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     color: #6b7280;
-    padding: 0 8px;
+    transition: all 0.2s ease;
 }
 
 .close-button:hover {
+    background: #e5e7eb;
     color: #1f2937;
 }
 
 .dialog-content {
-    padding: 20px;
+    padding: 24px;
     overflow-y: auto;
     flex-grow: 1;
+    background-color: #f9fafb;
 }
 
-/* Các phần CSS khác giữ nguyên như component trước, nhưng có thể điều chỉnh max-height nếu cần */
-.cinema-grid {
-    max-height: calc(90vh - 200px);
-    overflow-y: auto;
-}
-
-/* Phần còn lại giữ nguyên như CSS ở component trước */
-.search-container {
-    margin-bottom: 1.5rem;
-}
-
-.search-input-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-@media (min-width: 768px) {
-    .search-input-wrapper {
-        width: 16rem;
-    }
-}
-
-.search-input {
-    width: 100%;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: white;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    color: #374151;
-    outline: none;
-    transition: all 0.2s;
-}
-
-.search-input:focus {
-    border-color: #1024ff;
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
-}
-
-.cinema-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-
-@media (min-width: 768px) {
-    .cinema-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .cinema-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-.cinema-card {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    border-left: 4px solid #1024ff;
-    transition: all 0.3s ease;
-}
-
-.cinema-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.card-content {
-    padding: 1rem;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.75rem;
-}
-
-.cinema-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
-}
-
-.cinema-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.detail-item {
-    display: flex;
-    align-items: flex-start;
-}
-
-.detail-icon {
+/* Empty & loading state */
+.empty-state,
+.loading-state {
+    text-align: center;
+    padding: 3rem;
     color: #6b7280;
-    margin-top: 0.25rem;
-    margin-right: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.detail-text {
-    color: #4b5563;
-    margin: 0;
-}
-
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 0;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    margin-top: 1.5rem;
-}
-
-.showtimes-title {
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 0.5rem;
-}
-
-.showtime-button-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.showtime-button {
-    padding: 0.4rem 0.75rem;
-    background-color: #f3f4f6;
-    color: #1f2937;
-    border: 1px solid #d1d5db;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.showtime-button:hover {
-    background-color: #1024ff;
-    color: white;
-    border-color: #1024ff;
 }
 
 .empty-icon {
-    font-size: 3rem;
+    font-size: 3.5rem;
     color: #d1d5db;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
 }
 
 .empty-text {
-    color: #6b7280;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     margin-bottom: 1rem;
+    color: #4b5563;
+}
+
+/* Date columns layout */
+.date-columns {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem 0.5rem 2rem;
+}
+
+.date-column {
+    min-width: 200px;
+    flex-shrink: 0;
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border-left: 3px solid #a5b4fc;
+    /* Light indigo */
+    transition: transform 0.2s ease;
+}
+
+.date-column:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.date-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 1rem;
+    text-align: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.showtime-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Showtime buttons */
+.showtime-button {
+    padding: 0.65rem 1rem;
+    background-color: #f9fafb;
+    color: #4f46e5;
+    /* Indigo 600 */
+    border: 1px solid #c7d2fe;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.showtime-button:hover {
+    background-color: #eef2ff;
+    color: #4338ca;
+    /* Indigo 700 */
+    border-color: #a5b4fc;
+}
+
+.showtime-button:active {
+    background-color: #e0e7ff;
+}
+
+/* Scrollbar styling */
+.date-columns::-webkit-scrollbar {
+    height: 6px;
+}
+
+.date-columns::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 10px;
+}
+
+.date-columns::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dialog-header {
+        padding: 16px 24px;
+    }
+
+    .dialog-title {
+        font-size: 1.4rem;
+    }
+
+    .date-column {
+        min-width: 180px;
+    }
 }

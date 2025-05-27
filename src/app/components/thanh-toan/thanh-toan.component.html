@@ -1,8 +1,9 @@
 <!-- Header với tiêu đề và ô tìm kiếm -->
 <div class="flex items-center justify-between mb-6">
   <h2 class="text-xl font-bold text-gray-800">Danh sách giao dịch</h2>
-  <div class="relative w-80">
-    <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Nhập vào email người dùng"
+  <div class="relative w-4/12">
+    <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()"
+      placeholder="Nhập vào email người dùng, mã vé, tên phim"
       class="w-full border border-gray-300 rounded-md px-3 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none"
       viewBox="0 0 24 24" stroke="currentColor">
@@ -31,7 +32,7 @@
           class="hover:bg-blue-50 transition-colors duration-150">
           <td class="px-6 py-4 text-sm font-semibold text-gray-800">{{ item.payment_id }}</td>
           <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.ticket_id }}</td>
-          <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.user.full_name || 'Không rõ' }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.user.email || 'Không rõ' }}</td>
           <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.seats.length || 0 }} ghế</td>
           <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.combos.length || 0 }} combo</td>
           <td class="px-6 py-4 text-sm">

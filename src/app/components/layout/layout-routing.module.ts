@@ -1,4 +1,4 @@
-// layout-routing.module.ts - UPDATED VERSION WITH NEW PERMISSIONS
+// layout-routing.module.ts - UPDATED VERSION WITH CORRECTED PERMISSIONS
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LayoutComponent } from './layout.component';
@@ -80,7 +80,7 @@ const routes: Routes = [
         loadChildren: () => import('../nguoi-dung/nguoi-dung.module').then(m => m.NguoiDungModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [] // Only System Admin can access user management
+          allowedRoles: [4] // FIXED: Only System Admin can access user management
         }
       },
       {
@@ -150,7 +150,7 @@ const routes: Routes = [
       // Fallback route - redirect based on role
       {
         path: '',
-        redirectTo: 'rap', // Updated default redirect to 'rap'
+        redirectTo: 'rap', // Default redirect to 'rap'
         pathMatch: 'full'
       }
     ]

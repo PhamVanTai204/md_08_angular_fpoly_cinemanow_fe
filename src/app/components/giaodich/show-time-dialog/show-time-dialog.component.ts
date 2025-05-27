@@ -4,6 +4,7 @@ import { BsModalService } from 'ngx-bootstrap/modal';
 import { CinemaDto } from '../../../../shared/dtos/cinemasDto.dto';
 import { Router } from '@angular/router';
 import { UserService } from '../../../../shared/services/user.service'; // Import UserService
+import { ShowtimesService } from '../../../../shared/services/showtimes.service';
 
 @Component({
   selector: 'app-show-time-dialog',
@@ -26,6 +27,8 @@ export class ShowTimeDialogComponent implements OnInit {
 
   constructor(
     private cinemasService: CinemasService,
+    private showtimesService: ShowtimesService,
+
     private _modalService: BsModalService,
     private router: Router,
     private userService: UserService // Inject UserService

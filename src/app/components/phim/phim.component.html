@@ -293,12 +293,19 @@
 
             <!-- Trạng thái -->
             <div class="mb-4">
-              <label class="block font-medium mb-2 text-gray-700">Trạng thái <span class="text-red-500">*</span></label>
-              <select [(ngModel)]="currentPhim.status_film"
-                class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <option [ngValue]="1">Đang khởi chiếu</option>
-                <option [ngValue]="0">Sắp chiếu</option>
-              </select>
+              <label class="block font-medium mb-2 text-gray-700">Trạng thái</label>
+              <div *ngIf="isEdit; else addStatus">
+                <select [(ngModel)]="currentPhim.status_film"
+                  class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option [ngValue]="1">Đang khởi chiếu</option>
+                  <option [ngValue]="0">Đã chiếu xong</option>
+                </select>
+              </div>
+              <ng-template #addStatus>
+                <input type="text" readonly value="Đang khởi chiếu"
+                  class="border border-gray-300 rounded-lg w-full px-4 py-2 bg-gray-100">
+                <input type="hidden" [(ngModel)]="currentPhim.status_film">
+              </ng-template>
             </div>
 
             <!-- Poster (URL) -->
@@ -373,7 +380,8 @@
 
             <!-- Đánh giá -->
             <div class="mb-4">
-              <label class="block font-medium mb-2 text-gray-700">Đánh giá imdb <span class="text-red-500">*</span></label>
+              <label class="block font-medium mb-2 text-gray-700">Đánh giá imdb <span
+                  class="text-red-500">*</span></label>
               <input type="number" [(ngModel)]="currentPhim.ratings"
                 class="border border-gray-300 rounded-lg w-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 error-field"
                 placeholder="VD: 9.5" step="0.1" min="0" max="10"

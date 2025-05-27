@@ -31,7 +31,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   contentMenuItems: MenuItem[] = [
     { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2] },
     { path: 'phim', title: 'Phim', icon: 'movie', roles: [2] },
-    { path: 'rap', title: 'Rạp', icon: 'store', roles: [2, 4], primary: true }, // Updated: Both role 2 and 4 can access, primary for both
+    { path: 'rap', title: 'Phòng chiếu', icon: 'store', roles: [2, 4], primary: true }, // Title sẽ được dynamic theo role
     { path: 'adminrap', title: 'Quản lý Admin Rạp', icon: 'manage_accounts', roles: [4] },
     { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] },
     { path: 'danhgia', title: 'Quản lý bình luận', icon: 'reviews', roles: [4] },
@@ -45,7 +45,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   userMenuItems: MenuItem[] = [
     { path: 'nhanvien', title: 'Nhân viên', icon: 'badge', roles: [2] },
-    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [] } // Updated: Only role 4 can access
+    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [4] } // Chỉ role 4 có thể truy cập
   ];
 
   marketingMenuItems: MenuItem[] = [
@@ -135,6 +135,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
     return menuItems.some(item => item.roles.includes(userRole));
   }
 
+  // NEW METHOD: Dynamic title based on user role
+  getMenuItemTitle(item: MenuItem): string {
+    // Nếu là menu 'rap' thì hiển thị title khác nhau theo role
+    if (item.path === 'rap') {
+      return this.currentUser?.role === 2 ? 'Phòng chiếu' : 'Rạp';
+    }
+    return item.title;
+  }
+
   // Updated: Route to appropriate pages based on role
   navigateBasedOnRole(): void {
     // Only navigate if we're at the root path
@@ -154,7 +163,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
         break;
 
       case 2: // Cinema Manager
-        // Updated: Cinema Managers should now start with cinema management instead of movies
+        // Cinema Managers should start with cinema management
         this.router.navigate(['/layout/rap']);
         break;
 

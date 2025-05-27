@@ -3,10 +3,22 @@ import { Injectable } from '@angular/core';
 import { ShowtimesDto } from '../dtos/showtimesDto.dto';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
+export interface ShowtimesByMovieAndCinemaResponse {
+  code: number;
+  error: string | null;
+  data: ShowtimeDateGroup[];
+}
 
+export interface ShowtimeDateGroup {
+  date: string; // Format: "YYYY-MM-DD"
+  showtimes: ShowtimesDto[];
+}
 @Injectable({
   providedIn: 'root'
 })
+
+
+
 export class ShowtimesService {
   // API URLs
   private baseUrl: string = 'http://127.0.0.1:3000/showtimes';
@@ -20,6 +32,32 @@ export class ShowtimesService {
   private deleteUrl: string = `${this.baseUrl}/delete`;
 
   constructor(private http: HttpClient) { }
+  getShowtimesByMovieAndCinema(movieId: string, cinemaId: string): Observable<ShowtimesByMovieAndCinemaResponse> {
+    const url = `${this.baseUrl}/by-movie-and-cinema?movie_id=${movieId}&cinema_id=${cinemaId}`;
+
+    return this.http.get<ShowtimesByMovieAndCinemaResponse>(url).pipe(
+      map(response => {
+        if (response && response.code === 200 && response.data) {
+          // Transform the data into the expected format
+          const transformedData = response.data.map((dateGroup: any) => ({
+            date: dateGroup.date,
+            showtimes: dateGroup.showtimes.map((showtime: any) => ShowtimesDto.fromJS(showtime))
+          }));
+
+          return {
+            code: 200,
+            error: null,
+            data: transformedData
+          };
+        }
+        throw new Error('Invalid response format');
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+
+
 
   /**
    * Lấy tất cả các suất chiếu, bao gồm tên phim và tên phòng
@@ -31,7 +69,7 @@ export class ShowtimesService {
         if (response && response.code === 200 && Array.isArray(response.data)) {
           // Parse showtimes
           const showtimes: ShowtimesDto[] = response.data.map((item: any) => ShowtimesDto.fromJS(item));
-          
+
           // Collect unique IDs for movies and rooms to minimize API requests
           const movieIds: string[] = Array.from(new Set(showtimes.map((s: ShowtimesDto) => s.movieId).filter(id => id)));
           const roomIds: string[] = Array.from(new Set(showtimes.map((s: ShowtimesDto) => s.roomId).filter(id => id)));
@@ -51,20 +89,20 @@ export class ShowtimesService {
                     showtime.movieName = movie.title || 'Không có tên';
                     console.log(`Lấy được tên phim: ${showtime.movieName} cho ID: ${showtime.movieId}`);
                   }
-                  
+
                   // Find and set room name
                   const room: any = rooms.find((r: any) => r._id === showtime.roomId);
                   if (room && !showtime.roomName) {
                     showtime.roomName = room.room_name || 'Không có tên';
                     console.log(`Lấy được tên phòng: ${showtime.roomName} cho ID: ${showtime.roomId}`);
                   }
-                  
+
                   return showtime;
                 });
               })
             );
           }
-          
+
           // If no IDs to look up, return showtimes as is
           return of(showtimes);
         }
@@ -73,7 +111,7 @@ export class ShowtimesService {
       catchError(this.handleError)
     );
   }
-  
+
   /**
    * Lấy thông tin các phim từ danh sách ID
    * @param movieIds Danh sách ID phim
@@ -84,7 +122,7 @@ export class ShowtimesService {
     if (movieIds.length === 0) {
       return of([]);
     }
-    
+
     // Fetch movies and filter by provided IDs
     return this.http.get<any>(this.moviesUrl).pipe(
       map((response: any) => {
@@ -112,7 +150,7 @@ export class ShowtimesService {
     if (roomIds.length === 0) {
       return of([]);
     }
-    
+
     // Fetch rooms and filter by provided IDs
     return this.http.get<any>(this.roomsUrl).pipe(
       map((response: any) => {
@@ -155,7 +193,7 @@ export class ShowtimesService {
   createShowtime(showtime: ShowtimesDto): Observable<ShowtimesDto> {
     const data: any = showtime.toJSON();
     console.log('Dữ liệu gửi đến API createShowtime:', data);
-    
+
     return this.http.post<any>(this.createUrl, data).pipe(
       tap((response: any) => console.log('API Response:', response)),
       map((response: any) => {
@@ -177,7 +215,7 @@ export class ShowtimesService {
   updateShowtime(id: string, showtime: ShowtimesDto): Observable<ShowtimesDto> {
     const data: any = showtime.toJSON();
     console.log('Dữ liệu gửi đến API updateShowtime:', data);
-    
+
     return this.http.put<any>(`${this.updateUrl}/${id}`, data).pipe(
       tap((response: any) => console.log('API Response:', response)),
       map((response: any) => {
@@ -214,11 +252,11 @@ export class ShowtimesService {
    */
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('ShowtimesService Error:', error);
-    
+
     if (error.error && error.error.message) {
       console.error('Server error message:', error.error.message);
     }
-    
+
     return throwError(() => error);
   }
 }
