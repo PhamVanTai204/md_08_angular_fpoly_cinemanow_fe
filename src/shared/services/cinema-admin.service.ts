@@ -24,6 +24,7 @@ export interface CinemaAdmin {
   createdAt?: string;
   updatedAt?: string;
   cinema_id?: string;
+  role_name?: string; // Tên vai trò
 }
 
 export interface RegisterAdminRequest {
@@ -48,12 +49,12 @@ export interface CinemaApiResponse {
   };
 }
 
-export interface CinemaAdminApiResponse {
+export interface CinemaAdminResponse {
   code: number;
   error: string | null;
   data: {
-    users: CinemaAdmin[];
-    totalUsers: number;
+    admins: CinemaAdmin[];
+    totalAdmins: number;
     totalPages: number;
     currentPage: number;
     pageSize: number;
@@ -100,19 +101,10 @@ export class CinemaAdminService {
     currentPage: number,
     pageSize: number
   }> {
-    return this.http.get<CinemaAdminApiResponse>(
-      `${this.baseUrl}/users/getCinemaAdminByCinema/${cinemaId}?page=${page}&limit=${limit}`
+    return this.http.get<CinemaAdminResponse>(
+      `${this.baseUrl}/users/get-admin-by-id-cinema/${cinemaId}?page=${page}&limit=${limit}`
     ).pipe(
-      map(response => {
-        // Chuyển đổi dữ liệu từ API để tương thích với ứng dụng
-        return {
-          admins: response.data.users,
-          totalAdmins: response.data.totalUsers,
-          totalPages: response.data.totalPages,
-          currentPage: response.data.currentPage,
-          pageSize: response.data.pageSize
-        };
-      }),
+      map(response => response.data),
       catchError(this.handleError)
     );
   }
@@ -142,13 +134,14 @@ export class CinemaAdminService {
   }
 
   // Xóa admin của rạp
-  removeCinemaAdmin(adminId: string): Observable<any> {
-    return this.http.delete<any>(
-      `${this.baseUrl}/users/delete/${adminId}`
-    ).pipe(
-      catchError(this.handleError)
-    );
-  }
+  removeCinemaAdmin(cinemaId: string, adminId: string): Observable<any> {
+  return this.http.delete<any>(
+    `${this.baseUrl}/users/delete-admin-by-cinema/${cinemaId}/${adminId}`
+  ).pipe(
+    catchError(this.handleError)
+  );
+}
+
 
   // Đăng nhập admin rạp
   loginAdminByCinema(loginData: LoginAdminRequest): Observable<any> {

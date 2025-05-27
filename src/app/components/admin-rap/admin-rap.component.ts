@@ -75,6 +75,33 @@ export class AdminRapComponent implements OnInit {
     this.selectedCinema = cinema;
     this.adminList = []; // Reset danh sách admin
     this.adminCurrentPage = 0;
+    this.loadAdmins(); // Tải danh sách admin khi chọn rạp
+  }
+
+  // Tải danh sách admin của rạp
+  loadAdmins(): void {
+    if (!this.selectedCinema) return;
+
+    this.isLoading = true;
+    const page = this.adminCurrentPage + 1;
+
+    this.cinemaAdminService.getAdminsByCinema(this.selectedCinema._id, page, this.adminRows)
+      .subscribe({
+        next: (data) => {
+          this.adminList = data.admins;
+          this.totalAdminRecords = data.totalAdmins;
+          this.adminTotalPages = data.totalPages;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.errorMessage = `Lỗi khi tải danh sách admin: ${error.message}`;
+          this.isLoading = false;
+          // Xóa thông báo lỗi sau 3 giây
+          setTimeout(() => {
+            this.errorMessage = '';
+          }, 3000);
+        }
+      });
   }
 
   // Thêm admin cho rạp
@@ -110,6 +137,13 @@ export class AdminRapComponent implements OnInit {
             url_image: 'https://example.com/avatar.jpg'
           });
           this.showAddForm = false;
+          // Reset và tải lại dữ liệu
+          this.adminCurrentPage = 0;
+          this.loadAdmins();
+          // Xóa thông báo thành công sau 3 giây
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 3000);
         },
         error: (error) => {
           // Hiển thị thông báo lỗi chi tiết
@@ -121,6 +155,10 @@ export class AdminRapComponent implements OnInit {
             this.errorMessage = `Lỗi khi thêm admin rạp: ${error.message}`;
           }
           this.isLoading = false;
+          // Xóa thông báo lỗi sau 3 giây
+          setTimeout(() => {
+            this.errorMessage = '';
+          }, 3000);
         }
       });
   }
@@ -133,15 +171,32 @@ export class AdminRapComponent implements OnInit {
       // Lưu lại cinema hiện tại trước khi xóa
       const currentCinema = this.selectedCinema;
 
-      this.cinemaAdminService.removeCinemaAdmin(admin._id)
+      if (!currentCinema) {
+        this.errorMessage = 'Không tìm thấy thông tin rạp';
+        this.isLoading = false;
+        return;
+      }
+
+      this.cinemaAdminService.removeCinemaAdmin(currentCinema._id, admin._id)
         .subscribe({
           next: (response) => {
             this.successMessage = response.message || 'Đã xóa admin rạp thành công';
             this.isLoading = false;
+            // Reset và tải lại dữ liệu
+            this.adminCurrentPage = 0;
+            this.loadAdmins();
+            // Xóa thông báo thành công sau 3 giây
+            setTimeout(() => {
+              this.successMessage = '';
+            }, 3000);
           },
           error: (error) => {
             this.errorMessage = `Lỗi khi xóa admin rạp: ${error.message}`;
             this.isLoading = false;
+            // Xóa thông báo lỗi sau 3 giây
+            setTimeout(() => {
+              this.errorMessage = '';
+            }, 3000);
           }
         });
     }
@@ -155,6 +210,7 @@ export class AdminRapComponent implements OnInit {
 
   onAdminPageChange(page: number): void {
     this.adminCurrentPage = page;
+    this.loadAdmins();
   }
 
   // Tìm kiếm rạp
@@ -171,6 +227,7 @@ export class AdminRapComponent implements OnInit {
 
   onAdminRowsChange(): void {
     this.adminCurrentPage = 0;
+    this.loadAdmins();
   }
 
   // Quản lý form
@@ -198,8 +255,13 @@ export class AdminRapComponent implements OnInit {
     return Array.from({ length: this.cinemaTotalPages }, (_, i) => i);
   }
 
+  // Lấy danh sách số trang cho phân trang admin
   getAdminPageNumbers(): number[] {
-    return Array.from({ length: this.adminTotalPages }, (_, i) => i);
+    const pages: number[] = [];
+    for (let i = 0; i < this.adminTotalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   // Quay lại danh sách rạp

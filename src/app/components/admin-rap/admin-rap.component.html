@@ -88,11 +88,31 @@
           <div class="flex-1">
             <h3 class="font-semibold text-gray-800">{{ admin.user_name }}</h3>
             <p class="text-gray-600">{{ admin.email }}</p>
+            <p class="text-sm text-gray-500">{{ admin.role_name }}</p>
           </div>
           <button (click)="removeAdmin(admin)" class="text-red-500 hover:text-red-600 p-2 rounded-full hover:bg-red-50">
             <i class="fas fa-trash"></i>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Phân trang cho danh sách admin -->
+    <div class="mt-6 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <span class="text-gray-600">Hiển thị:</span>
+        <select [(ngModel)]="adminRows" (change)="onAdminRowsChange()" class="border rounded px-2 py-1">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+        </select>
+      </div>
+      <div class="flex space-x-2">
+        <button *ngFor="let page of getAdminPageNumbers()" (click)="onAdminPageChange(page)"
+          [class.bg-red-500]="adminCurrentPage === page" [class.text-white]="adminCurrentPage === page"
+          class="px-3 py-1 rounded hover:bg-red-100">
+          {{ page + 1 }}
+        </button>
       </div>
     </div>
 
