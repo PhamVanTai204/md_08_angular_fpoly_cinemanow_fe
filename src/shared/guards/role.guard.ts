@@ -61,7 +61,7 @@ export class RoleGuard implements CanActivate {
         return of(true);
       } else {
         console.log('System Admin attempting to access restricted route:', path);
-        this.router.navigate(['/rap']);
+        this.router.navigate(['/layout/rap']); // Updated to use /layout/rap
         return of(false);
       }
     }
@@ -71,11 +71,13 @@ export class RoleGuard implements CanActivate {
       // Check if this is a permitted route for Cinema Manager
       const path = route.routeConfig?.path || '';
 
-      // List of routes permitted for Cinema Manager as per updated requirements
+      // Updated list of routes permitted for Cinema Manager
+      // Now includes 'rap' as per new requirements
       const allowedManagerRoutes = [
         'theloaiphim', 'phim', 'lichchieu',
         'giaodich', 'thanhtoan', 'thongke',
-        'nhanvien', 'banner', 'voucher', 'combo'
+        'nhanvien', 'banner', 'voucher', 'combo',
+        'rap' // Added rap to allowed routes for Cinema Manager
       ];
 
       const isRoomRoute = path.startsWith('room');
@@ -85,7 +87,7 @@ export class RoleGuard implements CanActivate {
         return of(true);
       } else {
         console.log('Cinema Manager attempting to access restricted route:', path);
-        this.router.navigate(['/phim']);
+        this.router.navigate(['/layout/rap']); // Updated default page for Cinema Manager
         return of(false);
       }
     }
@@ -104,7 +106,7 @@ export class RoleGuard implements CanActivate {
         return of(true);
       } else {
         console.log('Staff attempting to access restricted route:', path);
-        this.router.navigate(['/giaodich']);
+        this.router.navigate(['/layout/giaodich']);
         return of(false);
       }
     }
@@ -130,21 +132,19 @@ export class RoleGuard implements CanActivate {
 
     switch (userRole) {
       case 4: // System Administrator
-        this.router.navigate(['/rap']);
+        this.router.navigate(['/layout/rap']);
         break;
-      case 2: // Cinema Admin
-        this.router.navigate(['/phim']);
+      case 2: // Cinema Admin - Updated to navigate to rap
+        this.router.navigate(['/layout/rap']);
         break;
       case 3: // Staff
-        this.router.navigate(['/giaodich']);
+        this.router.navigate(['/layout/giaodich']);
         break;
       case 1: // Regular user
-
       default:
         // Unknown role - redirect to login
         this.userService.logout();
         this.router.navigate(['/login']);
-
     }
   }
 }

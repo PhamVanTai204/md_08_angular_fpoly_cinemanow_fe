@@ -6,6 +6,8 @@ import { RoomDto } from '../../../shared/dtos/roomDto.dto';
 import { lastValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { SeatService } from '../../../shared/services/seat.service';
+import { SeatDto } from '../../../shared/dtos/seatDto.dto';
+import { UserService } from '../../../shared/services/user.service';
 
 @Component({
   selector: 'app-rap',
@@ -39,17 +41,56 @@ export class RapComponent implements OnInit {
   totalPages: number = 1;
   pagedRapList: CinemaDto[] = [];
 
+  // Role permissions
+  currentUser: any;
+  canAddCinema: boolean = false;
+  canEditCinema: boolean = false;
+  canDeleteCinema: boolean = false;
+  canViewCinemaDetails: boolean = false;
+  canAddRoom: boolean = true; // Both role 2 and 4 can add rooms
+
   constructor(
     private cinemasService: CinemasService,
     private roomService: RoomService,
     private seatService: SeatService,
-
+    private userService: UserService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
+    this.currentUser = this.userService.getCurrentUser();
+    this.setPermissions();
     this.getAllRaps();
   }
+
+  /**
+   * Set permissions based on user role
+   */
+  private setPermissions(): void {
+    if (!this.currentUser) return;
+
+    switch (this.currentUser.role) {
+      case 2: // Cinema Admin
+        this.canAddCinema = true;
+        this.canEditCinema = false; // Cannot edit cinema
+        this.canDeleteCinema = false; // Cannot delete cinema
+        this.canViewCinemaDetails = true; // Can view details
+        break;
+      case 4: // System Admin
+        this.canAddCinema = true;
+        this.canEditCinema = true; // Can edit cinema
+        this.canDeleteCinema = true; // Can delete cinema
+        this.canViewCinemaDetails = true; // Can view details
+        break;
+      default:
+        this.canAddCinema = false;
+        this.canEditCinema = false;
+        this.canDeleteCinema = false;
+        this.canViewCinemaDetails = false;
+        break;
+    }
+  }
+
   // Thêm biến để theo dõi trạng thái loading
   isDeletingRoom: boolean = false;
   deleteRoomError: string | null = null;
@@ -79,8 +120,6 @@ export class RapComponent implements OnInit {
       }
     }
   }
-
-
 
   getPageNumbers(): (number | string)[] {
     const totalPages = this.totalPages;
@@ -160,7 +199,6 @@ export class RapComponent implements OnInit {
     });
   }
 
-
   getAllRaps(): void {
     this.cinemasService.getCinemas().subscribe({
       next: (data) => {
@@ -173,6 +211,10 @@ export class RapComponent implements OnInit {
   }
 
   openAddModal(): void {
+    if (!this.canAddCinema) {
+      alert('Bạn không có quyền thêm rạp!');
+      return;
+    }
     this.isAddModalOpen = true;
     this.newRap = new CinemaDto();
   }
@@ -182,6 +224,11 @@ export class RapComponent implements OnInit {
   }
 
   saveNewRap(): void {
+    if (!this.canAddCinema) {
+      alert('Bạn không có quyền thêm rạp!');
+      return;
+    }
+
     // Gán cứng totalRoom = 0 khi thêm rạp mới
     this.newRap.totalRoom = 0;
 
@@ -196,6 +243,11 @@ export class RapComponent implements OnInit {
   }
 
   async openEditModal(rap: CinemaDto, index: number): Promise<void> {
+    if (!this.canViewCinemaDetails) {
+      alert('Bạn không có quyền xem chi tiết rạp!');
+      return;
+    }
+
     const actualIndex = (this.currentPage - 1) * this.pageSize + index;
     this.editRapIndex = actualIndex;
     this.editRapData = rap.clone();
@@ -217,6 +269,11 @@ export class RapComponent implements OnInit {
   }
 
   saveEditRap(): void {
+    if (!this.canEditCinema) {
+      alert('Bạn không có quyền chỉnh sửa rạp!');
+      return;
+    }
+
     // Prepare the data in the format the service expects
     const editData = {
       cinema_name: this.editRapData.cinemaName,
@@ -233,6 +290,11 @@ export class RapComponent implements OnInit {
   }
 
   deleteRap(rap: CinemaDto): void {
+    if (!this.canDeleteCinema) {
+      alert('Bạn không có quyền xóa rạp!');
+      return;
+    }
+
     const confirmDelete = confirm(`Bạn có chắc muốn xóa rạp: ${rap.cinemaName}?`);
     if (!confirmDelete) return;
 
@@ -248,8 +310,6 @@ export class RapComponent implements OnInit {
     // Phương thức xử lý chỉnh sửa phòng
     console.log('Editing room at index:', index);
   }
-
-
 
   getRoom(id: string): void {
     this.roomService.getByCinemaId(id)
@@ -268,5 +328,4 @@ export class RapComponent implements OnInit {
   showRomDialog(idRoom: string): void {
     this.router.navigate(['/layout', 'room', idRoom, '1', '1']);
   }
-
 }

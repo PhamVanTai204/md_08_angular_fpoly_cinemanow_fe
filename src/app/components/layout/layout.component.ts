@@ -27,25 +27,25 @@ export class LayoutComponent implements OnInit, OnDestroy {
   userCinema: string | null = null;
   private subscriptions: Subscription[] = [];
 
-  // Updated menu lists based on specific role requirements from screenshot
+  // Updated menu lists based on specific role requirements
   contentMenuItems: MenuItem[] = [
     { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2] },
-    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2], primary: true }, // Primary for Cinema Managers
-    { path: 'rap', title: 'Rạp', icon: 'store', roles: [4], primary: true }, // Primary for System Admin
-    { path: 'adminrap', title: 'Quản lý Admin Rạp', icon: 'manage_accounts', roles: [4] }, // Ngay sau Rạp
+    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2] },
+    { path: 'rap', title: 'Rạp', icon: 'store', roles: [2, 4], primary: true }, // Updated: Both role 2 and 4 can access, primary for both
+    { path: 'adminrap', title: 'Quản lý Admin Rạp', icon: 'manage_accounts', roles: [4] },
     { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] },
     { path: 'danhgia', title: 'Quản lý bình luận', icon: 'reviews', roles: [4] },
   ];
 
   businessMenuItems: MenuItem[] = [
-    { path: 'giaodich', title: 'Đặt vé', icon: 'receipt', roles: [2, 3], primary: true }, // Primary for Staff
+    { path: 'giaodich', title: 'Đặt vé', icon: 'receipt', roles: [2, 3], primary: true }, // Primary for Staff only
     { path: 'thanhtoan', title: 'Thanh toán', icon: 'credit_card', roles: [2, 3] },
     { path: 'thongke', title: 'Thống kê', icon: 'bar_chart', roles: [2] }
   ];
 
   userMenuItems: MenuItem[] = [
     { path: 'nhanvien', title: 'Nhân viên', icon: 'badge', roles: [2] },
-    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [] }
+    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [4] } // Updated: Only role 4 can access
   ];
 
   marketingMenuItems: MenuItem[] = [
@@ -154,8 +154,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
         break;
 
       case 2: // Cinema Manager
-        // Cinema Managers should start with movie management
-        this.router.navigate(['/layout/phim']);
+        // Updated: Cinema Managers should now start with cinema management instead of movies
+        this.router.navigate(['/layout/rap']);
         break;
 
       default:
