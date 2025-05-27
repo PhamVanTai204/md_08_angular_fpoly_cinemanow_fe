@@ -43,6 +43,37 @@ export class PhanQuyenService {
     );
   }
 
+  // Lấy danh sách người dùng theo location (mới thêm)
+  getUsersByLocation(location: string, role?: number, params?: PaginationParams): Observable<any> {
+    let httpParams = new HttpParams().set('location', location);
+    
+    if (role) {
+      httpParams = httpParams.set('role', role.toString());
+    }
+    
+    if (params) {
+      httpParams = httpParams.set('page', params.page.toString());
+      httpParams = httpParams.set('limit', params.limit.toString());
+    }
+
+    return this.http.get<any>(
+      `${this.baseUrl}/getByLocation`,
+      { 
+        headers: this.getHeaders(),
+        params: httpParams
+      }
+    );
+  }
+
+  // Tạo nhân viên cho rạp cụ thể (mới thêm)
+  createStaffByLocation(userData: UserCreateUpdate): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(
+      `${this.baseUrl}/registerWebByLocation`,
+      userData,
+      { headers: this.getHeaders() }
+    );
+  }
+
   // Lấy tất cả người dùng
   getAllUsers(): Observable<User[]> {
     return this.http.get<ApiResponse>(`${this.baseUrl}/getAll`, { headers: this.getHeaders() })
@@ -94,7 +125,11 @@ export class PhanQuyenService {
 
   // Thêm người dùng mới
   createUser(userData: UserCreateUpdate): Observable<ApiResponse> {
-    // Sử dụng API đăng ký người dùng thay vì API insert
+    // Nếu có location và role = 3 (staff), sử dụng API registerWebByLocation
+    if (userData.location && userData.role === 3) {
+      return this.createStaffByLocation(userData);
+    }
+    // Ngược lại sử dụng API đăng ký thông thường
     return this.registerUser(userData);
   }
 
@@ -104,7 +139,7 @@ export class PhanQuyenService {
     console.log('Update data:', userData);
 
     return this.http.patch<ApiResponse>(
-      `${this.baseUrl}/update-profile/${userId}`, // Correct endpoint
+      `${this.baseUrl}/update-profile/${userId}`,
       userData,
       { headers: this.getHeaders() }
     ).pipe(
@@ -115,6 +150,7 @@ export class PhanQuyenService {
       })
     );
   }
+
   // Cập nhật trạng thái người dùng (khóa/mở khóa)
   updateUserStatus(userId: string, isActive: boolean): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(
@@ -135,7 +171,6 @@ export class PhanQuyenService {
   // Các hàm tiện ích - updated to match the correct role IDs
   getRoleName(roleId: number): string {
     switch (Number(roleId)) {
-      
       case PhanQuyenService.ROLE_CINEMA_ADMIN: return 'Quản trị rạp';
       case PhanQuyenService.ROLE_STAFF: return 'Nhân viên rạp';
       case PhanQuyenService.ROLE_SYSTEM_ADMIN: return 'Quản trị hệ thống';

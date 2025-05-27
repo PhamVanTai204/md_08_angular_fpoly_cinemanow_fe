@@ -17,18 +17,11 @@ export class NhanVienComponent implements OnInit, OnDestroy {
   // ViewChild để tham chiếu đến form
   @ViewChild('userForm') userForm!: NgForm;
 
-  // Danh sách người dùng
-  adminUsers: User[] = [];  // Danh sách admin (role 2)
-  staffUsers: User[] = [];  // Danh sách nhân viên (role 3)
+  // Danh sách người dùng - CHỈ KHAI BÁO 1 LẦN
+  staffUsers: User[] = [];  // Danh sách nhân viên hiển thị (sau phân trang)
+  allStaffUsers: User[] = [];  // Toàn bộ nhân viên cùng location
 
-  // Thông tin phân trang
-  adminPagination = {
-    currentPage: 1,
-    totalPages: 1,
-    totalUsers: 0,
-    limit: 5
-  };
-
+  // Thông tin phân trang chỉ cho nhân viên
   staffPagination = {
     currentPage: 1,
     totalPages: 1,
@@ -51,10 +44,7 @@ export class NhanVienComponent implements OnInit, OnDestroy {
 
   // Thông tin người dùng đăng nhập
   currentUser: User | null = null;
-  isAdmin: boolean = false;  // Xác định người dùng hiện tại có phải admin không
-
-  // Toggle view state
-  showAdminView: boolean = true; // Default to showing admin view
+  isAdmin: boolean = false;
 
   // Form properties
   showForm: boolean = false;
@@ -66,55 +56,46 @@ export class NhanVienComponent implements OnInit, OnDestroy {
     user_name: '',
     email: '',
     url_image: 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc',
-    role: 3,  // Mặc định là nhân viên
-    password: ''
+    role: 3,  // Cố định là nhân viên
+    password: '',
+    location: ''
   };
 
   private subscriptions: Subscription[] = [];
 
-  // Update constructor to include HttpClient
   constructor(
     private phanQuyenService: PhanQuyenService,
     private router: Router,
-    private http: HttpClient // Add this line
+    private http: HttpClient
   ) { }
 
   ngOnInit(): void {
-    // Khi component khởi tạo, kiểm tra thông tin người dùng hiện tại
     this.checkCurrentUser();
   }
 
   ngOnDestroy(): void {
-    // Hủy các subscription khi component bị hủy để tránh memory leak
     this.subscriptions.forEach(sub => sub.unsubscribe());
-  }
-
-  // Toggle between admin and staff view
-  toggleView(): void {
-    this.showAdminView = !this.showAdminView;
   }
 
   // Kiểm tra thông tin người dùng đăng nhập
   checkCurrentUser(): void {
     this.isLoading = true;
 
-    // Kiểm tra localStorage trước để tránh gọi API không cần thiết
     const savedUser = this.phanQuyenService.getSavedCurrentUser();
     if (savedUser) {
       this.currentUser = savedUser;
       this.isAdmin = this.phanQuyenService.isUserAdmin(savedUser);
 
       if (this.isAdmin) {
-        this.loadUsers();  // Nếu là admin, tải danh sách người dùng
+        this.loadStaffUsers();
       } else {
-        this.handleNonAdminAccess();  // Nếu không phải admin, xử lý truy cập trái phép
+        this.handleNonAdminAccess();
       }
 
       this.isLoading = false;
       return;
     }
 
-    // Nếu không có trong localStorage, gọi API
     const sub = this.phanQuyenService.getCurrentUser().subscribe({
       next: (user) => {
         if (user) {
@@ -122,10 +103,12 @@ export class NhanVienComponent implements OnInit, OnDestroy {
           this.isAdmin = this.phanQuyenService.isUserAdmin(user);
           this.phanQuyenService.saveCurrentUser(user);
 
+          console.log('Current user cinema:', user.cinema_name);
+
           if (this.isAdmin) {
-            this.loadUsers();  // Nếu là admin, tải danh sách người dùng
+            this.loadStaffUsers();
           } else {
-            this.handleNonAdminAccess();  // Nếu không phải admin, xử lý truy cập trái phép
+            this.handleNonAdminAccess();
           }
         } else {
           this.errorMessage = 'Không thể xác thực người dùng';
@@ -152,69 +135,45 @@ export class NhanVienComponent implements OnInit, OnDestroy {
   handleNonAdminAccess(): void {
     this.errorMessage = 'Bạn không có quyền truy cập trang này (chỉ admin mới được phép)';
     setTimeout(() => {
-      this.router.navigate(['/']);  // Chuyển hướng về trang chủ
+      this.router.navigate(['/']);
     }, 2000);
   }
 
-  // Load danh sách Admin và Nhân viên
-  loadUsers(): void {
+  // Load danh sách Nhân viên (role 3) và filter theo cinema_name
+  loadStaffUsers(): void {
     this.isLoading = true;
-    this.loadAdmins();  // Đầu tiên load danh sách admin
-  }
+    
+    if (!this.currentUser?.cinema_name) {
+      this.errorMessage = 'Không thể xác định rạp của bạn';
+      this.isLoading = false;
+      return;
+    }
 
-  // Load danh sách Admin (role 2)
-  loadAdmins(): void {
     const paginationParams: PaginationParams = {
-      page: this.adminPagination.currentPage,
-      limit: this.adminPagination.limit
-    };
-
-    const sub = this.phanQuyenService.getUsersByRole(2, paginationParams)
-      .subscribe({
-        next: (response) => {
-          if (response.code === 200) {
-            this.adminUsers = response.data.users;
-
-            // Cập nhật thông tin phân trang
-            this.adminPagination.totalUsers = response.data.totalUsers;
-            this.adminPagination.totalPages = response.data.totalPages;
-
-            console.log('Loaded admins:', this.adminUsers.length);
-            this.loadStaff();  // Sau khi load xong admin thì load nhân viên
-          } else {
-            this.errorMessage = 'Không thể tải dữ liệu quản trị viên';
-            this.isLoading = false;
-          }
-        },
-        error: (error) => {
-          console.error('Error loading admins:', error);
-          this.errorMessage = 'Lỗi kết nối máy chủ khi tải danh sách quản trị viên';
-          this.isLoading = false;
-        }
-      });
-
-    this.subscriptions.push(sub);
-  }
-
-  // Load danh sách Nhân viên (role 3)
-  loadStaff(): void {
-    const paginationParams: PaginationParams = {
-      page: this.staffPagination.currentPage,
-      limit: this.staffPagination.limit
+      page: 1,
+      limit: 1000
     };
 
     const sub = this.phanQuyenService.getUsersByRole(3, paginationParams)
-      .pipe(finalize(() => this.isLoading = false))  // Kết thúc loading state sau khi load xong nhân viên
+      .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: (response) => {
           if (response.code === 200) {
-            this.staffUsers = response.data.users;
+            const allStaff = response.data.users || [];
+            console.log('All staff from API:', allStaff);
+            console.log('Current user cinema_name:', this.currentUser?.cinema_name);
+            
+            this.allStaffUsers = allStaff.filter(user => {
+              console.log('Checking user location:', user.location, 'vs cinema_name:', this.currentUser?.cinema_name);
+              return user.location === this.currentUser?.cinema_name;
+            });
 
-            // Cập nhật thông tin phân trang
-            this.staffPagination.totalUsers = response.data.totalUsers;
-            this.staffPagination.totalPages = response.data.totalPages;
+            this.staffPagination.totalUsers = this.allStaffUsers.length;
+            this.staffPagination.totalPages = Math.ceil(this.allStaffUsers.length / this.staffPagination.limit);
 
-            console.log('Loaded staff:', this.staffUsers.length);
+            this.applyClientSidePagination();
+
+            console.log('Loaded staff for cinema:', this.currentUser?.cinema_name, 'Total:', this.allStaffUsers.length);
           } else {
             this.errorMessage = 'Không thể tải dữ liệu nhân viên';
           }
@@ -228,24 +187,21 @@ export class NhanVienComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  // Phân trang admin - chuyển đến trang chỉ định
-  goToAdminPage(page: number): void {
-    if (page < 1 || page > this.adminPagination.totalPages) {
-      return;
-    }
-
-    this.adminPagination.currentPage = page;
-    this.loadAdmins();
+  // Áp dụng phân trang client-side
+  applyClientSidePagination(): void {
+    const startIndex = (this.staffPagination.currentPage - 1) * this.staffPagination.limit;
+    const endIndex = startIndex + this.staffPagination.limit;
+    this.staffUsers = this.allStaffUsers.slice(startIndex, endIndex);
   }
 
-  // Phân trang nhân viên - chuyển đến trang chỉ định
+  // Phân trang nhân viên
   goToStaffPage(page: number): void {
     if (page < 1 || page > this.staffPagination.totalPages) {
       return;
     }
 
     this.staffPagination.currentPage = page;
-    this.loadStaff();
+    this.applyClientSidePagination();
   }
 
   // Tạo mảng trang cho phân trang
@@ -255,7 +211,6 @@ export class NhanVienComponent implements OnInit, OnDestroy {
 
   // Khóa/mở khóa tài khoản
   toggleUserStatus(user: User): void {
-    // Kiểm tra quyền admin trước khi thực hiện hành động
     if (!this.isAdmin) {
       this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
       return;
@@ -269,11 +224,10 @@ export class NhanVienComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.code === 200) {
-            user.isActive = isActive;  // Cập nhật UI ngay lập tức
+            user.isActive = isActive;
             const message = isActive ? 'Đã mở khóa tài khoản' : 'Đã khóa tài khoản';
             this.successMessage = `${message} cho ${user.user_name}`;
 
-            // Tự động ẩn thông báo thành công sau 3 giây
             setTimeout(() => {
               this.successMessage = '';
             }, 3000);
@@ -297,27 +251,29 @@ export class NhanVienComponent implements OnInit, OnDestroy {
 
   // Mở form thêm người dùng mới
   addUser(): void {
-    // Kiểm tra quyền admin trước khi mở form thêm người dùng
     if (!this.isAdmin) {
       this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
       return;
     }
 
-    // Reset form errors
+    if (!this.currentUser?.cinema_name) {
+      this.errorMessage = 'Không thể xác định rạp của bạn';
+      return;
+    }
+
     this.resetFormErrors();
 
-    // Thiết lập form cho thêm mới
     this.editMode = false;
     this.selectedUser = null;
-    // Đặt giá trị mặc định cho người dùng mới
     this.newUser = {
       user_name: '',
       email: '',
       url_image: 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc',
-      role: 3,  // Mặc định là nhân viên
-      password: ''
+      role: 3,
+      password: '',
+      location: this.currentUser.cinema_name
     };
-    this.showForm = true;  // Hiển thị form
+    this.showForm = true;
   }
 
   // Đóng form
@@ -340,45 +296,39 @@ export class NhanVienComponent implements OnInit, OnDestroy {
 
   // Mở form chỉnh sửa người dùng
   editUser(user: User): void {
-    // Kiểm tra quyền admin trước khi mở form chỉnh sửa
     if (!this.isAdmin) {
       this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
       return;
     }
 
-    // Reset form errors
     this.resetFormErrors();
 
-    // Thiết lập form cho chỉnh sửa
     this.editMode = true;
     this.selectedUser = user;
-    // Điền thông tin người dùng hiện tại vào form
     this.newUser = {
       user_name: user.user_name,
       email: user.email,
       url_image: user.url_image || 'https://play-lh.googleusercontent.com/P0QkMWnVe00FSXsSc2OzkHKqGB9JTMm4sur4XRkBBkFEtO7MEQgoxO6s92LHnJcvdgc',
-      role: Number(user.role),
-      password: ''  // Để trống khi chỉnh sửa
+      role: 3,
+      password: '',
+      location: this.currentUser?.cinema_name || ''
     };
-    this.showForm = true;  // Hiển thị form
+    this.showForm = true;
   }
 
   // Xóa người dùng
   deleteUser(user: User): void {
-    // Kiểm tra quyền admin trước khi thực hiện hành động
     if (!this.isAdmin) {
       this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
       return;
     }
 
-    // Không cho phép xóa admin hiện tại
     if (this.currentUser && user._id === this.currentUser._id) {
       this.errorMessage = 'Không thể xóa tài khoản đang đăng nhập';
       return;
     }
 
-    // Xác nhận trước khi xóa
-    if (confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.user_name}?`)) {
+    if (confirm(`Bạn có chắc chắn muốn xóa nhân viên ${user.user_name}?`)) {
       this.isLoading = true;
 
       const sub = this.phanQuyenService.deleteUser(user._id)
@@ -386,10 +336,9 @@ export class NhanVienComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (response) => {
             if (response.code === 200) {
-              this.successMessage = `Đã xóa người dùng ${user.user_name}`;
-              this.loadUsers();  // Tải lại danh sách để cập nhật UI
+              this.successMessage = `Đã xóa nhân viên ${user.user_name}`;
+              this.loadStaffUsers();
 
-              // Tự động ẩn thông báo thành công sau 3 giây
               setTimeout(() => {
                 this.successMessage = '';
               }, 3000);
@@ -419,7 +368,6 @@ export class NhanVienComponent implements OnInit, OnDestroy {
     let isValid = true;
     this.resetFormErrors();
 
-    // Kiểm tra tên người dùng
     if (!this.newUser.user_name) {
       this.formErrors.user_name = 'Tên người dùng không được để trống';
       isValid = false;
@@ -428,7 +376,6 @@ export class NhanVienComponent implements OnInit, OnDestroy {
       isValid = false;
     }
 
-    // Kiểm tra email
     if (!this.newUser.email) {
       this.formErrors.email = 'Email không được để trống';
       isValid = false;
@@ -440,7 +387,6 @@ export class NhanVienComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Kiểm tra mật khẩu (chỉ bắt buộc khi thêm mới)
     if (!this.editMode) {
       if (!this.newUser.password) {
         this.formErrors.password = 'Mật khẩu không được để trống';
@@ -450,12 +396,10 @@ export class NhanVienComponent implements OnInit, OnDestroy {
         isValid = false;
       }
     } else if (this.newUser.password && this.newUser.password.length < 6) {
-      // Nếu đang chỉnh sửa và có nhập mật khẩu, kiểm tra độ dài
       this.formErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
       isValid = false;
     }
 
-    // Kiểm tra URL hình ảnh (tùy chọn)
     if (this.newUser.url_image && !this.newUser.url_image.startsWith('http')) {
       this.formErrors.url_image = 'URL hình ảnh phải bắt đầu bằng http:// hoặc https://';
       isValid = false;
@@ -465,118 +409,108 @@ export class NhanVienComponent implements OnInit, OnDestroy {
   }
 
   // Xử lý form submit
-onSubmitForm(): void {
-  // Kiểm tra quyền admin trước khi thực hiện hành động
-  if (!this.isAdmin) {
-    this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
-    return;
-  }
-
-  // Kiểm tra dữ liệu hợp lệ
-  if (!this.validateForm()) {
-    return;
-  }
-
-  this.isLoading = true;
-
-  if (this.editMode && this.selectedUser) {
-    // Chỉnh sửa người dùng hiện có
-    const userData: any = {
-      user_name: this.newUser.user_name,
-      email: this.newUser.email,
-      url_image: this.newUser.url_image,
-      role: this.newUser.role
-    };
-
-    // Chỉ gửi password nếu không trống
-    if (this.newUser.password && this.newUser.password.trim() !== '') {
-      userData.password = this.newUser.password;
+  onSubmitForm(): void {
+    if (!this.isAdmin) {
+      this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
+      return;
     }
 
-    console.log('Updating user with ID:', this.selectedUser._id);
-    console.log('Update data:', userData);
+    if (!this.validateForm()) {
+      return;
+    }
 
-    // Sử dụng PATCH request với đúng endpoint
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    });
+    this.isLoading = true;
 
-    this.http.patch(
-      `http://127.0.0.1:3000/users/update-profile/${this.selectedUser._id}`,
-      userData, 
-      { headers: headers }
-    ).subscribe({
-      next: (response: any) => {
-        this.isLoading = false;
-        this.showForm = false;
-        
-        if (response.code === 200) {
-          this.successMessage = `Đã cập nhật thông tin cho ${this.newUser.user_name}`;
-          this.loadUsers();  // Tải lại danh sách để cập nhật UI
+    if (this.editMode && this.selectedUser) {
+      // Chỉnh sửa nhân viên
+      const userData: any = {
+        user_name: this.newUser.user_name,
+        email: this.newUser.email,
+        url_image: this.newUser.url_image,
+        role: 3
+      };
 
-          // Tự động ẩn thông báo thành công sau 3 giây
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        } else {
-          this.errorMessage = response.error || 'Có lỗi xảy ra khi cập nhật';
-        }
-      },
-      error: (error) => {
-        console.error('Error updating user:', error);
-        this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || JSON.stringify(error));
-        this.isLoading = false;
-        this.showForm = false;
+      if (this.newUser.password && this.newUser.password.trim() !== '') {
+        userData.password = this.newUser.password;
       }
-    });
-  } else {
-    // Thêm người dùng mới - không thay đổi
-    const newUserData = {
-      user_name: this.newUser.user_name,
-      email: this.newUser.email,
-      password: this.newUser.password,
-      url_image: this.newUser.url_image,
-      role: this.newUser.role
-    };
 
-    const sub = this.phanQuyenService.createUser(newUserData)
-      .pipe(finalize(() => {
-        this.isLoading = false;
-        this.showForm = false;
-      }))
-      .subscribe({
-        next: (response) => {
-          if (response && (response.code === 200 || response.data)) {
-            this.successMessage = `Đã thêm ${this.newUser.user_name} vào hệ thống`;
-            this.loadUsers();  // Tải lại danh sách để cập nhật UI
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      });
 
-            // Tự động ẩn thông báo thành công sau 3 giây
+      this.http.patch(
+        `http://127.0.0.1:3000/users/update-profile/${this.selectedUser._id}`,
+        userData, 
+        { headers: headers }
+      ).subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          this.showForm = false;
+          
+          if (response.code === 200) {
+            this.successMessage = `Đã cập nhật thông tin cho ${this.newUser.user_name}`;
+            this.loadStaffUsers();
+
             setTimeout(() => {
               this.successMessage = '';
             }, 3000);
           } else {
-            this.errorMessage = (response && response.error)
-              ? response.error
-              : 'Có lỗi xảy ra khi thêm mới';
+            this.errorMessage = response.error || 'Có lỗi xảy ra khi cập nhật';
+          }
+        },
+        error: (error) => {
+          console.error('Error updating user:', error);
+          this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || JSON.stringify(error));
+          this.isLoading = false;
+          this.showForm = false;
+        }
+      });
+    } else {
+      // Thêm nhân viên mới
+      const newUserData = {
+        user_name: this.newUser.user_name,
+        email: this.newUser.email,
+        password: this.newUser.password,
+        url_image: this.newUser.url_image,
+        role: 3,
+        location: this.currentUser?.cinema_name
+      };
 
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      });
+
+      this.http.post('http://127.0.0.1:3000/users/registerWebByLocation', newUserData, { headers: headers })
+        .pipe(finalize(() => {
+          this.isLoading = false;
+          this.showForm = false;
+        }))
+        .subscribe({
+          next: (response: any) => {
+            if (response && (response.code === 200 || response.data)) {
+              this.successMessage = `Đã thêm nhân viên ${this.newUser.user_name} vào rạp ${this.currentUser?.cinema_name}`;
+              this.loadStaffUsers();
+
+              setTimeout(() => {
+                this.successMessage = '';
+              }, 3000);
+            } else {
+              this.errorMessage = (response && response.error) ? response.error : 'Có lỗi xảy ra khi thêm mới';
+              setTimeout(() => {
+                this.errorMessage = '';
+              }, 3000);
+            }
+          },
+          error: (error) => {
+            console.error('Error adding staff:', error);
+            this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || error);
             setTimeout(() => {
               this.errorMessage = '';
             }, 3000);
           }
-        },
-        error: (error) => {
-          console.error('Error adding user:', error);
-          this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || error);
-
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-          }
-      });
-
-    this.subscriptions.push(sub);
+        });
+    }
   }
-}
-
 }

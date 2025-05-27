@@ -1,17 +1,13 @@
-// login.module.ts
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoginRoutingModule } from './login-routing.module';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [],
+  declarations: [], // Để trống vì LoginComponent là standalone
   imports: [
     CommonModule,
-    LoginRoutingModule,
-    FormsModule,
-    HttpClientModule
+    LoginRoutingModule
+    // Không cần FormsModule, HttpClientModule vì LoginComponent tự import
   ]
 })
 export class LoginModule { }
