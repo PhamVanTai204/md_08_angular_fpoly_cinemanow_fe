@@ -1,10 +1,15 @@
 <div>
-  <h1 class="text-3xl font-bold mb-6 text-gray-800">DANH SÁCH RẠP</h1>
+  <!-- Title thay đổi theo role -->
+  <h1 class="text-3xl font-bold mb-6 text-gray-800">
+    <span *ngIf="currentUser.role === 4">DANH SÁCH RẠP</span>
+    <span *ngIf="currentUser.role === 2">DANH SÁCH PHÒNG - {{ userCinemaName || 'Rạp của bạn' }}</span>
+  </h1>
 
   <!-- Search section -->
   <div class="mb-6">
     <div class="relative w-full md:w-64">
-      <input type="text" placeholder="Tìm kiếm rạp"
+      <input type="text" 
+        [placeholder]="currentUser.role === 4 ? 'Tìm kiếm rạp' : 'Tìm kiếm phòng'"
         class="w-full border border-gray-300 rounded-lg py-2 px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700" />
       <button
         class="absolute right-1 top-1 bottom-1 px-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
@@ -13,8 +18,8 @@
     </div>
   </div>
 
-  <!-- Card grid for cinemas -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <!-- Card grid for cinemas (System Admin only) -->
+  <div *ngIf="currentUser.role === 4" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div *ngFor="let rap of rapList; let i = index"
       class="bg-white rounded-lg shadow hover:shadow-lg transition-all border-l-4 border-red-500 card-hover">
       <div class="p-4">
@@ -43,14 +48,63 @@
     </div>
   </div>
 
-  <!-- Hiển thị thông báo khi không có rạp nào -->
-  <div *ngIf="rapList.length === 0"
+  <!-- Card grid for rooms (Cinema Admin only) -->
+  <div *ngIf="currentUser.role === 2" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let room of userRooms; let i = index"
+      class="bg-white rounded-lg shadow hover:shadow-lg transition-all border-l-4 border-green-500 card-hover">
+      <div class="p-4">
+        <div class="flex justify-between items-start mb-3">
+          <h2 class="text-xl font-semibold text-gray-800">{{ room.room_name }}</h2>
+          <div class="flex space-x-2">
+            <button (click)="showRomDialog(room.id)"
+              class="text-blue-500 hover:text-blue-600 p-1 rounded transition-all" title="Chỉnh sửa ghế">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button (click)="deleteUserRoom(room)" 
+              class="text-red-500 hover:text-red-600 p-1 rounded transition-all" title="Xóa phòng">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-2 mb-3">
+          <div class="flex items-start">
+            <i class="fas fa-tv text-gray-500 mt-1 mr-2"></i>
+            <p class="text-gray-600">Loại: {{ room.room_style }}</p>
+          </div>
+          <div class="flex items-start">
+            <i class="fas fa-chair text-gray-500 mt-1 mr-2"></i>
+            <p class="text-gray-600">{{ room.total_seat }} ghế</p>
+          </div>
+          <div class="flex items-start">
+            <i class="fas fa-toggle-on text-gray-500 mt-1 mr-2"></i>
+            <p class="text-gray-600">
+              <span [ngClass]="{'text-green-600': room.status === 'active', 'text-red-600': room.status !== 'active'}">
+                {{ room.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hiển thị thông báo khi không có dữ liệu -->
+  <div *ngIf="(currentUser.role === 4 && rapList.length === 0) || (currentUser.role === 2 && userRooms.length === 0)"
     class="flex flex-col items-center justify-center py-12 bg-white rounded-lg shadow-sm mt-6 empty-state">
-    <i class="fas fa-theater-masks text-5xl text-gray-300 mb-4"></i>
-    <p class="text-gray-500 text-xl mb-4">Chưa có rạp nào được thêm</p>
+    <i [ngClass]="currentUser.role === 4 ? 'fas fa-theater-masks' : 'fas fa-couch'" 
+       class="text-5xl text-gray-300 mb-4"></i>
+    <p class="text-gray-500 text-xl mb-4">
+      <span *ngIf="currentUser.role === 4">Chưa có rạp nào được thêm</span>
+      <span *ngIf="currentUser.role === 2">Chưa có phòng nào được thêm</span>
+    </p>
     <button *ngIf="canAddCinema" (click)="openAddModal()"
       class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-md">
       <i class="fas fa-plus mr-2"></i> Thêm rạp mới
+    </button>
+    <button *ngIf="canAddRoom" (click)="openAddRoomModal()"
+      class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors shadow-md">
+      <i class="fas fa-plus mr-2"></i> Thêm phòng mới
     </button>
   </div>
 
@@ -63,9 +117,9 @@
 
   <!-- Nút Thêm phòng (floating button) - Only show for role 2 -->
   <button *ngIf="canAddRoom" (click)="openAddRoomModal()"
-    class="fixed bottom-20 right-8 bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition-transform hover:scale-110"
+    class="fixed bottom-8 right-8 bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition-transform hover:scale-110"
     title="Thêm phòng">
-    <i class="fas fa-door-open"></i>
+    <i class="fas fa-plus"></i>
   </button>
 
   <!-- ========== DIALOG THÊM RẠP MỚI ========== -->

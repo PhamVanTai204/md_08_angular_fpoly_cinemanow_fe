@@ -42,6 +42,7 @@ export class RapComponent implements OnInit {
   currentUser: any;
   userCinemaId: string = ''; // ID rạp mà user đang làm việc
   userCinemaName: string = ''; // Tên rạp mà user đang làm việc
+  userRooms: RoomDto[] = []; // Danh sách phòng của Cinema Admin
   canAddCinema: boolean = false;
   canEditCinema: boolean = false;
   canDeleteCinema: boolean = false;
@@ -59,11 +60,16 @@ export class RapComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.userService.getCurrentUser();
     this.setPermissions();
-    this.getAllRaps();
     
-    // Nếu là Cinema Admin (role 2), tự động lấy rạp của họ để thêm phòng
+    // Nếu là System Admin (role 4), hiển thị tất cả rạp
+    if (this.currentUser && this.currentUser.role === 4) {
+      this.getAllRaps();
+    }
+    
+    // Nếu là Cinema Admin (role 2), chỉ hiển thị phòng của rạp mình
     if (this.currentUser && this.currentUser.role === 2) {
       this.getUserCinema();
+      this.loadUserRooms();
     }
   }
 
@@ -94,6 +100,48 @@ export class RapComponent implements OnInit {
         console.log('Tên rạp của user:', this.userCinemaName);
       }
     }
+  }
+
+  /**
+   * Load danh sách phòng của Cinema Admin
+   */
+  private loadUserRooms(): void {
+    if (this.userCinemaId) {
+      this.roomService.getByCinemaId(this.userCinemaId).subscribe({
+        next: (rooms: RoomDto[]) => {
+          this.userRooms = rooms;
+          console.log('Danh sách phòng của Cinema Admin:', this.userRooms);
+        },
+        error: (err) => {
+          console.error('Lỗi khi load phòng của Cinema Admin:', err);
+          this.userRooms = [];
+        }
+      });
+    }
+  }
+
+  /**
+   * Xóa phòng (chỉ dành cho Cinema Admin)
+   */
+  deleteUserRoom(room: RoomDto): void {
+    if (this.currentUser.role !== 2) {
+      alert('Bạn không có quyền xóa phòng!');
+      return;
+    }
+
+    const confirmDelete = confirm(`Bạn có chắc muốn xóa phòng: ${room.room_name}?`);
+    if (!confirmDelete) return;
+
+    this.roomService.deleteRoom(room.id).subscribe({
+      next: () => {
+        alert('Đã xóa phòng thành công!');
+        this.loadUserRooms(); // Reload danh sách phòng
+      },
+      error: (err) => {
+        console.error('Lỗi khi xóa phòng:', err);
+        alert('Có lỗi xảy ra khi xóa phòng!');
+      }
+    });
   }
   /**
    * Set permissions based on user role
@@ -274,6 +322,7 @@ export class RapComponent implements OnInit {
             console.log('Ghế đã được tạo:', res);
             alert(`Đã thêm phòng "${this.room_name}" thành công vào rạp ${this.userCinemaName}!`);
             this.isAddRoomModalOpen = false;
+            
             // Reset form fields
             this.room_name = '';
             this.room_style = '';
@@ -281,6 +330,11 @@ export class RapComponent implements OnInit {
             this.cols = 0;
             this.price_seat = 0;
             this.selectedCinemaId = '';
+            
+            // Reload danh sách phòng cho Cinema Admin
+            if (this.currentUser.role === 2) {
+              this.loadUserRooms();
+            }
           },
           error: (err) => {
             console.error('Lỗi khi tạo ghế:', err);
