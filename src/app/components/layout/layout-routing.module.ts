@@ -80,7 +80,7 @@ const routes: Routes = [
         loadChildren: () => import('../nguoi-dung/nguoi-dung.module').then(m => m.NguoiDungModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [4] // Only System Admin can access user management
+          allowedRoles: [] // Only System Admin can access user management
         }
       },
       {

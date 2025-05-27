@@ -45,7 +45,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   userMenuItems: MenuItem[] = [
     { path: 'nhanvien', title: 'Nhân viên', icon: 'badge', roles: [2] },
-    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [4] } // Updated: Only role 4 can access
+    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [] } // Updated: Only role 4 can access
   ];
 
   marketingMenuItems: MenuItem[] = [
