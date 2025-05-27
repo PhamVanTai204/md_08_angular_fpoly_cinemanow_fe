@@ -2,59 +2,33 @@
 <div class="dialog-overlay">
     <div class="dialog-container">
         <div class="dialog-header">
-            <h2 class="dialog-title">DANH SÁCH RẠP</h2>
+            <h2 class="dialog-title">LỊCH CHIẾU THEO NGÀY</h2>
             <button class="close-button" (click)="closeModal()">&times;</button>
         </div>
 
         <div class="dialog-content">
-            <!-- Search section -->
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <input type="text" placeholder="Tìm kiếm rạp" class="search-input" />
-                </div>
+            <!-- Empty state -->
+            <div *ngIf="showtimesData.length === 0 && !isLoading" class="empty-state">
+                <i class="fas fa-theater-masks empty-icon"></i>
+                <p class="empty-text">Phim hiện không có suất chiếu</p>
             </div>
 
-            <!-- Card grid for cinemas -->
-            <!-- Card grid for cinemas -->
-            <div class="cinema-grid">
-                <div *ngFor="let rap of cinemas; let i = index" class="cinema-card">
-                    <div class="card-content">
-                        <div class="card-header">
-                            <h3 class="cinema-name">{{ rap.cinemaName }}</h3>
-                        </div>
+            <!-- Loading state -->
+            <div *ngIf="isLoading" class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Đang tải dữ liệu...</p>
+            </div>
 
-                        <div class="cinema-details">
-                            <div class="detail-item">
-                                <i class="fas fa-map-marker-alt detail-icon"></i>
-                                <p class="detail-text">{{ rap.location }}</p>
-                            </div>
-
-                            <!-- Showtimes -->
-                            <!-- Showtimes -->
-                            <div class="showtimes-section" *ngIf="rap.showtimes && rap.showtimes.length > 0">
-                                <p class="showtimes-title">Suất chiếu:</p>
-                                <div class="showtime-button-group" *ngFor="let st of rap.showtimes">
-                                    <button (click)="showRomDialog(st.roomId,st.id)" class="showtime-button">
-                                        {{ st.startTime }} - {{ st.endTime }}
-                                    </button>
-                                </div>
-                            </div>
-
-
-                            <!-- No showtime -->
-                            <div *ngIf="!rap.showtimes || rap.showtimes.length === 0" class="no-showtime">
-                                Không có suất chiếu
-                            </div>
-                        </div>
+            <div class="date-columns">
+                <div *ngFor="let dateGroup of showtimesData" class="date-column">
+                    <h3 class="date-title">{{ formatDate(dateGroup.date) }}</h3>
+                    <div class="showtime-list">
+                        <button *ngFor="let showtime of dateGroup.showtimes"
+                            (click)="showRomDialog(showtime.roomId, showtime.id)" class="showtime-button">
+                            {{ showtime.startTime }} - {{ showtime.endTime }}
+                        </button>
                     </div>
                 </div>
-            </div>
-
-
-            <!-- Empty state -->
-            <div *ngIf="cinemas.length === 0" class="empty-state">
-                <i class="fas fa-theater-masks empty-icon"></i>
-                <p class="empty-text">Phim hiện không chiếu ở rạp nào</p>
             </div>
         </div>
     </div>
