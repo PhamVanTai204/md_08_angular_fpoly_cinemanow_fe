@@ -7,6 +7,15 @@
         </div>
 
         <div class="dialog-content">
+            <!-- Hiển thị thông tin rạp của user -->
+            <div *ngIf="currentUser?.cinema_name" class="user-cinema-info"
+                style="background-color: #dbeafe; padding: 12px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #3b82f6;">
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-map-marker-alt" style="color: #3b82f6; margin-right: 8px;"></i>
+                    <span style="color: #1e40af; font-weight: 500;">Rạp của bạn: {{ currentUser.cinema_name }}</span>
+                </div>
+            </div>
+
             <!-- Search section -->
             <div class="search-container">
                 <div class="search-input-wrapper">
@@ -14,9 +23,21 @@
                 </div>
             </div>
 
+            <!-- Loading spinner -->
+            <div *ngIf="isLoading" style="display: flex; justify-content: center; padding: 40px;">
+                <div
+                    style="border: 4px solid #f3f4f6; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;">
+                </div>
+            </div>
+
+            <!-- Error message -->
+            <div *ngIf="error"
+                style="background-color: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                {{ error }}
+            </div>
+
             <!-- Card grid for cinemas -->
-            <!-- Card grid for cinemas -->
-            <div class="cinema-grid">
+            <div class="cinema-grid" *ngIf="!isLoading && !error">
                 <div *ngFor="let rap of cinemas; let i = index" class="cinema-card">
                     <div class="card-content">
                         <div class="card-header">
@@ -30,7 +51,6 @@
                             </div>
 
                             <!-- Showtimes -->
-                            <!-- Showtimes -->
                             <div class="showtimes-section" *ngIf="rap.showtimes && rap.showtimes.length > 0">
                                 <p class="showtimes-title">Suất chiếu:</p>
                                 <div class="showtime-button-group" *ngFor="let st of rap.showtimes">
@@ -40,9 +60,9 @@
                                 </div>
                             </div>
 
-
                             <!-- No showtime -->
-                            <div *ngIf="!rap.showtimes || rap.showtimes.length === 0" class="no-showtime">
+                            <div *ngIf="!rap.showtimes || rap.showtimes.length === 0" class="no-showtime"
+                                style="color: #6b7280; font-style: italic; margin-top: 8px;">
                                 Không có suất chiếu
                             </div>
                         </div>
@@ -50,12 +70,32 @@
                 </div>
             </div>
 
-
             <!-- Empty state -->
-            <div *ngIf="cinemas.length === 0" class="empty-state">
+            <div *ngIf="!isLoading && !error && cinemas.length === 0" class="empty-state">
                 <i class="fas fa-theater-masks empty-icon"></i>
-                <p class="empty-text">Phim hiện không chiếu ở rạp nào</p>
+                <p class="empty-text">Phim hiện không chiếu ở rạp của bạn</p>
+                <p style="color: #9ca3af; font-size: 0.875rem;">Rạp: {{ currentUser?.cinema_name || 'Không xác định' }}
+                </p>
             </div>
+
+            <!-- Debug info (có thể xóa sau khi test)
+            <div *ngIf="!isLoading"
+                style="margin-top: 16px; padding: 8px; background-color: #f9fafb; border-radius: 4px; font-size: 0.75rem; color: #6b7280;">
+                Debug: Tổng {{ allCinemas.length }} rạp từ API, hiển thị {{ cinemas.length }} rạp cho {{
+                currentUser?.cinema_name }}
+            </div> -->
         </div>
     </div>
 </div>
+
+<style>
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
