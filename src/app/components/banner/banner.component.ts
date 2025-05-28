@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { BannersService } from '../../../shared/services/banners.service';
 import { BannersDto } from '../../../shared/dtos/bannersDto.dto';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { forkJoin, timer } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-banner',
@@ -18,7 +20,6 @@ export class BannerComponent implements OnInit {
   previewError: string = '';
   errorMessage: string = '';
   isLoading: boolean = false;
-  // Không sử dụng đường dẫn ảnh nữa để tránh lỗi 404
   
   // Add form group for validation
   bannerForm!: FormGroup;
@@ -46,15 +47,21 @@ export class BannerComponent implements OnInit {
     return this.bannerForm.get('imageUrl');
   }
 
-  // Lấy danh sách banner
+  // Lấy danh sách banner với delay loading tối thiểu 2 giây
   getBanners() {
     this.isLoading = true;
     this.errorMessage = '';
     
-    this.bannersService.getBanners().subscribe({
-      next: (data) => {
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000); // 2 giây
+    const apiCall = this.bannersService.getBanners();
+    
+    // Sử dụng forkJoin để đợi cả timer và API call hoàn thành
+    forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, data]) => {
         this.banners = data;
         this.isLoading = false;
+        console.log('Dữ liệu đã được tải sau delay 2 giây');
       },
       error: (error) => {
         console.error('Lỗi khi tải banner:', error);
@@ -62,6 +69,12 @@ export class BannerComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  // Refresh dữ liệu với delay (có thể gọi từ nút refresh)
+  refreshBanners() {
+    console.log('Đang làm mới dữ liệu...');
+    this.getBanners();
   }
 
   // Mở dialog thêm banner mới
@@ -80,7 +93,7 @@ export class BannerComponent implements OnInit {
     this.submitted = false;
   }
 
-  // Xác nhận thêm banner mới
+  // Xác nhận thêm banner mới với delay loading
   confirmAddBanner() {
     this.submitted = true;
 
@@ -94,9 +107,15 @@ export class BannerComponent implements OnInit {
       this.isLoading = true;
       
       const newBanner = new BannersDto({ id: '', imageUrl: imageUrl.trim() });
-      this.bannersService.createBanner(newBanner).subscribe({
-        next: () => {
-          this.getBanners();
+      
+      // Tạo timer 2 giây và kết hợp với API call tạo banner
+      const minimumDelay = timer(2000);
+      const createCall = this.bannersService.createBanner(newBanner);
+      
+      forkJoin([minimumDelay, createCall]).subscribe({
+        next: ([_, result]) => {
+          console.log('Banner đã được tạo sau delay 2 giây');
+          this.getBanners(); // Sẽ có delay thêm 2 giây nữa khi tải lại
           this.closeAddDialog();
         },
         error: (error) => {
@@ -130,14 +149,19 @@ export class BannerComponent implements OnInit {
     this.cancelPress(); // Đảm bảo hủy timer nếu dialog được mở bằng nút xóa
   }
 
-  // Xác nhận xóa banner từ dialog
+  // Xác nhận xóa banner từ dialog với delay loading
   confirmDelete() {
     if (this.bannerToDelete) {
       this.isLoading = true;
       
-      this.bannersService.deleteBanner(this.bannerToDelete.id).subscribe({
-        next: () => {
-          this.getBanners();
+      // Tạo timer 2 giây và kết hợp với API call xóa banner
+      const minimumDelay = timer(2000);
+      const deleteCall = this.bannersService.deleteBanner(this.bannerToDelete.id);
+      
+      forkJoin([minimumDelay, deleteCall]).subscribe({
+        next: ([_, result]) => {
+          console.log('Banner đã được xóa sau delay 2 giây');
+          this.getBanners(); // Sẽ có delay thêm 2 giây nữa khi tải lại
           this.closeDeleteDialog();
         },
         error: (error) => {
