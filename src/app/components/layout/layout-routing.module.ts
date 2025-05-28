@@ -88,7 +88,7 @@ const routes: Routes = [
         loadChildren: () => import('../giaodich/giaodich.module').then(m => m.GiaodichModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2, 3] // Cinema Admin and Staff can access
+          allowedRoles: [3] // Cinema Admin and Staff can access
         }
       },
       {

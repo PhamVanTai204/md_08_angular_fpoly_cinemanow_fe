@@ -75,7 +75,7 @@ export class RoleGuard implements CanActivate {
       // Now includes 'rap' as per new requirements
       const allowedManagerRoutes = [
         'theloaiphim', 'phim', 'lichchieu',
-        'giaodich', 'thanhtoan', 'thongke',
+        'thanhtoan', 'thongke',
         'nhanvien', 'banner', 'voucher', 'combo',
         'rap' // Added rap to allowed routes for Cinema Manager
       ];
