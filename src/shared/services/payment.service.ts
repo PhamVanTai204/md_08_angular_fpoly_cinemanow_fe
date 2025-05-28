@@ -254,10 +254,10 @@ export class PaymentService {
         );
     }
 
-    getAllPayments(page: number = 1, limit: number = 10, search: string = ''): Observable<PaymentApiResponseDto> {
+    getAllPayments(page: number = 1, limit: number = 10, search: string = '', cinema_id?: string): Observable<PaymentApiResponseDto> {
 
 
-        return this.http.get<ApiResponse<PaymentApiResponseDto>>(`${this.baseUrl}/get-all?search=${search}&page=${page}&limit=${limit}`)
+        return this.http.get<ApiResponse<PaymentApiResponseDto>>(`${this.baseUrl}/get-all?cinema_id=${cinema_id}&search=${search}&page=${page}&limit=${limit}`)
             .pipe(
                 map(response => response.data),
                 catchError(this.handleError)

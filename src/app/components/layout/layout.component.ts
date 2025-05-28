@@ -38,9 +38,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
   ];
 
   businessMenuItems: MenuItem[] = [
-    { path: 'giaodich', title: 'Đặt vé', icon: 'receipt', roles: [2, 3], primary: true }, // Primary for Staff only
+    { path: 'giaodich', title: 'Đặt vé', icon: 'receipt', roles: [3], primary: true }, // Primary for Staff only
     { path: 'thanhtoan', title: 'Thanh toán', icon: 'credit_card', roles: [2, 3] },
-    { path: 'thongke', title: 'Thống kê', icon: 'bar_chart', roles: [2] }
+    { path: 'thongke', title: 'Thống kê', icon: 'bar_chart', roles: [2, 4] }
   ];
 
   userMenuItems: MenuItem[] = [

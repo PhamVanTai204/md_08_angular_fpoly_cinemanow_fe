@@ -41,6 +41,7 @@ export class RoomComponent implements OnInit {
     vip: 'VIP',
     couple: 'Cặp đôi'
   };
+  currentUser: any;
 
   //biến cho seat
   selectedRowKey: string = '';
@@ -230,6 +231,8 @@ export class RoomComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
     this.route.paramMap.subscribe(params => {
       const idRoomParam = params.get('idRoom');
 
@@ -385,7 +388,7 @@ export class RoomComponent implements OnInit {
   createTicketDto(): TicketDto {
     return new TicketDto({
       id: "", // Nếu cần, có thể điền giá trị mặc định hoặc gán giá trị sau khi tạo ticket
-      user_id: "67ea1c5108d4e0d7db8e5d16", // User ID
+      user_id: this.currentUser.userId, // User ID
       ticket_id: '',
       showtime_id: this.showtime_id, // Showtime ID
       seats: this.selectedSeats.map(seat => new SeatDto({
