@@ -1,3 +1,4 @@
+/* Existing styles */
 .page-container {
     min-height: 100vh;
     background-color: white;
@@ -8,6 +9,7 @@
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     padding: 24px;
+    position: relative;
 }
 
 .container {
@@ -18,20 +20,29 @@
 .search-header {
     display: flex;
     flex-direction: column;
-    /* Default for smaller screens */
     gap: 16px;
     margin-bottom: 24px;
-    /* Added margin for spacing */
 }
 
+/* Updated search controls layout */
+.search-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
 
-/* Styles for larger screens */
 @media (min-width: 640px) {
     .search-header {
         flex-direction: row;
-        /* Row layout on larger screens */
         justify-content: space-between;
         align-items: center;
+    }
+    
+    .search-controls {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
     }
 }
 
@@ -41,16 +52,13 @@
     gap: 8px;
     max-width: 400px;
     width: 100%;
-    /* Take full width within its flex container */
 }
 
-/* Ensure form takes full width on small screens when header is column */
 @media (max-width: 639px) {
     .search-form {
         width: 100%;
     }
 }
-
 
 .title {
     font-size: 24px;
@@ -58,11 +66,9 @@
     color: #2d3748;
     white-space: nowrap;
     flex-shrink: 0;
-    /* Prevent title from shrinking */
 }
 
 .search-box {
-    /* This class seems unused in the HTML provided, but kept for consistency */
     display: flex;
     align-items: center;
     gap: 8px;
@@ -72,25 +78,28 @@
 .input-wrapper {
     position: relative;
     width: 100%;
-    /* Allow input to take available space */
     flex-grow: 1;
-    /* Allow input wrapper to grow */
 }
 
 .search-input {
     width: 100%;
-    /* Full width within its wrapper */
     padding: 8px 8px 8px 36px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
     outline: none;
     font-size: 14px;
-    /* Consistent font size */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .search-input:focus {
     border-color: #f87171;
     box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.3);
+}
+
+.search-input:disabled {
+    background-color: #f9fafb;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .search-icon {
@@ -100,7 +109,6 @@
     transform: translateY(-50%);
     color: #a0aec0;
     pointer-events: none;
-    /* Prevent icon from interfering with input click */
 }
 
 .search-button {
@@ -112,23 +120,145 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
     flex-shrink: 0;
-    /* Prevent button from shrinking */
     font-size: 14px;
-    /* Consistent font size */
 }
 
-.search-button:hover {
+.search-button:hover:not(:disabled) {
     background-color: #dc2626;
 }
 
+.search-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Refresh Button Styles */
+.refresh-button {
+    background-color: #10b981;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.refresh-button:hover:not(:disabled) {
+    background-color: #059669;
+    transform: translateY(-1px);
+}
+
+.refresh-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.refresh-button.refreshing {
+    background-color: #6366f1;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+.loading-content {
+    text-align: center;
+    padding: 20px;
+}
+
+.loading-spinner {
+    margin-bottom: 16px;
+}
+
+/* Spinner Animation */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #ef4444;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: 16px;
+    color: #4a5568;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Error Message */
+.error-message {
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #dc2626;
+}
+
+.error-message i {
+    font-size: 18px;
+}
+
+.retry-button {
+    background-color: #ef4444;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+    background-color: #dc2626;
+}
+
+/* Product List */
 .product-list {
     display: grid;
     gap: 24px;
-    /* === THAY ĐỔI Ở ĐÂY === */
     grid-template-columns: repeat(5, 1fr);
-    /* Tạo 5 cột bằng nhau */
-    /* grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Dòng cũ */
     margin-top: 24px;
+    transition: opacity 0.3s ease;
+}
+
+.product-list.loading {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .product-card {
@@ -137,64 +267,53 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     padding: 4px;
-    /* Reduced padding a bit */
     text-align: center;
-    transition: box-shadow 0.3s;
-    /* Smoother transition */
+    transition: all 0.3s ease;
     cursor: pointer;
     display: flex;
-    /* Use flexbox for better internal alignment */
     flex-direction: column;
-    /* Stack elements vertically */
     overflow: hidden;
-    /* Prevent content overflow */
 }
 
 .product-card:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .product-img-wrapper {
     height: 190px;
-    /* Fixed height for image consistency */
     width: 100%;
-    /* Take full width of card */
     overflow: hidden;
     margin-bottom: 12px;
     border-radius: 6px 6px 0 0;
-    /* Rounded corners only top */
     flex-shrink: 0;
-    /* Prevent image wrapper from shrinking */
 }
 
 .product-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Cover ensures image fills space without distortion */
     display: block;
-    /* Remove extra space below image */
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-img {
+    transform: scale(1.05);
 }
 
 .product-info {
-    /* Wrapper for text content */
     padding: 8px 12px 12px;
-    /* Add padding around text */
     flex-grow: 1;
-    /* Allow text area to grow if needed */
     display: flex;
     flex-direction: column;
 }
 
 .product-title {
     font-size: 15px;
-    /* Slightly smaller font */
     font-weight: 600;
     color: #2d3748;
     margin-bottom: 4px;
     line-height: 1.3;
-    /* Adjust line height */
-    /* Limit text to 2 lines with ellipsis */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -202,37 +321,43 @@
     overflow: hidden;
     text-overflow: ellipsis;
     min-height: calc(1.3em * 2);
-    /* Ensure space for 2 lines */
 }
 
 .product-age {
     font-size: 13px;
-    /* Slightly smaller font */
     color: #4a5568;
     margin-top: auto;
-    /* Push age limit to the bottom */
     padding-top: 4px;
-    /* Add some space above age limit */
 }
 
-
+/* No Result */
 .no-result {
     text-align: center;
     margin-top: 40px;
     color: #a0aec0;
     font-size: 18px;
+    padding: 40px 20px;
 }
 
+.no-result i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.no-result p {
+    margin-bottom: 16px;
+}
+
+/* Pagination */
 .pagination-container {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    /* Increased gap */
     margin-top: 32px;
     padding-top: 20px;
     border-top: 1px solid #e5e7eb;
     align-items: center;
-    /* Center items vertically by default */
 }
 
 @media (min-width: 768px) {
@@ -245,58 +370,44 @@
 
 .pagination-info {
     font-size: 14px;
-    /* Adjusted size */
     color: #4a5568;
     text-align: center;
-    /* Center text on small screens */
 }
 
 @media (min-width: 768px) {
     .pagination-info {
         text-align: left;
-        /* Align left on larger screens */
     }
 }
-
 
 .pagination-controls {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    /* Allow buttons to wrap on very small screens */
     gap: 4px;
-    /* Add gap between buttons */
 }
 
 .page-button {
     padding: 8px 14px;
-    /* Adjusted padding */
     margin: 0;
-    /* Removed margin, using gap now */
     border: 1px solid #d1d5db;
     background-color: white;
     font-size: 14px;
-    /* Adjusted size */
     color: #4a5568;
     cursor: pointer;
     border-radius: 6px;
-    /* Slightly less rounded */
     transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-    /* Added transitions */
     min-width: 38px;
-    /* Ensure minimum width for buttons */
     text-align: center;
 }
 
 .page-button:hover:not(:disabled) {
-    /* Apply hover only if not disabled */
     background-color: #f3f4f6;
     border-color: #adb5bd;
 }
 
 .page-button.active {
     background-color: #ef4444;
-    /* Use theme color */
     border-color: #ef4444;
     color: white;
     font-weight: bold;
@@ -306,50 +417,105 @@
     opacity: 0.5;
     cursor: not-allowed;
     background-color: #e9ecef;
-    /* Lighter background for disabled */
     border-color: #d1d5db;
 }
-
 
 .pagination-limit {
     display: flex;
     align-items: center;
     gap: 8px;
-    /* Increased gap */
     font-size: 14px;
-    /* Match other text */
     color: #4a5568;
 }
 
 .limit-select {
     padding: 6px 10px;
-    /* Adjusted padding */
     border: 1px solid #d1d5db;
     border-radius: 6px;
     background-color: white;
     font-size: 14px;
-    /* Match other text */
     cursor: pointer;
+    transition: border-color 0.2s ease;
 }
 
-/* Optional: Add media query for fewer columns on smaller screens */
+.limit-select:focus {
+    border-color: #ef4444;
+    outline: none;
+}
+
+.limit-select:disabled {
+    background-color: #f9fafb;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsive Design */
 @media (max-width: 1024px) {
     .product-list {
         grid-template-columns: repeat(4, 1fr);
-        /* 4 columns for medium screens */
     }
 }
 
 @media (max-width: 768px) {
     .product-list {
         grid-template-columns: repeat(3, 1fr);
-        /* 3 columns for smaller screens */
+    }
+    
+    .search-wrapper {
+        padding: 16px;
+    }
+    
+    .title {
+        font-size: 20px;
     }
 }
 
 @media (max-width: 500px) {
     .product-list {
         grid-template-columns: repeat(2, 1fr);
-        /* 2 columns for very small screens */
     }
+    
+    .search-controls {
+        gap: 8px;
+    }
+    
+    .refresh-button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .search-button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Animation for card loading */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Pulse animation for loading state */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading .product-card {
+    animation: pulse 1.5s ease-in-out infinite;
 }

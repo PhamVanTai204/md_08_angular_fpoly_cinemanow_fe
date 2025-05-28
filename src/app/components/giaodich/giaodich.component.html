@@ -5,21 +5,54 @@
       <section>
         <div class="search-header">
           <h1 class="title">🎬 Chọn Phim</h1>
-
-          <div class="search-form">
-            <div class="input-wrapper">
-              <input type="text" placeholder="Nhập vào tên Phim" [(ngModel)]="searchTerm" class="search-input"
-                (keyup.enter)="onSearch()" />
-              <span class="search-icon">
-                <i class="fas fa-search"></i>
-              </span>
+          
+          <div class="search-controls">
+            <div class="search-form">
+              <div class="input-wrapper">
+                <input type="text" placeholder="Nhập vào tên Phim" [(ngModel)]="searchTerm" class="search-input"
+                  (keyup.enter)="onSearch()" [disabled]="isLoading || isRefreshing" />
+                <span class="search-icon">
+                  <i class="fas fa-search"></i>
+                </span>
+              </div>
+              <button type="button" class="search-button" (click)="onSearch()" [disabled]="isLoading || isRefreshing">
+                Tìm
+              </button>
             </div>
-            <button type="button" class="search-button" (click)="onSearch()">Tìm</button>
+            
+            <!-- Nút làm mới -->
+            <button type="button" class="refresh-button" (click)="refreshData()" 
+                    [disabled]="isLoading || isRefreshing" 
+                    [class.refreshing]="isRefreshing">
+              <i [class]="isRefreshing ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'"></i>
+              {{ isRefreshing ? 'Đang làm mới...' : 'Làm mới' }}
+            </button>
           </div>
         </div>
       </section>
 
-      <div class="product-list">
+      <!-- Loading Overlay -->
+      <div *ngIf="isLoading" class="loading-overlay">
+        <div class="loading-content">
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+          </div>
+          <p class="loading-text">Đang tải dữ liệu phim...</p>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error && !isLoading" class="error-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>{{ error }}</span>
+        <button class="retry-button" (click)="refreshData()">
+          <i class="fas fa-redo"></i>
+          Thử lại
+        </button>
+      </div>
+
+      <!-- Product List -->
+      <div class="product-list" [class.loading]="isLoading">
         @for (product of danhSachPhimDaLoc; track product.id) {
         <div class="product-card" (click)="showCreateOrEditProductDialog(product.id)">
           <div class="product-img-wrapper">
@@ -34,8 +67,14 @@
         }
       </div>
 
-      <div *ngIf="!danhSachPhimDaLoc.length" class="no-result">
+      <!-- No Results -->
+      <div *ngIf="!danhSachPhimDaLoc.length && !isLoading && !error" class="no-result">
+        <i class="fas fa-film"></i>
         <p>Không có phim phù hợp.</p>
+        <button class="retry-button" (click)="refreshData()">
+          <i class="fas fa-sync-alt"></i>
+          Tải lại dữ liệu
+        </button>
       </div>
     </div>
   </section>
@@ -49,24 +88,26 @@
 
     <div class="pagination-controls">
       <nav aria-label="Pagination">
-        <button [disabled]="page === 1" [ngClass]="{'disabled': page === 1}" class="page-button"
+        <button [disabled]="page === 1 || isRefreshing" [ngClass]="{'disabled': page === 1 || isRefreshing}" class="page-button"
           (click)="changePage(1)">
           ««
         </button>
-        <button [disabled]="page === 1" [ngClass]="{'disabled': page === 1}" class="page-button"
+        <button [disabled]="page === 1 || isRefreshing" [ngClass]="{'disabled': page === 1 || isRefreshing}" class="page-button"
           (click)="changePage(page - 1)">
           «
         </button>
         <ng-container *ngFor="let p of getPaginationRange()">
-          <button [ngClass]="p === page ? 'page-button active' : 'page-button'" (click)="changePage(p)">
+          <button [ngClass]="p === page ? 'page-button active' : 'page-button'" 
+                  (click)="changePage(p)" 
+                  [disabled]="isRefreshing">
             {{ p }}
           </button>
         </ng-container>
-        <button [disabled]="page >= totalPages" [ngClass]="{'disabled': page >= totalPages}" class="page-button"
+        <button [disabled]="page >= totalPages || isRefreshing" [ngClass]="{'disabled': page >= totalPages || isRefreshing}" class="page-button"
           (click)="changePage(page + 1)">
           »
         </button>
-        <button [disabled]="page >= totalPages" [ngClass]="{'disabled': page >= totalPages}" class="page-button"
+        <button [disabled]="page >= totalPages || isRefreshing" [ngClass]="{'disabled': page >= totalPages || isRefreshing}" class="page-button"
           (click)="changePage(totalPages)">
           »»
         </button>
@@ -75,7 +116,7 @@
 
     <div class="pagination-limit">
       <label for="limit">Hiển thị:</label>
-      <select id="limit" [(ngModel)]="limit" (change)="onLimitChange()" class="limit-select">
+      <select id="limit" [(ngModel)]="limit" (change)="onLimitChange()" class="limit-select" [disabled]="isRefreshing">
         <option [ngValue]="5">5</option>
         <option [ngValue]="10">10</option>
         <option [ngValue]="20">20</option>

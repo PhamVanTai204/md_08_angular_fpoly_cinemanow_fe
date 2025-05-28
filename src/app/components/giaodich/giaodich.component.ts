@@ -25,20 +25,23 @@ export class GiaodichComponent implements OnInit {
   isLoading: boolean = false;
   cinemas: CinemaDto[] = [];
   error: string | null = null;
-  danhSachPhimDaLoc: PhimDto[] = []; // Separate property for filtered results
+  danhSachPhimDaLoc: PhimDto[] = [];
   isSearching: boolean = false;
   filmId: string = '';
+  
+  // Thêm properties cho loading và refresh
+  private minLoadingTime: number = 2000; // Tối thiểu 2 giây
+  private loadingStartTime: number = 0;
+  isRefreshing: boolean = false;
+
   constructor(
     private phimService: PhimService,
     private _modalService: BsModalService
-
   ) { }
 
   ngOnInit(): void {
     this.loadPhims();
   }
-
-
 
   showCreateOrEditProductDialog(id?: string): void {
     let createOrEditProductDialog: BsModalRef;
@@ -51,12 +54,10 @@ export class GiaodichComponent implements OnInit {
         },
       }
     );
-
-
   }
 
   onSearch(): void {
-    this.page = 1; // Reset to first page when searching
+    this.page = 1;
     if (this.searchTerm.trim() === '') {
       this.isSearching = false;
       this.loadPhims();
@@ -66,50 +67,96 @@ export class GiaodichComponent implements OnInit {
     }
   }
 
-  loadPhims(): void {
-    this.isLoading = true;
-    console.log('Loading films for page:', this.page, 'limit:', this.limit);
-
-    this.phimService.getPhims(this.page, this.limit, '').subscribe({
-      next: (response: any) => {
-        console.log('Films loaded successfully:', response);
-
-        if (Array.isArray(response)) {
-          this.danhSachPhim = response;
-          this.danhSachPhimDaLoc = response;
-          if (response.length === this.limit) {
-            this.totalPhim = Math.max((this.page * this.limit) + 1, this.totalPhim);
-          } else if (this.page === 1) {
-            this.totalPhim = response.length;
-          }
-        }
-        else if (response && typeof response === 'object') {
-          if (response.data && response.data.films) {
-            this.danhSachPhim = response.data.films;
-            this.danhSachPhimDaLoc = response.data.films;
-            this.totalPhim = response.data.totalCount || response.data.total || 0;
-          } else if (response.items || response.results) {
-            this.danhSachPhim = response.items || response.results;
-            this.danhSachPhimDaLoc = response.items || response.results;
-            this.totalPhim = response.total || response.totalItems || response.count || 0;
-          } else if (response.data && Array.isArray(response.data)) {
-            this.danhSachPhim = response.data;
-            this.danhSachPhimDaLoc = response.data;
-            this.totalPhim = response.totalCount || response.total || 0;
-          }
-        }
-
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading films:', error);
-        this.isLoading = false;
-      }
+  // Hàm refresh dữ liệu
+  refreshData(): void {
+    this.isRefreshing = true;
+    this.page = 1;
+    this.searchTerm = '';
+    this.isSearching = false;
+    
+    // Reset lại trạng thái
+    this.error = null;
+    
+    this.loadPhims().finally(() => {
+      // Đảm bảo refresh hiện ít nhất 1 giây
+      setTimeout(() => {
+        this.isRefreshing = false;
+      }, 1000);
     });
   }
 
+  // Cập nhật hàm loadPhims với loading delay
+  loadPhims(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.isLoading = true;
+      this.loadingStartTime = Date.now();
+      this.error = null;
+      
+      console.log('Loading films for page:', this.page, 'limit:', this.limit);
+
+      this.phimService.getPhims(this.page, this.limit, '').subscribe({
+        next: (response: any) => {
+          console.log('Films loaded successfully:', response);
+
+          // Xử lý response như cũ
+          if (Array.isArray(response)) {
+            this.danhSachPhim = response;
+            this.danhSachPhimDaLoc = response;
+            if (response.length === this.limit) {
+              this.totalPhim = Math.max((this.page * this.limit) + 1, this.totalPhim);
+            } else if (this.page === 1) {
+              this.totalPhim = response.length;
+            }
+          }
+          else if (response && typeof response === 'object') {
+            if (response.data && response.data.films) {
+              this.danhSachPhim = response.data.films;
+              this.danhSachPhimDaLoc = response.data.films;
+              this.totalPhim = response.data.totalCount || response.data.total || 0;
+            } else if (response.items || response.results) {
+              this.danhSachPhim = response.items || response.results;
+              this.danhSachPhimDaLoc = response.items || response.results;
+              this.totalPhim = response.total || response.totalItems || response.count || 0;
+            } else if (response.data && Array.isArray(response.data)) {
+              this.danhSachPhim = response.data;
+              this.danhSachPhimDaLoc = response.data;
+              this.totalPhim = response.totalCount || response.total || 0;
+            }
+          }
+
+          // Tính toán thời gian loading đã trôi qua
+          const elapsedTime = Date.now() - this.loadingStartTime;
+          const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+
+          // Đảm bảo loading hiện ít nhất minLoadingTime
+          setTimeout(() => {
+            this.isLoading = false;
+            resolve();
+          }, remainingTime);
+        },
+        error: (error) => {
+          console.error('Error loading films:', error);
+          this.error = 'Có lỗi xảy ra khi tải dữ liệu phim';
+          
+          // Vẫn áp dụng minimum loading time cho error case
+          const elapsedTime = Date.now() - this.loadingStartTime;
+          const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+
+          setTimeout(() => {
+            this.isLoading = false;
+            reject(error);
+          }, remainingTime);
+        }
+      });
+    });
+  }
+
+  // Cập nhật hàm searchPhims với loading delay
   searchPhims(): void {
     this.isLoading = true;
+    this.loadingStartTime = Date.now();
+    this.error = null;
+
     this.phimService.searchPhims(this.searchTerm).subscribe({
       next: (response: any) => {
         if (Array.isArray(response)) {
@@ -119,36 +166,47 @@ export class GiaodichComponent implements OnInit {
           this.danhSachPhimDaLoc = response.data;
           this.totalPhim = response.data.length;
         }
-        this.isLoading = false;
+
+        // Áp dụng minimum loading time
+        const elapsedTime = Date.now() - this.loadingStartTime;
+        const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+
+        setTimeout(() => {
+          this.isLoading = false;
+        }, remainingTime);
       },
       error: (error) => {
         console.error('Error searching films:', error);
-        this.isLoading = false;
+        this.error = 'Có lỗi xảy ra khi tìm kiếm phim';
+        
+        const elapsedTime = Date.now() - this.loadingStartTime;
+        const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+
+        setTimeout(() => {
+          this.isLoading = false;
+        }, remainingTime);
       }
     });
   }
+
   kiemTraTheLoaiPhim(phim: PhimDto): void {
     console.log('Phim:', phim.title);
     console.log('ID thể loại:', phim.genre_film);
 
-    // Kiểm tra nếu genre_film chứa các đối tượng thể loại đầy đủ
     if (phim.genre_film && Array.isArray(phim.genre_film) && phim.genre_film.length > 0) {
       const firstGenre = phim.genre_film[0];
       console.log('Kiểm tra đối tượng thể loại đầu tiên:', firstGenre);
 
       if (typeof firstGenre === 'object' && firstGenre !== null) {
-        // Kiểm tra các thuộc tính
         console.log('firstGenre._id:', (firstGenre as any)._id);
         console.log('firstGenre.name:', (firstGenre as any).name);
 
-        // Nếu đây là đối tượng thể loại đầy đủ
         if ((firstGenre as any).name) {
           console.log('genre_film chứa các đối tượng thể loại đầy đủ!');
-          return; // Không cần kiểm tra thêm
+          return;
         }
       }
 
-      // Tiếp tục kiểm tra các ID nếu không phải đối tượng thể loại đầy đủ
       console.log('Danh sách thể loại đã tải:', this.danhSachTheLoai);
 
       phim.genre_film.forEach((genreObj: any, index) => {
@@ -157,13 +215,11 @@ export class GiaodichComponent implements OnInit {
         const genreId = this.getIdAsString(genreObj);
         console.log(`Genre #${index} sau khi chuyển đổi:`, genreId);
 
-        // Tìm thể loại với ID
         if (genreId) {
           const foundGenre = this.danhSachTheLoai.find(g => g.id === genreId);
           console.log(`Thể loại khớp chính xác cho ID ${genreId}:`, foundGenre);
 
           if (!foundGenre) {
-            // Tìm với so sánh một phần
             const partialMatches = this.danhSachTheLoai.filter(g =>
               (genreId.length > 5 && g.id.includes(genreId)) ||
               (g.id.length > 5 && genreId.includes(g.id))
@@ -174,31 +230,26 @@ export class GiaodichComponent implements OnInit {
       });
     }
   }
+
   private getIdAsString(idObject: any): string {
     if (!idObject) return '';
 
     if (typeof idObject === 'object' && idObject !== null) {
-      // Nếu là đối tượng thể loại đầy đủ (có _id và name)
       if (idObject._id) {
         return idObject._id;
       }
-      // Nếu là ObjectId hoặc có thuộc tính id
       if (idObject.id) {
         return idObject.id;
       }
-      // Nếu là ObjectId với toString()
       if (idObject.toString && typeof idObject.toString === 'function') {
         const str = idObject.toString();
-        // Kiểm tra xem kết quả toString có phải là "[object Object]" không
         return str !== '[object Object]' ? str : '';
       }
     }
 
-    // Nếu đã là string hoặc kiểu dữ liệu khác
     return String(idObject);
-
   }
-  // Thêm vào GiaodichComponent
+
   get totalPages(): number {
     return Math.ceil(this.totalPhim / this.limit) || 1;
   }
@@ -210,19 +261,12 @@ export class GiaodichComponent implements OnInit {
 
     this.page = newPage;
     this.loadPhims();
-
-    // Scroll to top when changing page
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   onLimitChange(): void {
-    // Reset to page 1 when changing limit to avoid empty pages
     this.page = 1;
-
-    // Load films with new pagination settings
     this.loadPhims();
-
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -230,16 +274,13 @@ export class GiaodichComponent implements OnInit {
     const maxPagesToShow = 5;
     const totalPages = this.totalPages;
 
-    // Simple case - show all pages if there are few
     if (totalPages <= maxPagesToShow) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
-    // Complex case - decide which pages to show
     let startPage = Math.max(1, this.page - Math.floor(maxPagesToShow / 2));
     let endPage = startPage + maxPagesToShow - 1;
 
-    // Adjust if we're near the end
     if (endPage > totalPages) {
       endPage = totalPages;
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
