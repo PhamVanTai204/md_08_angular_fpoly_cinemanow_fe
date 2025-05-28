@@ -82,36 +82,114 @@ export class ThanhToanComponent implements OnInit {
       <html>
       <head>
         <title>Vé xem phim</title>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
         <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-          .ticket { border: 2px dashed #000; padding: 15px; max-width: 300px; margin: 0 auto; }
-          .header { text-align: center; font-weight: bold; margin-bottom: 3px; }
-                              .p1 { text-align: center;  margin-bottom: 3px; }
-
-          .info { margin: 5px 0; }
-          .divider { border-top: 1px dashed #000; margin: 10px 0; }
+          body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background-color: #f5f5f5;
+          }
+          .ticket { 
+            border: 2px solid #000; 
+            padding: 25px; 
+            max-width: 350px; 
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          }
+          .header { 
+            text-align: center; 
+            font-weight: bold; 
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+          }
+          .p1 { 
+            text-align: center;  
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #333;
+          }
+          .info { 
+            margin: 12px 0;
+            font-size: 0.95em;
+            line-height: 1.4;
+          }
+          .divider { 
+            border-top: 1px solid #000; 
+            margin: 15px 0;
+          }
+          .highlight {
+            background-color: #f8f8f8;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+          }
+          .price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #000;
+          }
+          .seat-info {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border: 2px solid #000;
+            border-radius: 4px;
+          }
+          .room-info {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #000;
+            margin: 10px 0;
+          }
+          .barcode-container {
+            text-align: center;
+            margin: 20px 0;
+          }
+          .barcode {
+            max-width: 100%;
+            height: 60px;
+          }
+          .ticket-id {
+            font-size: 0.8em;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+          }
         </style>
       </head>
       <body>
         <div class="ticket">
-   <div class="header">
-           ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'}
-       </div>          
-                 <p class="p1" > ${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'} </p> 
- 
-                <div class="header"> 
-                <h4> VÉ XEM PHIM </h4>
-                </div>
+          <div class="header">
+            ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'}
+          </div>          
+          <p class="p1">${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'}</p> 
+          
+          <div class="header">
+            <h4>VÉ XEM PHIM</h4>
+          </div>
           
           <div class="info"><strong>Phim:</strong> ${payment.ticket.showtime.movie.title}</div>
-          <div class="info"><strong>Phòng:</strong> ${payment.ticket?.showtime?.room?.room_name || ''} - ${payment.ticket?.showtime?.room?.room_style || ''}</div>
+          <div class="room-info">Phòng: ${payment.ticket?.showtime?.room?.room_name || ''} - ${payment.ticket?.showtime?.room?.room_style || ''}</div>
           <div class="info"><strong>Suất chiếu:</strong> ${payment.ticket?.showtime?.start_time || ''} - ${this.formatDate(payment.ticket?.showtime?.show_date)}</div>
           
           <div class="divider"></div>
           
-          <div class="info"><strong>Mã vé:</strong> ${payment.ticket?.ticket_id || ''}</div>
-          <div class="info"><strong>Ghế:</strong> ${seat.seatDetails?.row_of_seat}${seat.seatDetails?.column_of_seat}</div>
-          <div class="info"><strong>Giá vé:</strong> ${seat.price?.toLocaleString('vi-VN') || '0'} VND</div>
+          <div class="barcode-container">
+            <svg class="barcode" id="barcode-${payment.ticket?.ticket_id}"></svg>
+            <div class="ticket-id">${payment.ticket?.ticket_id || ''}</div>
+          </div>
+          
+          <div class="seat-info">Ghế: ${seat.seatDetails?.row_of_seat}${seat.seatDetails?.column_of_seat}</div>
+          <div class="price">Giá vé: ${seat.price?.toLocaleString('vi-VN') || '0'} VND</div>
           
           <div class="divider"></div>
           
@@ -123,12 +201,21 @@ export class ThanhToanComponent implements OnInit {
           
           <div class="info"><strong>Ngày đặt:</strong> ${this.formatDate(payment.vnp_PayDate)}</div>
           <div class="info"><strong>Trạng thái:</strong> ${this.getStatusText(payment.status_order)}</div>
-                    <div class="divider"></div>
-
-           <div class="header">
-           Xin chân thành cảm ơn quý khách
-        </div> 
+          
+          <div class="divider"></div>
+          
+          <div class="header">
+            Xin chân thành cảm ơn quý khách
+          </div> 
         </div>
+        <script>
+          JsBarcode("#barcode-${payment.ticket?.ticket_id}", "${payment.ticket?.ticket_id}", {
+            format: "CODE128",
+            width: 2,
+            height: 60,
+            displayValue: false
+          });
+        </script>
       </body>
       </html>
     `;
@@ -141,29 +228,105 @@ export class ThanhToanComponent implements OnInit {
       <html>
       <head>
         <title>Vé combo</title>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
         <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-          .ticket { border: 2px dashed #000; padding: 15px; max-width: 300px; margin: 0 auto; }
-                              .p1 { text-align: center;  margin-bottom: 3px; }
-
-          .header { text-align: center; font-weight: bold; margin-bottom: 3px; }
-          .info { margin: 5px 0; }
-          .divider { border-top: 1px dashed #000; margin: 10px 0; }
+          body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background-color: #f5f5f5;
+          }
+          .ticket { 
+            border: 2px solid #000; 
+            padding: 25px; 
+            max-width: 350px; 
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          }
+          .header { 
+            text-align: center; 
+            font-weight: bold; 
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+          }
+          .p1 { 
+            text-align: center;  
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #333;
+          }
+          .info { 
+            margin: 12px 0;
+            font-size: 0.95em;
+            line-height: 1.4;
+          }
+          .divider { 
+            border-top: 1px solid #000; 
+            margin: 15px 0;
+          }
+          .highlight {
+            background-color: #f8f8f8;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+          }
+          .price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #000;
+          }
+          .combo-info {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border: 2px solid #000;
+            border-radius: 4px;
+          }
+          .barcode-container {
+            text-align: center;
+            margin: 20px 0;
+          }
+          .barcode {
+            max-width: 100%;
+            height: 60px;
+          }
+          .ticket-id {
+            font-size: 0.8em;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+          }
         </style>
       </head>
       <body>
         <div class="ticket">
-             <div class="header">
-           ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'} 
-       </div>          
-                 <p class="p1" > ${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'} </p> 
-
-          <div class="header">                <h4> Hóa đơn bán hàng </h4>
-</div>
+          <div class="header">
+            ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'}
+          </div>          
+          <p class="p1">${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'}</p>
           
-           <div class="info"><strong>Tên mặt hàng:</strong>  ${comboName}</div>
+          <div class="header">
+            <h4>HÓA ĐƠN BÁN HÀNG</h4>
+          </div>
+          
+          <div class="combo-info">
+            ${comboName}
+          </div>
           <div class="info"><strong>Số lượng:</strong> ${combo.quantity || 1}</div>
-          <div class="info"><strong>Giá:</strong> ${combo.price?.toLocaleString('vi-VN') || '0'} VND</div>
+          <div class="price">Giá: ${combo.price?.toLocaleString('vi-VN') || '0'} VND</div>
+          
+          <div class="barcode-container">
+            <svg class="barcode" id="barcode-${payment.ticket?.ticket_id}"></svg>
+            <div class="ticket-id">${payment.ticket?.ticket_id || ''}</div>
+          </div>
           
           <div class="divider"></div>
           
@@ -175,12 +338,21 @@ export class ThanhToanComponent implements OnInit {
           
           <div class="info"><strong>Ngày đặt:</strong> ${this.formatDate(payment.vnp_PayDate)}</div>
           <div class="info"><strong>Trạng thái:</strong> ${this.getStatusText(payment.status_order)}</div>
-                    <div class="divider"></div>
-
-           <div class="header">
-           Xin chân thành cảm ơn quý khách
-        </div> 
+          
+          <div class="divider"></div>
+          
+          <div class="header">
+            Xin chân thành cảm ơn quý khách
+          </div>
         </div>
+        <script>
+          JsBarcode("#barcode-${payment.ticket?.ticket_id}", "${payment.ticket?.ticket_id}", {
+            format: "CODE128",
+            width: 2,
+            height: 60,
+            displayValue: false
+          });
+        </script>
       </body>
       </html>
     `;
@@ -192,28 +364,96 @@ export class ThanhToanComponent implements OnInit {
       <html>
       <head>
         <title>Vé xem phim</title>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
         <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-          .ticket { border: 2px dashed #000; padding: 15px; max-width: 300px; margin: 0 auto; }
-          .header { text-align: center; font-weight: bold; margin-bottom: 3px; }
-                    .p1 { text-align: center;  margin-bottom: 3px; }
-
-          .info { margin: 5px 0; }
-          .divider { border-top: 1px dashed #000; margin: 10px 0; }
+          body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background-color: #f5f5f5;
+          }
+          .ticket { 
+            border: 2px solid #000; 
+            padding: 25px; 
+            max-width: 350px; 
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          }
+          .header { 
+            text-align: center; 
+            font-weight: bold; 
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+          }
+          .p1 { 
+            text-align: center;  
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #333;
+          }
+          .info { 
+            margin: 12px 0;
+            font-size: 0.95em;
+            line-height: 1.4;
+          }
+          .divider { 
+            border-top: 1px solid #000; 
+            margin: 15px 0;
+          }
+          .highlight {
+            background-color: #f8f8f8;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+          }
+          .price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border: 2px solid #000;
+            border-radius: 4px;
+          }
+          .barcode-container {
+            text-align: center;
+            margin: 20px 0;
+          }
+          .barcode {
+            max-width: 100%;
+            height: 60px;
+          }
+          .ticket-id {
+            font-size: 0.8em;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+          }
         </style>
       </head>
       <body>
         <div class="ticket">
-       <div class="header">
-           ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'} 
-       </div>          
-                 <p class="p1" > ${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'} </p> 
-
-       <div class="header">                <h4> VÉ XEM PHIM </h4>
-</div>
+          <div class="header">
+            ${payment.ticket?.showtime?.room?.cinema?.cinema_name || 'RẠP CHIẾU PHIM'}
+          </div>          
+          <p class="p1">${payment.ticket?.showtime?.room?.cinema?.location || 'Địa chỉ Rạp'}</p>
           
-          <div class="info"><strong>Mã vé:</strong> ${payment.ticket?.ticket_id || ''}</div>
-          <div class="info"><strong>Tổng tiền:</strong> ${payment.ticket?.total_amount?.toLocaleString('vi-VN') || '0'} VND</div>
+          <div class="header">
+            <h4>VÉ XEM PHIM</h4>
+          </div>
+          
+          <div class="barcode-container">
+            <svg class="barcode" id="barcode-${payment.ticket?.ticket_id}"></svg>
+            <div class="ticket-id">${payment.ticket?.ticket_id || ''}</div>
+          </div>
+          
+          <div class="price">Tổng tiền: ${payment.ticket?.total_amount?.toLocaleString('vi-VN') || '0'} VND</div>
           
           <div class="divider"></div>
           
@@ -225,13 +465,21 @@ export class ThanhToanComponent implements OnInit {
           
           <div class="info"><strong>Ngày đặt:</strong> ${this.formatDate(payment.vnp_PayDate)}</div>
           <div class="info"><strong>Trạng thái:</strong> ${this.getStatusText(payment.status_order)}</div>
-                    <div class="divider"></div>
-
           
-           <div class="header">
-           Xin chân thành cảm ơn quý khách
-        </div> 
+          <div class="divider"></div>
+          
+          <div class="header">
+            Xin chân thành cảm ơn quý khách
+          </div>
         </div>
+        <script>
+          JsBarcode("#barcode-${payment.ticket?.ticket_id}", "${payment.ticket?.ticket_id}", {
+            format: "CODE128",
+            width: 2,
+            height: 60,
+            displayValue: false
+          });
+        </script>
       </body>
       </html>
     `;
