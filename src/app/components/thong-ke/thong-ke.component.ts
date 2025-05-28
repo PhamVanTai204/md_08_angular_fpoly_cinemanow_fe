@@ -19,6 +19,10 @@ export class ThongKeComponent implements OnInit {
   originalCinemaRevenueData: any[] = [];
   currentUser: any;
   isManager: boolean = false;
+  //c Thêm các biến mới
+  yearlyChartData: any;
+  yearlyChartOptions: any;
+  yearlyRevenueData: any[] = []; // Dữ liệu từ API
 
   // Dữ liệu thống kê
   summaryData = {
@@ -52,7 +56,9 @@ export class ThongKeComponent implements OnInit {
     this.endDate = this.formatDate(lastDay);
 
     // Load dữ liệu ban đầu
+    this.initYearlyChart();
     this.loadInitialData();
+    this.logYearlyRevenue();
   }
 
   // Load dữ liệu ban đầu
@@ -69,6 +75,142 @@ export class ThongKeComponent implements OnInit {
 
 
 
+
+
+
+
+
+
+
+  private initYearlyChart() {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--text-color');
+    const textColorSecondary = documentStyle.getPropertyValue('--text-secondary-color');
+    const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+    const primaryColor = documentStyle.getPropertyValue('--primary-500');
+    const primaryColorLight = documentStyle.getPropertyValue('--primary-200');
+
+    this.yearlyChartOptions = {
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: any) => {
+              const label = context.dataset.label || '';
+              const value = context.raw || 0;
+              return `${label}: ${value.toLocaleString('vi-VN')} VND`;
+            },
+            title: (context: any) => {
+              return `Tháng ${context[0].label}`;
+            }
+          },
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleFont: {
+            size: 25,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: 12
+          },
+          padding: 10,
+          displayColors: false
+        },
+
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: textColorSecondary,
+            font: {
+              size: 25,
+
+              weight: 'bold'
+            }
+          },
+          grid: {
+            display: false,
+            drawBorder: false
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: textColorSecondary,
+            font: {
+              size: 20,
+
+            },
+
+
+            callback: (value: any) => {
+              if (value >= 1000000) {
+                return (value / 1000000).toLocaleString('vi-VN') + ' tr';
+              }
+              return value.toLocaleString('vi-VN');
+            }
+          },
+          grid: {
+
+            color: surfaceBorder,
+            drawBorder: false
+          }
+        }
+      },
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
+      },
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      }
+    };
+
+    this.updateYearlyChartData();
+  }
+
+  private updateYearlyChartData() {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const primaryColor = documentStyle.getPropertyValue('--primary-500');
+    const primaryColorLight = documentStyle.getPropertyValue('--primary-200');
+
+    // Tạo mảng 12 tháng với doanh thu mặc định là 0
+    const allMonths = Array.from({ length: 12 }, (_, i) => i + 1);
+    const monthlyData = allMonths.map(month => {
+      const foundData = this.yearlyRevenueData.find(d => d.month === month);
+      return foundData ? foundData.revenue : 0;
+    });
+
+    this.yearlyChartData = {
+      labels: allMonths.map(month => month.toString()),
+      datasets: [
+        {
+          label: 'Doanh thu',
+          data: monthlyData,
+          backgroundColor: (context: any) => {
+            const value = context.dataset.data[context.dataIndex];
+            const maxValue = Math.max(...context.dataset.data);
+            const ratio = value / maxValue;
+            return `rgba(54, 162, 235, ${0.2 + 0.8 * ratio})`;
+          },
+          borderColor: primaryColor,
+          borderWidth: 1,
+          borderRadius: 4,
+          hoverBackgroundColor: primaryColorLight,
+          fill: true
+        }
+      ]
+    };
+
+    // Cập nhật tiêu đề biểu đồ nếu có
+    if (this.yearlyChartOptions?.plugins?.title) {
+      this.yearlyChartOptions.plugins.title.text = `DOANH THU THEO THÁNG - NĂM ${this.selectedYear}`;
+    }
+  }
 
 
 
@@ -216,11 +358,48 @@ export class ThongKeComponent implements OnInit {
 
 
 
+  getTotalYearlyRevenue(): number {
+    if (!this.yearlyRevenueData) return 0;
+    return this.yearlyRevenueData.reduce((sum, month) => sum + month.revenue, 0);
+  }
 
+  onYearChange() {
+    console.log('Năm được chọn:', this.selectedYear);
+    this.logYearlyRevenue();
+  }
 
+  // Trong thong-ke.component.ts
 
+  // Thêm biến selectedYear
+  selectedYear: number = new Date().getFullYear();
+  // Trong thong-ke.component.ts
+  getYearRange(): number[] {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    // Tạo danh sách 10 năm gần đây
+    for (let i = 0; i < 10; i++) {
+      years.push(currentYear - i);
+    }
+    return years;
+  }
+  // Thêm phương thức này vào class
+  logYearlyRevenue() {
+    this.isLoading = true;
+    const cinemaId = this.isManager ? this.currentUser.cinema_id : undefined;
 
-
+    this.thongKeService.getRevenueByYear(this.selectedYear, cinemaId).subscribe({
+      next: (data) => {
+        console.log('Doanh thu theo năm:', this.selectedYear, data);
+        this.yearlyRevenueData = data.monthlyData;
+        this.updateYearlyChartData();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Lỗi khi lấy dữ liệu thống kê theo năm:', err);
+        this.isLoading = false;
+      }
+    });
+  }
 
   // Xử lý nút thống kê
   handleThongKe() {
