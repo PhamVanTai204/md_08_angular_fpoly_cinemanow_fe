@@ -1,6 +1,6 @@
 <!-- Header -->
 <div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-bold text-gray-800">THỐNG KÊ</h1>
+  <h1 class="text-2xl font-bold text-gray-800">THỐNG KÊ DOANH THU</h1>
 </div>
 
 <!-- Loading indicator -->
@@ -51,11 +51,13 @@
     </div>
   </div>
 </div>
-
+@if (currentUser.role==4) {
 <!-- Tiêu đề mục thống kê doanh thu -->
 <div class="flex items-center mb-4">
   <h2 class="text-xl font-bold text-gray-800">THỐNG KÊ DOANH THU</h2>
 </div>
+}
+
 
 <!-- Bộ lọc thống kê -->
 <div class="bg-white shadow-sm rounded-lg border border-gray-100 p-5 mb-8">
@@ -73,6 +75,7 @@
       <input type="date" [(ngModel)]="endDate"
         class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
     </div>
+    @if(currentUser.role==4){
 
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">CHỌN RẠP</label>
@@ -84,6 +87,7 @@
       </select>
 
     </div>
+    }
 
     <div class="flex items-end">
       <button (click)="handleThongKe()"
@@ -108,6 +112,7 @@
 
     </div>
 
+    @if(currentUser.role ==4){
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Chọn phim</label>
       <select
@@ -118,13 +123,14 @@
       </select>
 
     </div>
+    }
   </div>
 </div>
 
 <!-- Bảng thống kê -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
   <!-- Doanh thu theo phim -->
-  @if(currentUser.role===2){
+  @if(currentUser.role===4){
   <div class="bg-white shadow-sm rounded-lg border border-gray-100 overflow-hidden">
     <div class="p-4 border-b border-gray-100">
       <div class="flex justify-between items-center">
@@ -158,8 +164,23 @@
       </table>
     </div>
   </div>
-  }@else {
-  <!-- biểu đồ thống kê tròn -->
+  <!-- Thay thế phần @else hiện tại bằng đoạn code này -->
+  } @else {
+  <div class="bg-white shadow-sm rounded-lg border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100">
+      <div class="flex justify-between items-center">
+        <h3 class="font-semibold text-gray-800 flex items-center">
+          <span class="material-icons text-blue-500 mr-2 text-sm">pie_chart</span>
+          Phân bổ doanh thu theo phim
+        </h3>
+      </div>
+    </div>
+    <div class="chart-container">
+      <p-chart type="pie" [data]="pieChartData" [options]="pieChartOptions"></p-chart>
+    </div>
+    <td class="p-3 text-sm text-right font-bold text-blue-600">Tổng số: {{totalMovieRevenue | number}} VND</td>
+
+  </div>
   }
 
 

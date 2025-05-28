@@ -41,6 +41,7 @@ export class ThongKeComponent implements OnInit {
     // Lấy thông tin user từ localStorage
     this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     this.isManager = this.currentUser?.role === 2;
+    this.initPieChart();
 
     // Khởi tạo ngày bắt đầu và kết thúc mặc định (tháng hiện tại)
     const today = new Date();
@@ -58,6 +59,168 @@ export class ThongKeComponent implements OnInit {
   private loadInitialData() {
     this.handleThongKe();
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // Thêm vào class ThongKeComponent
+  pieChartData: any;
+  pieChartOptions: any;
+
+  // Thêm vào phương thức ngOnInit(), sau khi khởi tạo các giá trị mặc định
+
+  // Thêm phương thức khởi tạo biểu đồ
+  private initPieChart() {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--text-color');
+
+    this.pieChartOptions = {
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            usePointStyle: true,
+            color: textColor,
+            font: {
+              size: 17, // Tăng kích thước font
+              weight: 'bold' // Làm đậm chữ
+            },
+            padding: 10, // Tăng khoảng cách giữa các mục
+            boxWidth: 40, // Tăng kích thước biểu tượng màu
+            boxHeight: 40 // Tăng kích thước biểu tượng màu
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: any) => {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ${value.toLocaleString()} VND (${percentage}%)`;
+            }
+          }
+        },
+        // title: {
+        //   display: true,
+        //   text: 'DOANH THU THEO PHIM', // Thêm tiêu đề biểu đồ
+        //   font: {
+        //     size: 16,
+        //     weight: 'bold'
+        //   },
+        //   // padding: {
+        //   //   top: 10,
+        //   //   bottom: 20
+        //   // }
+        // }
+      },
+      cutout: '60%',
+      animation: {
+        animateScale: true,
+        animateRotate: true
+      }
+    };
+
+    this.updatePieChartData();
+  }
+
+  private updatePieChartData() {
+    const documentStyle = getComputedStyle(document.documentElement);
+
+    // Chỉ hiển thị top 5 phim doanh thu cao nhất, gom phần còn lại vào "Phim khác"
+    const topMovies = [...this.movieRevenueData]
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+
+    const otherRevenue = this.movieRevenueData
+      .slice(5)
+      .reduce((sum, movie) => sum + movie.revenue, 0);
+
+    const labels = topMovies.map(movie => movie.name);
+    const data = topMovies.map(movie => movie.revenue);
+
+    if (otherRevenue > 0) {
+      labels.push('Phim khác');
+      data.push(otherRevenue);
+    }
+
+    // Mảng màu sắc tươi sáng hơn
+    const backgroundColors = [
+      '#4BC0C0', // Teal
+      '#9966FF', // Purple
+      '#FF9F40', // Orange
+      '#FFCD56', // Yellow
+      '#36A2EB', // Blue
+      '#FF6384', // Pink
+      '#8AC24A', // Green
+      '#FF7043', // Deep Orange
+      '#7E57C2', // Deep Purple
+      '#26C6DA'  // Cyan
+    ];
+
+    this.pieChartData = {
+      labels: labels,
+      datasets: [
+        {
+          data: data,
+          backgroundColor: backgroundColors.slice(0, labels.length),
+          hoverBackgroundColor: backgroundColors.map(color => this.lightenColor(color, 20)).slice(0, labels.length),
+          borderWidth: 1,
+          borderColor: documentStyle.getPropertyValue('--surface-ground')
+        }
+      ]
+    };
+  }
+
+  // Hàm phụ trợ để làm sáng màu
+  private lightenColor(color: string, percent: number): string {
+    const num = parseInt(color.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+
+    return '#' + (
+      0x1000000 +
+      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+      (B < 255 ? (B < 1 ? 0 : B) : 255)
+    ).toString(16).slice(1);
+  }
+
+  // Phương thức cập nhật dữ liệu cho biểu đồ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Xử lý nút thống kê
   handleThongKe() {
@@ -91,6 +254,8 @@ export class ThongKeComponent implements OnInit {
         }));
         this.originalMovieRevenueData = [...this.movieRevenueData];
         this.filterMovieData();
+        // Cập nhật biểu đồ
+        this.updatePieChartData();
 
         this.isLoading = false;
       },
@@ -99,27 +264,30 @@ export class ThongKeComponent implements OnInit {
         this.isLoading = false;
       }
     });
+    this.thongKeService.getRevenueByCinema(this.startDate, this.endDate).subscribe({
+      next: (cinemaData) => {
+        this.cinemaRevenueData = cinemaData.cinemaStats.map((cinema: any) => ({
+          name: cinema.cinema.cinema_name,
+          tickets: cinema.ticketCount,
+          revenue: cinema.revenue
+        }));
+        this.originalCinemaRevenueData = [...this.cinemaRevenueData];
+        this.filterCinemaData();
+
+        console.log('Dữ liệu rạp:', this.cinemaRevenueData);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Lỗi khi lấy dữ liệu thống kê rạp:', err);
+        this.isLoading = false;
+      }
+    });
+
+
 
     // Chỉ gọi API thống kê theo rạp nếu không phải là manager (role != 2)
     if (!this.isManager) {
-      this.thongKeService.getRevenueByCinema(this.startDate, this.endDate).subscribe({
-        next: (cinemaData) => {
-          this.cinemaRevenueData = cinemaData.cinemaStats.map((cinema: any) => ({
-            name: cinema.cinema.cinema_name,
-            tickets: cinema.ticketCount,
-            revenue: cinema.revenue
-          }));
-          this.originalCinemaRevenueData = [...this.cinemaRevenueData];
-          this.filterCinemaData();
 
-          console.log('Dữ liệu rạp:', this.cinemaRevenueData);
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Lỗi khi lấy dữ liệu thống kê rạp:', err);
-          this.isLoading = false;
-        }
-      });
     } else {
       // Nếu là manager, ẩn hoặc xử lý khác phần thống kê theo rạp
       this.cinemaRevenueData = [];
@@ -158,6 +326,7 @@ export class ThongKeComponent implements OnInit {
     } else {
       this.movieRevenueData = this.originalMovieRevenueData.filter(m => m.name === this.selectedMovie);
     }
+    this.updatePieChartData();
   }
 
   filterCinemaData() {
