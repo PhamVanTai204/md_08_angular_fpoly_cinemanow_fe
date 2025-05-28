@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ComboService } from '../../../shared/services/combo.service';
 import { UserService } from '../../../shared/services/user.service';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin, timer } from 'rxjs';
 import { ComboDto } from '../../../shared/dtos/ComboDto.dto';
 
 @Component({
@@ -195,18 +195,24 @@ export class ComboComponent implements OnInit, OnDestroy {
     return Array.isArray(this.combos) && this.combos.length > 0;
   }
 
-  // Load all combos
+  // Load all combos với delay loading tối thiểu 2 giây
   loadAllCombos(): void {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const sub = this.comboService.getAllCombos().subscribe({
-      next: (response) => {
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000); // 2 giây
+    const apiCall = this.comboService.getAllCombos();
+    
+    // Sử dụng forkJoin để đợi cả timer và API call hoàn thành
+    const sub = forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, response]) => {
         if (Array.isArray(response)) {
           this.combos = response;
           this.totalItems = this.combos.length;
           this.calculateTotalPages();
           this.generatePagesToShow();
+          console.log('Dữ liệu combo đã được tải sau delay 2 giây');
         } else {
           console.error('API response is not an array:', response);
           this.combos = [];
@@ -224,6 +230,12 @@ export class ComboComponent implements OnInit, OnDestroy {
     });
     
     this.subscriptions.push(sub);
+  }
+
+  // Refresh dữ liệu với delay (có thể gọi từ nút refresh)
+  refreshCombos(): void {
+    console.log('Đang làm mới dữ liệu combo...');
+    this.loadAllCombos();
   }
 
   // Get paginated combos
@@ -300,15 +312,20 @@ export class ComboComponent implements OnInit, OnDestroy {
     return this.canEditCombo(combo);
   }
 
-  // Load combo details
+  // Load combo details với delay
   loadComboDetails(id: string): void {
     this.isLoading = true;
     
-    const sub = this.comboService.getComboById(id).subscribe({
-      next: (data) => {
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000);
+    const apiCall = this.comboService.getComboById(id);
+    
+    const sub = forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, data]) => {
         this.selectedCombo = data;
         this.showDetailsDialog = true;
         this.isLoading = false;
+        console.log('Chi tiết combo đã được tải sau delay 2 giây');
       },
       error: (error) => {
         this.errorMessage = 'Không thể tải chi tiết combo. Vui lòng thử lại sau.';
@@ -382,13 +399,18 @@ export class ComboComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Create new combo
+  // Create new combo với delay
   createCombo(): void {
     this.isLoading = true;
 
-    const sub = this.comboService.createCombo(this.newCombo).subscribe({
-      next: () => {
-        this.loadAllCombos();
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000);
+    const apiCall = this.comboService.createCombo(this.newCombo);
+
+    const sub = forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, result]) => {
+        console.log('Combo đã được tạo sau delay 2 giây');
+        this.loadAllCombos(); // Sẽ có delay thêm 2 giây nữa khi tải lại
         this.closeDialog();
       },
       error: (error) => {
@@ -401,7 +423,7 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  // Update existing combo
+  // Update existing combo với delay
   updateCombo(): void {
     if (!this.editId) return;
 
@@ -413,9 +435,14 @@ export class ComboComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    const sub = this.comboService.updateCombo(this.editId, this.newCombo).subscribe({
-      next: () => {
-        this.loadAllCombos();
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000);
+    const apiCall = this.comboService.updateCombo(this.editId, this.newCombo);
+
+    const sub = forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, result]) => {
+        console.log('Combo đã được cập nhật sau delay 2 giây');
+        this.loadAllCombos(); // Sẽ có delay thêm 2 giây nữa khi tải lại
         this.closeDialog();
       },
       error: (error) => {
@@ -450,17 +477,23 @@ export class ComboComponent implements OnInit, OnDestroy {
     this.comboToDelete = { id: '', name: '' };
   }
 
-  // Delete combo
+  // Delete combo với delay
   deleteCombo(id: string): void {
     this.isLoading = true;
 
-    const sub = this.comboService.deleteCombo(id).subscribe({
-      next: () => {
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000);
+    const apiCall = this.comboService.deleteCombo(id);
+
+    const sub = forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, result]) => {
+        console.log('Combo đã được xóa sau delay 2 giây');
+        
         if (this.selectedCombo && this.selectedCombo.id === id) {
           this.selectedCombo = null;
         }
 
-        this.loadAllCombos();
+        this.loadAllCombos(); // Sẽ có delay thêm 2 giây nữa khi tải lại
         this.showDeleteDialog = false;
       },
       error: (error) => {

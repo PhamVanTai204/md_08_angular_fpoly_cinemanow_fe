@@ -7,11 +7,28 @@
       {{ isAdminView ? 'Quản Lý Combo' : 'Combo Của Bạn' }}
     </h1>
 
-    <button (click)="openDialog()"
-      class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-      <span class="material-icons text-sm mr-1">add</span>
-      Thêm Combo
-    </button>
+    <div class="flex space-x-2">
+      <!-- Nút Refresh -->
+      <button 
+        (click)="refreshCombos()" 
+        [disabled]="isLoading"
+        class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
+        title="Làm mới dữ liệu">
+        <span class="material-icons text-sm mr-1" [ngClass]="{'animate-spin': isLoading}">refresh</span>
+        Làm mới
+      </button>
+      
+      <!-- Nút Thêm Combo -->
+      <button 
+        (click)="openDialog()"
+        [disabled]="isLoading"
+        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}">
+        <span class="material-icons text-sm mr-1">add</span>
+        Thêm Combo
+      </button>
+    </div>
   </div>
 
   <!-- Thông báo lỗi -->
@@ -25,9 +42,10 @@
     </div>
   </div>
 
-  <!-- Loading spinner -->
-  <div *ngIf="isLoading" class="flex justify-center my-6">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  <!-- Loading spinner với thông báo -->
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center my-8">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+    <p class="text-gray-600 text-sm">Đang tải dữ liệu combo...</p>
   </div>
 
   <!-- Combo Table -->
@@ -67,16 +85,30 @@
               <div class="text-sm text-gray-900">{{ getUserName(combo.user_id) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-              <button (click)="loadComboDetails(combo.id)" class="text-blue-600 hover:text-blue-900 mx-1"
+              <button 
+                (click)="loadComboDetails(combo.id)" 
+                [disabled]="isLoading"
+                class="text-blue-600 hover:text-blue-900 mx-1"
+                [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
                 title="Chi tiết">
                 <span class="material-icons text-sm">visibility</span>
               </button>
-              <button *ngIf="canEditCombo(combo)" (click)="openDialog(combo)"
-                class="text-yellow-600 hover:text-yellow-900 mx-1" title="Sửa">
+              <button 
+                *ngIf="canEditCombo(combo)" 
+                (click)="openDialog(combo)"
+                [disabled]="isLoading"
+                class="text-yellow-600 hover:text-yellow-900 mx-1" 
+                [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
+                title="Sửa">
                 <span class="material-icons text-sm">edit</span>
               </button>
-              <button *ngIf="canDeleteCombo(combo)" (click)="confirmDelete(combo.id, combo.name_combo)"
-                class="text-red-600 hover:text-red-900 mx-1" title="Xóa">
+              <button 
+                *ngIf="canDeleteCombo(combo)" 
+                (click)="confirmDelete(combo.id, combo.name_combo)"
+                [disabled]="isLoading"
+                class="text-red-600 hover:text-red-900 mx-1" 
+                [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
+                title="Xóa">
                 <span class="material-icons text-sm">delete</span>
               </button>
             </td>
@@ -87,8 +119,7 @@
             <td colspan="5" class="px-6 py-10 text-center text-gray-500">
               <div class="flex flex-col items-center">
                 <span class="material-icons text-gray-300 text-5xl mb-2">fastfood</span>
-                <span>{{ isAdminView ? 'Không có combo nào. Hãy thêm combo mới.' : 'Bạn chưa có combo nào. Hãy thêm
-                  combo mới.' }}</span>
+                <span>{{ isAdminView ? 'Không có combo nào. Hãy thêm combo mới.' : 'Bạn chưa có combo nào. Hãy thêm combo mới.' }}</span>
               </div>
             </td>
           </tr>
@@ -238,7 +269,7 @@
   </div>
 </div>
 
-<!-- Dialog Thêm/Sửa Combo với validation - Voucher style -->
+<!-- Dialog Thêm/Sửa Combo với validation -->
 <div *ngIf="showDialog" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
   aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -271,7 +302,9 @@
               <label class="block text-sm font-medium text-gray-700">Mã Combo <span
                   class="text-red-500">*</span></label>
               <input type="text" [(ngModel)]="newCombo.combo_id" name="combo_id" (blur)="markFieldAsTouched('combo_id')"
+                [disabled]="isLoading"
                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
                 placeholder="CB001" required>
               <p *ngIf="formErrors.combo_id && touchedFields.combo_id" class="mt-1 text-sm text-red-600">
                 {{ formErrors.combo_id }}
@@ -284,7 +317,9 @@
                   class="text-red-500">*</span></label>
               <input type="text" [(ngModel)]="newCombo.name_combo" name="name_combo"
                 (blur)="markFieldAsTouched('name_combo')"
+                [disabled]="isLoading"
                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
                 placeholder="Combo Đôi" required>
               <p *ngIf="formErrors.name_combo && touchedFields.name_combo" class="mt-1 text-sm text-red-600">
                 {{ formErrors.name_combo }}
@@ -301,7 +336,9 @@
               </div>
               <input type="number" [(ngModel)]="newCombo.price_combo" name="price_combo"
                 (blur)="markFieldAsTouched('price_combo')"
+                [disabled]="isLoading"
                 class="block w-full pl-7 pr-12 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
                 placeholder="0" required>
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <span class="text-gray-500 sm:text-sm">VND</span>
@@ -317,7 +354,9 @@
             <label class="block text-sm font-medium text-gray-700">Mô tả</label>
             <textarea [(ngModel)]="newCombo.description_combo" name="description_combo" rows="3"
               (blur)="markFieldAsTouched('description_combo')"
+              [disabled]="isLoading"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
               placeholder="Bao gồm 2 bắp + 2 nước lớn..."></textarea>
             <p *ngIf="formErrors.description_combo && touchedFields.description_combo"
               class="mt-1 text-sm text-red-600">
@@ -330,7 +369,9 @@
             <label class="block text-sm font-medium text-gray-700">URL Hình ảnh</label>
             <input type="text" [(ngModel)]="newCombo.image_combo" name="image_combo"
               (blur)="markFieldAsTouched('image_combo')"
+              [disabled]="isLoading"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}"
               placeholder="https://example.com/images/combo.jpg">
             <p *ngIf="formErrors.image_combo && touchedFields.image_combo" class="mt-1 text-sm text-red-600">
               {{ formErrors.image_combo }}
