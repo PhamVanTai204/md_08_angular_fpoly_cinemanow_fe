@@ -209,41 +209,6 @@ export class NhanVienComponent implements OnInit, OnDestroy {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
-  // Khóa/mở khóa tài khoản
-  toggleUserStatus(user: User): void {
-    if (!this.isAdmin) {
-      this.errorMessage = 'Bạn không có quyền thực hiện thao tác này';
-      return;
-    }
-
-    this.isLoading = true;
-    const isActive = user.isActive === false || user.isActive === undefined ? true : false;
-
-    const sub = this.phanQuyenService.updateUserStatus(user._id, isActive)
-      .pipe(finalize(() => this.isLoading = false))
-      .subscribe({
-        next: (response) => {
-          if (response.code === 200) {
-            user.isActive = isActive;
-            const message = isActive ? 'Đã mở khóa tài khoản' : 'Đã khóa tài khoản';
-            this.successMessage = `${message} cho ${user.user_name}`;
-
-            setTimeout(() => {
-              this.successMessage = '';
-            }, 3000);
-          } else {
-            this.errorMessage = response.error || 'Có lỗi xảy ra khi cập nhật trạng thái';
-          }
-        },
-        error: (error) => {
-          console.error('Error toggling user status:', error);
-          this.errorMessage = 'Lỗi kết nối máy chủ';
-        }
-      });
-
-    this.subscriptions.push(sub);
-  }
-
   // Lấy tên vai trò từ id
   getRoleName(roleId: number): string {
     return this.phanQuyenService.getRoleName(roleId);
@@ -434,38 +399,31 @@ export class NhanVienComponent implements OnInit, OnDestroy {
         userData.password = this.newUser.password;
       }
 
-      const headers = new HttpHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      });
-
-      this.http.patch(
-        `http://127.0.0.1:3000/users/update-profile/${this.selectedUser._id}`,
-        userData, 
-        { headers: headers }
-      ).subscribe({
-        next: (response: any) => {
+      const sub = this.phanQuyenService.updateUser(this.selectedUser._id, userData)
+        .pipe(finalize(() => {
           this.isLoading = false;
           this.showForm = false;
-          
-          if (response.code === 200) {
-            this.successMessage = `Đã cập nhật thông tin cho ${this.newUser.user_name}`;
-            this.loadStaffUsers();
+        }))
+        .subscribe({
+          next: (response) => {
+            if (response.code === 200) {
+              this.successMessage = `Đã cập nhật thông tin cho ${this.newUser.user_name}`;
+              this.loadStaffUsers();
 
-            setTimeout(() => {
-              this.successMessage = '';
-            }, 3000);
-          } else {
-            this.errorMessage = response.error || 'Có lỗi xảy ra khi cập nhật';
+              setTimeout(() => {
+                this.successMessage = '';
+              }, 3000);
+            } else {
+              this.errorMessage = response.error || 'Có lỗi xảy ra khi cập nhật';
+            }
+          },
+          error: (error) => {
+            console.error('Error updating user:', error);
+            this.errorMessage = 'Lỗi kết nối máy chủ';
           }
-        },
-        error: (error) => {
-          console.error('Error updating user:', error);
-          this.errorMessage = 'Lỗi kết nối máy chủ: ' + (error.message || JSON.stringify(error));
-          this.isLoading = false;
-          this.showForm = false;
-        }
-      });
+        });
+
+      this.subscriptions.push(sub);
     } else {
       // Thêm nhân viên mới
       const newUserData = {

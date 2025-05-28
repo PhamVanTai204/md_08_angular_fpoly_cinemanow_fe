@@ -77,8 +77,6 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avatar</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên người dùng</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quyền</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
           </tr>
         </thead>
@@ -102,29 +100,10 @@
               {{ user.email }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                {{ getRoleName(user.role) }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span [ngClass]="user.isActive === false ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
-                class="px-2 py-1 rounded-full text-xs font-medium">
-                {{ user.isActive === false ? 'Đã khóa' : 'Đang hoạt động' }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex space-x-2">
                 <button (click)="editUser(user)"
                   class="text-blue-600 hover:bg-blue-100 p-1 rounded-full transition-colors duration-200">
                   <span class="material-icons text-sm">edit</span>
-                </button>
-
-                <button (click)="toggleUserStatus(user)"
-                  [class]="user.isActive === false ? 'text-green-600 hover:bg-green-100' : 'text-orange-600 hover:bg-orange-100'"
-                  class="p-1 rounded-full transition-colors duration-200">
-                  <span class="material-icons text-sm">
-                    {{ user.isActive === false ? 'lock_open' : 'lock' }}
-                  </span>
                 </button>
 
                 <button (click)="deleteUser(user)"
@@ -137,7 +116,7 @@
 
           <!-- Hiển thị khi không có dữ liệu -->
           <tr *ngIf="staffUsers.length === 0">
-            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+            <td colspan="4" class="px-6 py-4 text-center text-gray-500">
               Không có nhân viên nào trong rạp này
             </td>
           </tr>

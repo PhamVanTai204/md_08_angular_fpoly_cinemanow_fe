@@ -1,3 +1,4 @@
+// thanh-toan.component.ts - Enhanced with detail dialog
 import { Component, OnInit } from "@angular/core";
 import { PaymentService, PaymentDto } from "../../../shared/services/payment.service";
 
@@ -18,6 +19,11 @@ export class ThanhToanComponent implements OnInit {
   totalPages: number = 1;
   currentUser: any;
 
+  // Dialog state
+  isDetailDialogOpen: boolean = false;
+  selectedPayment: PaymentDto | null = null;
+  isLoadingDetail: boolean = false;
+
   constructor(private paymentService: PaymentService) { }
 
   ngOnInit(): void {
@@ -26,7 +32,229 @@ export class ThanhToanComponent implements OnInit {
     this.loadThanhToanData(this.currentUser.cinema_id);
   }
 
+  // ========== DIALOG METHODS ==========
 
+  /**
+   * Open payment detail dialog
+   */
+  openDetailDialog(payment: PaymentDto): void {
+    this.selectedPayment = payment;
+    this.isDetailDialogOpen = true;
+    console.log('Selected payment for detail:', payment);
+  }
+
+  /**
+   * Close payment detail dialog
+   */
+  closeDetailDialog(): void {
+    this.isDetailDialogOpen = false;
+    this.selectedPayment = null;
+  }
+
+  /**
+   * Check if payment is completed and can print tickets
+   */
+  canPrintTickets(payment: PaymentDto): boolean {
+    return payment && payment.status_order === 'completed';
+  }
+
+  /**
+   * Get total items count (seats + combos)
+   */
+  getTotalItems(payment: PaymentDto): number {
+    if (!payment || !payment.ticket) return 0;
+    const seatsCount = payment.ticket.seats?.length || 0;
+    const combosCount = payment.ticket.combos?.length || 0;
+    return seatsCount + combosCount;
+  }
+
+  /**
+   * Get payment method text
+   */
+  getPaymentMethodText(method: number): string {
+    switch (method) {
+      case 0:
+        return 'Tiền mặt';
+      case 1:
+        return 'Chuyển khoản (VNPay)';
+      case 2:
+        return 'Momo';
+      default:
+        return 'Không xác định';
+    }
+  }
+
+  /**
+  * Get payment method icon for display
+  */
+  getPaymentMethodIcon(method: number): string {
+    switch (method) {
+      case 0:
+        return 'fas fa-money-bill-wave'; // Tiền mặt
+      case 1:
+        return 'fas fa-credit-card'; // VNPay
+      case 2:
+        return 'fas fa-mobile-alt'; // Momo
+      default:
+        return 'fas fa-question-circle';
+    }
+  }
+
+  /**
+  * Get payment method color class
+  */
+  getPaymentMethodColorClass(method: number): string {
+    switch (method) {
+      case 0:
+        return 'text-green-600'; // Tiền mặt - xanh lá
+      case 1:
+        return 'text-blue-600'; // VNPay - xanh dương
+      case 2:
+        return 'text-pink-600'; // Momo - hồng
+      default:
+        return 'text-gray-600';
+    }
+  }
+
+  /**
+  * Format VNPay response code to Vietnamese text
+  */
+  getVNPayResponseText(responseCode: string): string {
+    switch (responseCode) {
+      case '00':
+        return 'Giao dịch thành công';
+      case '07':
+        return 'Trừ tiền thành công. Giao dịch bị nghi ngờ (liên quan tới lừa đảo, giao dịch bất thường)';
+      case '09':
+        return 'Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng chưa đăng ký dịch vụ InternetBanking tại ngân hàng';
+      case '10':
+        return 'Giao dịch không thành công do: Khách hàng xác thực thông tin thẻ/tài khoản không đúng quá 3 lần';
+      case '11':
+        return 'Giao dịch không thành công do: Đã hết hạn chờ thanh toán';
+      case '12':
+        return 'Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng bị khóa';
+      case '13':
+        return 'Giao dịch không thành công do Quý khách nhập sai mật khẩu xác thực giao dịch (OTP)';
+      case '24':
+        return 'Giao dịch không thành công do: Khách hàng hủy giao dịch';
+      case '51':
+        return 'Giao dịch không thành công do: Tài khoản của quý khách không đủ số dư thực hiện giao dịch';
+      case '65':
+        return 'Giao dịch không thành công do: Tài khoản của Quý khách đã vượt quá hạn mức giao dịch trong ngày';
+      case '75':
+        return 'Ngân hàng thanh toán đang bảo trì';
+      case '79':
+        return 'Giao dịch không thành công do: KH nhập sai mật khẩu thanh toán quá số lần quy định';
+      case '99':
+        return 'Các lỗi khác (lỗi còn lại, không có trong danh sách mã lỗi đã liệt kê)';
+      default:
+        return responseCode ? `Mã lỗi: ${responseCode}` : 'Không có thông tin';
+    }
+  }
+
+  /**
+   * Get bank name from VNPay bank code
+   */
+  getBankName(bankCode: string): string {
+    const bankNames: { [key: string]: string } = {
+      'NCB': 'Ngân hàng NCB',
+      'AGRIBANK': 'Ngân hàng Agribank',
+      'SCB': 'Ngân hàng SCB',
+      'SACOMBANK': 'Ngân hàng SacomBank',
+      'EXIMBANK': 'Ngân hàng EximBank',
+      'MSBANK': 'Ngân hàng MS Bank',
+      'NAMABANK': 'Ngân hàng NamA Bank',
+      'VNMART': 'Ví VnMart',
+      'VIETINBANK': 'Ngân hàng Vietinbank',
+      'VIETCOMBANK': 'Ngân hàng VCB',
+      'HDBANK': 'Ngân hàng HDBank',
+      'DONGABANK': 'Ngân hàng Dong A',
+      'TPBANK': 'Ngân hàng TPBank',
+      'OJB': 'Ngân hàng OceanBank',
+      'BIDV': 'Ngân hàng BIDV',
+      'TECHCOMBANK': 'Ngân hàng Techcombank',
+      'VPBANK': 'Ngân hàng VPBank',
+      'MBBANK': 'Ngân hàng MBBank',
+      'ACB': 'Ngân hàng ACB',
+      'OCB': 'Ngân hàng OCB',
+      'IVB': 'Ngân hàng IVB',
+      'VISA': 'Thanh toán qua VISA/MASTER'
+    };
+    return bankNames[bankCode] || bankCode || 'Không xác định';
+  }
+  
+  /**
+   * Get total combo quantity
+   */
+  getTotalComboQuantity(combos: any[]): number {
+    if (!combos || combos.length === 0) return 0;
+    return combos.reduce((total, combo) => total + (combo.quantity || 0), 0);
+  }
+
+  /**
+   * Calculate total combo price
+   */
+  getTotalComboPrice(combos: any[]): number {
+    if (!combos || combos.length === 0) return 0;
+    return combos.reduce((total, combo) => total + (combo.price || 0), 0);
+  }
+
+  /**
+   * Calculate total seat price
+   */
+  getTotalSeatPrice(seats: any[]): number {
+    if (!seats || seats.length === 0) return 0;
+    return seats.reduce((total, seat) => total + (seat.price || 0), 0);
+  }
+
+  /**
+   * Get seat list as string
+   */
+  getSeatListString(seats: any[]): string {
+    if (!seats || seats.length === 0) return 'Không có';
+    return seats.map(seat =>
+      `${seat.seatDetails?.row_of_seat}${seat.seatDetails?.column_of_seat}`
+    ).join(', ');
+  }
+
+  /**
+   * Get combo list as string
+   */
+  getComboListString(combos: any[]): string {
+    if (!combos || combos.length === 0) return 'Không có';
+    return combos.map(combo =>
+      `${combo.comboDetails?.name_combo} (x${combo.quantity})`
+    ).join(', ');
+  }
+
+  /**
+   * Print tickets from dialog
+   */
+  printTicketsFromDialog(): void {
+    if (this.selectedPayment && this.canPrintTickets(this.selectedPayment)) {
+      this.printAllInOneWindow(this.selectedPayment);
+      this.closeDetailDialog();
+    }
+  }
+
+  /**
+   * Get status badge class for dialog
+   */
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'failed':
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  }
+
+  // ========== EXISTING METHODS ==========
 
   // Alternative: In tất cả trong một cửa sổ
   printAllInOneWindow(payment: PaymentDto): void {
@@ -58,7 +286,6 @@ export class ThanhToanComponent implements OnInit {
     this.openPrintWindow(allContent, 'all_tickets');
   }
 
-
   private openPrintWindow(content: string, windowName: string): void {
     const printWindow = window.open('', windowName);
     if (printWindow) {
@@ -72,10 +299,17 @@ export class ThanhToanComponent implements OnInit {
       }, 500);
     }
   }
+
   formatDate(dateStr: string | null | undefined): string {
     if (!dateStr) return 'N/A'; // Xử lý cả null và undefined
     return new Date(dateStr).toLocaleDateString('vi-VN');
   }
+
+  formatDateTime(dateStr: string | null | undefined): string {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toLocaleString('vi-VN');
+  }
+
   private generateSeatTicket(payment: PaymentDto, seat: any): string {
     return `
       <!DOCTYPE html>
@@ -485,18 +719,7 @@ export class ThanhToanComponent implements OnInit {
     `;
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
+  // ========== PAGINATION METHODS ==========
 
   getPageNumbers(): number[] {
     const current = this.currentPage + 1;
@@ -543,7 +766,6 @@ export class ThanhToanComponent implements OnInit {
         this.totalRecords = data.totalPayments;
         this.totalPages = data.totalPages;
         console.log(this.thanhToanList);
-
       },
       error: (err) => {
         console.error('Lỗi tải dữ liệu thanh toán:', err);
@@ -594,6 +816,4 @@ export class ThanhToanComponent implements OnInit {
   traCuuGD(): void {
     alert('Đang chuyển đến trang tra cứu giao dịch chi tiết');
   }
-
-
 }
