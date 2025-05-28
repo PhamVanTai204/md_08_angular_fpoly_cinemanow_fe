@@ -4,7 +4,7 @@ import { BsModalService } from 'ngx-bootstrap/modal';
 import { CinemaDto } from '../../../../shared/dtos/cinemasDto.dto';
 import { Router } from '@angular/router';
 import { UserService } from '../../../../shared/services/user.service';
-import { ShowtimesService } from '../../../../shared/services/showtimes.service';
+import { ShowtimeDateGroup, ShowtimesByMovieAndCinemaResponse, ShowtimesService } from '../../../../shared/services/showtimes.service';
 import { forkJoin, timer } from 'rxjs';
 
 @Component({
@@ -18,12 +18,22 @@ export class ShowTimeDialogComponent implements OnInit {
   isLoading: boolean = false;
   cinemas: CinemaDto[] = [];
   allCinemas: CinemaDto[] = []; // Lưu tất cả rạp từ API
-  error: string | null = null;
+  error: any | null = null;
+  error1: any | null = null;
+
   currentUser: any = null; // Thông tin user hiện tại
+  showtimesData: ShowtimeDateGroup[] = [];
+  idCinema: string = '';
 
   ngOnInit(): void {
     this.getCurrentUser();
     this.loadCinemas(this.id);
+    this.idCinema = localStorage.getItem('userCinemaId') || '';
+    if (this.id) {
+      this.loadShowtimesByMovieAndCinema(this.id, this.idCinema)
+    } else {
+      this.error = 'Không tìm thấy userCinemaId trong localStorage';
+    }
   }
 
   constructor(
@@ -33,7 +43,28 @@ export class ShowTimeDialogComponent implements OnInit {
     private router: Router,
     private userService: UserService // Inject UserService
   ) { }
+  loadShowtimesByMovieAndCinema(movieId: string, cinemaId: string): void {
+    this.isLoading = true;
+    this.error = null;
 
+    this.showtimesService.getShowtimesByMovieAndCinema(movieId, cinemaId).subscribe({
+      next: (response: ShowtimesByMovieAndCinemaResponse) => {
+        if (response.code === 200 && response.data) {
+          this.showtimesData = response.data;
+        } else {
+          this.error = 'Không có dữ liệu suất chiếu';
+        }
+        console.log(this.showtimesData);
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.error1 = err.error;
+        this.isLoading = false;
+        console.error(this.error1);
+      }
+    });
+  }
   // Lấy thông tin user hiện tại
   getCurrentUser(): void {
     this.currentUser = this.userService.getCurrentUser();
@@ -44,14 +75,22 @@ export class ShowTimeDialogComponent implements OnInit {
   closeModal() {
     this._modalService.hide();
   }
-
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
   // Load cinemas với delay 2 giây
   loadCinemas(id: string): void {
     this.isLoading = true;
     this.error = null;
 
     // Tạo timer 2 giây và kết hợp với API call
-    const minimumDelay = timer(2000); // 2 giây
+    const minimumDelay = timer(100); // 2 giây
     const apiCall = this.cinemasService.getCinemaByFilm(id);
 
     forkJoin([minimumDelay, apiCall]).subscribe({

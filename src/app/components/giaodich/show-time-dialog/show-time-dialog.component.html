@@ -13,10 +13,7 @@
             </div>
             <div class="header-actions">
                 <!-- Refresh button -->
-                <button 
-                    class="refresh-button" 
-                    (click)="refreshCinemas()" 
-                    [disabled]="isLoading"
+                <button class="refresh-button" (click)="refreshCinemas()" [disabled]="isLoading"
                     title="Làm mới dữ liệu">
                     <i class="fas fa-sync-alt" [ngClass]="{'fa-spin': isLoading}"></i>
                 </button>
@@ -63,7 +60,8 @@
                     </div>
                     <div class="error-text">
                         <h4 class="error-title">Đã xảy ra lỗi</h4>
-                        <p class="error-message">{{ error }}</p>
+                        <p class="error-message">{{ error1.error
+                            }}</p>
                     </div>
                 </div>
                 <button class="retry-button" (click)="retryLoading()">
@@ -76,40 +74,21 @@
             <div class="cinema-grid" *ngIf="!isLoading && !error && cinemas.length > 0">
                 <div *ngFor="let rap of cinemas; let i = index" class="cinema-card">
                     <div class="card-content">
-                        <div class="card-header">
-                            <div class="cinema-header-icon">
-                                <i class="fas fa-building"></i>
-                            </div>
-                            <div class="cinema-header-text">
-                                <h3 class="cinema-name">{{ rap.cinemaName }}</h3>
-                                <p class="cinema-location">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    {{ rap.location }}
-                                </p>
-                            </div>
-                        </div>
 
                         <!-- Showtimes -->
-                        <div class="showtimes-section" *ngIf="rap.showtimes && rap.showtimes.length > 0">
-                            <div class="showtimes-header">
-                                <i class="fas fa-clock"></i>
-                                <span class="showtimes-title">Suất chiếu hôm nay</span>
-                            </div>
-                            <div class="showtime-grid">
-                                <button 
-                                    *ngFor="let st of rap.showtimes" 
-                                    (click)="showRomDialog(st.roomId, st.id)" 
-                                    class="showtime-button">
-                                    <div class="showtime-time">
-                                        <span class="start-time">{{ st.startTime }}</span>
-                                        <span class="time-separator">-</span>
-                                        <span class="end-time">{{ st.endTime }}</span>
+                        <div class="showtimes-section">
+
+                            <div class="date-columns">
+                                <div *ngFor="let dateGroup of showtimesData" class="date-column">
+                                    <h3 class="date-title">{{ formatDate(dateGroup.date) }}</h3>
+                                    <div class="showtime-list">
+                                        <button *ngFor="let showtime of dateGroup.showtimes"
+                                            (click)="showRomDialog(showtime.roomId, showtime.id)"
+                                            class="showtime-button">
+                                            {{ showtime.startTime }} - {{ showtime.endTime }}
+                                        </button>
                                     </div>
-                                    <div class="showtime-room">
-                                        <i class="fas fa-couch"></i>
-                                        <span>Phòng {{ st.roomId }}</span>
-                                    </div>
-                                </button>
+                                </div>
                             </div>
                         </div>
 
