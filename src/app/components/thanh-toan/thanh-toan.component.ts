@@ -16,11 +16,14 @@ export class ThanhToanComponent implements OnInit {
   currentPage: number = 0;
   rows: number = 10;
   totalPages: number = 1;
+  currentUser: any;
 
   constructor(private paymentService: PaymentService) { }
 
   ngOnInit(): void {
-    this.loadThanhToanData();
+    this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    console.log(this.currentUser.cinema_id);
+    this.loadThanhToanData(this.currentUser.cinema_id);
   }
 
 
@@ -258,35 +261,35 @@ export class ThanhToanComponent implements OnInit {
 
   goToPage(pageNumber: number): void {
     this.currentPage = pageNumber - 1;
-    this.loadThanhToanData();
+    this.loadThanhToanData(this.currentUser.cinema_id);
   }
 
   goToPreviousPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
-      this.loadThanhToanData();
+      this.loadThanhToanData(this.currentUser.cinema_id);
     }
   }
 
   goToNextPage(): void {
     if (this.currentPage < this.totalPages - 1) {
       this.currentPage++;
-      this.loadThanhToanData();
+      this.loadThanhToanData(this.currentUser.cinema_id);
     }
   }
 
   onRowsPerPageChange(): void {
     this.currentPage = 0;
-    this.loadThanhToanData();
+    this.loadThanhToanData(this.currentUser.cinema_id);
   }
 
   isLastPage(): boolean {
     return this.currentPage >= this.totalPages - 1;
   }
 
-  loadThanhToanData(): void {
+  loadThanhToanData(cinema_id: string): void {
     const page = this.currentPage + 1;
-    this.paymentService.getAllPayments(page, this.rows, this.searchTerm).subscribe({
+    this.paymentService.getAllPayments(page, this.rows, this.searchTerm, cinema_id).subscribe({
       next: (data) => {
         this.thanhToanList = data.payments;
         this.totalRecords = data.totalPayments;
@@ -302,13 +305,13 @@ export class ThanhToanComponent implements OnInit {
 
   onSearch(): void {
     this.currentPage = 0;
-    this.loadThanhToanData();
+    this.loadThanhToanData(this.currentUser.cinema_id);
   }
 
   onPageChange(event: any): void {
     this.currentPage = event.page;
     this.rows = event.rows;
-    this.loadThanhToanData();
+    this.loadThanhToanData(this.currentUser.cinema_id);
   }
 
   getStatusClass(status: string): string {

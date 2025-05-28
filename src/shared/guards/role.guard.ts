@@ -51,7 +51,7 @@ export class RoleGuard implements CanActivate {
 
       // List of routes permitted for System Admin as per updated requirements
       const allowedAdminRoutes = [
-        'rap', 'danhgia', 'nhanvien', 'nguoidung', 'adminrap'
+        'rap', 'danhgia', 'nhanvien', 'nguoidung', 'adminrap', 'thongke'
       ];
 
       const isRoomRoute = path.startsWith('room');
@@ -75,7 +75,7 @@ export class RoleGuard implements CanActivate {
       // Now includes 'rap' as per new requirements
       const allowedManagerRoutes = [
         'theloaiphim', 'phim', 'lichchieu',
-        'giaodich', 'thanhtoan', 'thongke',
+        'thanhtoan', 'thongke',
         'nhanvien', 'banner', 'voucher', 'combo',
         'rap' // Added rap to allowed routes for Cinema Manager
       ];
