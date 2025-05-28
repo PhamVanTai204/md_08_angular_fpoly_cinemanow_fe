@@ -67,21 +67,6 @@ export class ThongKeComponent implements OnInit {
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   private initYearlyChart() {
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue('--text-color');
@@ -213,13 +198,6 @@ export class ThongKeComponent implements OnInit {
   }
 
 
-
-
-
-
-
-
-
   // Thêm vào class ThongKeComponent
   pieChartData: any;
   pieChartOptions: any;
@@ -346,17 +324,6 @@ export class ThongKeComponent implements OnInit {
   }
 
   // Phương thức cập nhật dữ liệu cho biểu đồ
-
-
-
-
-
-
-
-
-
-
-
 
   getTotalYearlyRevenue(): number {
     if (!this.yearlyRevenueData) return 0;
