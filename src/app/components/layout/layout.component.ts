@@ -29,10 +29,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   // Updated menu lists based on specific role requirements
   contentMenuItems: MenuItem[] = [
-    { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [2] },
-    { path: 'phim', title: 'Phim', icon: 'movie', roles: [2] },
+    { path: 'theloaiphim', title: 'Thể loại phim', icon: 'category', roles: [4] },
+    { path: 'phim', title: 'Phim', icon: 'movie', roles: [4] },
     { path: 'rap', title: 'Phòng chiếu', icon: 'store', roles: [2, 4], primary: true }, // Title sẽ được dynamic theo role
-    { path: 'adminrap', title: 'Quản lý Admin Rạp', icon: 'manage_accounts', roles: [4] },
     { path: 'lichchieu', title: 'Lịch chiếu', icon: 'event', roles: [2] },
     { path: 'danhgia', title: 'Quản lý bình luận', icon: 'reviews', roles: [4] },
   ];
@@ -45,13 +44,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   userMenuItems: MenuItem[] = [
     { path: 'nhanvien', title: 'Nhân viên', icon: 'badge', roles: [2] },
-//    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [] } // Chỉ role 4 có thể truy cập
+    //    { path: 'nguoidung', title: 'Người dùng', icon: 'person', roles: [] } // Chỉ role 4 có thể truy cập
+    { path: 'adminrap', title: 'Quản lý Admin Rạp', icon: 'manage_accounts', roles: [4] },
+
   ];
 
   marketingMenuItems: MenuItem[] = [
-    { path: 'banner', title: 'Banner', icon: 'image', roles: [2] },
-    { path: 'voucher', title: 'Voucher', icon: 'card_giftcard', roles: [2] },
-    { path: 'combo', title: 'Combo', icon: 'fastfood', roles: [2] }
+    { path: 'banner', title: 'Banner', icon: 'image', roles: [4] },
+    { path: 'voucher', title: 'Voucher', icon: 'card_giftcard', roles: [4] },
+    { path: 'combo', title: 'Combo', icon: 'fastfood', roles: [4] }
   ];
 
   constructor(
