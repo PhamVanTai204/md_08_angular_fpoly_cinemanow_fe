@@ -75,14 +75,14 @@ const routes: Routes = [
           allowedRoles: [2] // Only Cinema Admin can access
         }
       },
-      {
-        path: 'nguoidung',
-        loadChildren: () => import('../nguoi-dung/nguoi-dung.module').then(m => m.NguoiDungModule),
-        canActivate: [RoleGuard],
-        data: {
-          allowedRoles: [4] // FIXED: Only System Admin can access user management
-        }
-      },
+      // {
+      //   path: 'nguoidung',
+      //   loadChildren: () => import('../nguoi-dung/nguoi-dung.module').then(m => m.NguoiDungModule),
+      //   canActivate: [RoleGuard],
+      //   data: {
+      //     allowedRoles: [] // FIXED: Only System Admin can access user management
+      //   }
+      // },
       {
         path: 'giaodich',
         loadChildren: () => import('../giaodich/giaodich.module').then(m => m.GiaodichModule),
