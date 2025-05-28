@@ -3,6 +3,7 @@ import { CinemaAdminService, Cinema, CinemaAdmin } from '../../../shared/service
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, timer } from 'rxjs';
 
 @Component({
   selector: 'app-admin-rap',
@@ -51,26 +52,39 @@ export class AdminRapComponent implements OnInit {
     this.loadCinemas();
   }
 
-  // Load danh sách rạp
+  // Load danh sách rạp với delay 2 giây
   loadCinemas(): void {
     this.isLoading = true;
+    this.errorMessage = '';
+    
     const page = this.cinemaCurrentPage + 1;
-    this.cinemaAdminService.getAllCinemas(page, this.cinemaRows, this.cinemaSearchTerm)
-      .subscribe({
-        next: (data) => {
-          this.cinemaList = data.cinemas;
-          this.totalCinemaRecords = data.totalCinemas;
-          this.cinemaTotalPages = data.totalPages;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.errorMessage = `Lỗi khi tải danh sách rạp: ${error.message}`;
-          this.isLoading = false;
-        }
-      });
+    
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000);
+    const apiCall = this.cinemaAdminService.getAllCinemas(page, this.cinemaRows, this.cinemaSearchTerm);
+    
+    forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, data]) => {
+        this.cinemaList = data.cinemas;
+        this.totalCinemaRecords = data.totalCinemas;
+        this.cinemaTotalPages = data.totalPages;
+        this.isLoading = false;
+        console.log('Danh sách rạp đã được tải sau delay 2 giây');
+      },
+      error: (error) => {
+        this.errorMessage = `Lỗi khi tải danh sách rạp: ${error.message}`;
+        this.isLoading = false;
+      }
+    });
   }
 
-  // Chọn rạp
+  // Refresh dữ liệu rạp
+  refreshCinemas(): void {
+    console.log('Đang làm mới danh sách rạp...');
+    this.loadCinemas();
+  }
+
+  // Chọn rạp với delay
   selectCinema(cinema: Cinema): void {
     this.selectedCinema = cinema;
     this.adminList = []; // Reset danh sách admin
@@ -78,33 +92,45 @@ export class AdminRapComponent implements OnInit {
     this.loadAdmins(); // Tải danh sách admin khi chọn rạp
   }
 
-  // Tải danh sách admin của rạp
+  // Tải danh sách admin của rạp với delay 2 giây
   loadAdmins(): void {
     if (!this.selectedCinema) return;
 
     this.isLoading = true;
+    this.errorMessage = '';
+    
     const page = this.adminCurrentPage + 1;
+    
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000);
+    const apiCall = this.cinemaAdminService.getAdminsByCinema(this.selectedCinema._id, page, this.adminRows);
 
-    this.cinemaAdminService.getAdminsByCinema(this.selectedCinema._id, page, this.adminRows)
-      .subscribe({
-        next: (data) => {
-          this.adminList = data.admins;
-          this.totalAdminRecords = data.totalAdmins;
-          this.adminTotalPages = data.totalPages;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.errorMessage = `Lỗi khi tải danh sách admin: ${error.message}`;
-          this.isLoading = false;
-          // Xóa thông báo lỗi sau 3 giây
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-        }
-      });
+    forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, data]) => {
+        this.adminList = data.admins;
+        this.totalAdminRecords = data.totalAdmins;
+        this.adminTotalPages = data.totalPages;
+        this.isLoading = false;
+        console.log('Danh sách admin đã được tải sau delay 2 giây');
+      },
+      error: (error) => {
+        this.errorMessage = `Lỗi khi tải danh sách admin: ${error.message}`;
+        this.isLoading = false;
+        // Xóa thông báo lỗi sau 5 giây
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 5000);
+      }
+    });
   }
 
-  // Thêm admin cho rạp
+  // Refresh dữ liệu admin
+  refreshAdmins(): void {
+    console.log('Đang làm mới danh sách admin...');
+    this.loadAdmins();
+  }
+
+  // Thêm admin cho rạp với delay 2 giây
   addAdmin(): void {
     if (!this.selectedCinema) {
       this.errorMessage = 'Vui lòng chọn rạp trước khi thêm admin';
@@ -128,42 +154,47 @@ export class AdminRapComponent implements OnInit {
       cinema_id: currentCinema._id
     };
 
-    this.cinemaAdminService.registerAdminByCinema(adminData)
-      .subscribe({
-        next: (response) => {
-          this.successMessage = response.message || 'Đã thêm admin rạp thành công';
-          this.isLoading = false;
-          this.addAdminForm.reset({
-            url_image: 'https://example.com/avatar.jpg'
-          });
-          this.showAddForm = false;
-          // Reset và tải lại dữ liệu
-          this.adminCurrentPage = 0;
-          this.loadAdmins();
-          // Xóa thông báo thành công sau 3 giây
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        },
-        error: (error) => {
-          // Hiển thị thông báo lỗi chi tiết
-          if (error.message.includes('email')) {
-            this.errorMessage = `Email ${this.addAdminForm.value.email} đã được sử dụng. Vui lòng sử dụng email khác.`;
-          } else if (error.message.includes('user_name') || error.message.includes('người dùng')) {
-            this.errorMessage = `Tên người dùng ${this.addAdminForm.value.user_name} đã tồn tại. Vui lòng chọn tên khác.`;
-          } else {
-            this.errorMessage = `Lỗi khi thêm admin rạp: ${error.message}`;
-          }
-          this.isLoading = false;
-          // Xóa thông báo lỗi sau 3 giây
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000);
+    const apiCall = this.cinemaAdminService.registerAdminByCinema(adminData);
+
+    forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, response]) => {
+        this.successMessage = response.message || 'Đã thêm admin rạp thành công';
+        this.isLoading = false;
+        this.addAdminForm.reset({
+          url_image: 'https://example.com/avatar.jpg'
+        });
+        this.showAddForm = false;
+        // Reset và tải lại dữ liệu
+        this.adminCurrentPage = 0;
+        this.loadAdmins(); // Sẽ có delay thêm 2 giây nữa
+        console.log('Admin đã được thêm sau delay 2 giây');
+        
+        // Xóa thông báo thành công sau 5 giây
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 5000);
+      },
+      error: (error) => {
+        // Hiển thị thông báo lỗi chi tiết
+        if (error.message.includes('email')) {
+          this.errorMessage = `Email ${this.addAdminForm.value.email} đã được sử dụng. Vui lòng sử dụng email khác.`;
+        } else if (error.message.includes('user_name') || error.message.includes('người dùng')) {
+          this.errorMessage = `Tên người dùng ${this.addAdminForm.value.user_name} đã tồn tại. Vui lòng chọn tên khác.`;
+        } else {
+          this.errorMessage = `Lỗi khi thêm admin rạp: ${error.message}`;
         }
-      });
+        this.isLoading = false;
+        // Xóa thông báo lỗi sau 5 giây
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 5000);
+      }
+    });
   }
 
-  // Xóa admin rạp
+  // Xóa admin rạp với delay 2 giây
   removeAdmin(admin: CinemaAdmin): void {
     if (confirm(`Bạn có chắc chắn muốn xóa admin "${admin.user_name}" không?`)) {
       this.isLoading = true;
@@ -177,28 +208,33 @@ export class AdminRapComponent implements OnInit {
         return;
       }
 
-      this.cinemaAdminService.removeCinemaAdmin(currentCinema._id, admin._id)
-        .subscribe({
-          next: (response) => {
-            this.successMessage = response.message || 'Đã xóa admin rạp thành công';
-            this.isLoading = false;
-            // Reset và tải lại dữ liệu
-            this.adminCurrentPage = 0;
-            this.loadAdmins();
-            // Xóa thông báo thành công sau 3 giây
-            setTimeout(() => {
-              this.successMessage = '';
-            }, 3000);
-          },
-          error: (error) => {
-            this.errorMessage = `Lỗi khi xóa admin rạp: ${error.message}`;
-            this.isLoading = false;
-            // Xóa thông báo lỗi sau 3 giây
-            setTimeout(() => {
-              this.errorMessage = '';
-            }, 3000);
-          }
-        });
+      // Tạo timer 2 giây và kết hợp với API call
+      const minimumDelay = timer(2000);
+      const apiCall = this.cinemaAdminService.removeCinemaAdmin(currentCinema._id, admin._id);
+
+      forkJoin([minimumDelay, apiCall]).subscribe({
+        next: ([_, response]) => {
+          this.successMessage = response.message || 'Đã xóa admin rạp thành công';
+          this.isLoading = false;
+          // Reset và tải lại dữ liệu
+          this.adminCurrentPage = 0;
+          this.loadAdmins(); // Sẽ có delay thêm 2 giây nữa
+          console.log('Admin đã được xóa sau delay 2 giây');
+          
+          // Xóa thông báo thành công sau 5 giây
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 5000);
+        },
+        error: (error) => {
+          this.errorMessage = `Lỗi khi xóa admin rạp: ${error.message}`;
+          this.isLoading = false;
+          // Xóa thông báo lỗi sau 5 giây
+          setTimeout(() => {
+            this.errorMessage = '';
+          }, 5000);
+        }
+      });
     }
   }
 
