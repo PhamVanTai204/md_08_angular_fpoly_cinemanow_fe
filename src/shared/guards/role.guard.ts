@@ -51,7 +51,7 @@ export class RoleGuard implements CanActivate {
 
       // List of routes permitted for System Admin as per updated requirements
       const allowedAdminRoutes = [
-        'rap', 'danhgia', 'nhanvien', 'nguoidung', 'adminrap'
+        'rap', 'danhgia', 'nhanvien', 'nguoidung', 'adminrap', 'thongke'
       ];
 
       const isRoomRoute = path.startsWith('room');

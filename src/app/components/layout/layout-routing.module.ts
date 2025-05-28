@@ -48,7 +48,7 @@ const routes: Routes = [
         loadChildren: () => import('../thong-ke/thong-ke.module').then(m => m.ThongKeModule),
         canActivate: [RoleGuard],
         data: {
-          allowedRoles: [2] // Only Cinema Admin can access statistics
+          allowedRoles: [2, 4] // Only Cinema Admin can access statistics
         }
       },
       {
