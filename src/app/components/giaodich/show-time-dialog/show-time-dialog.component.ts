@@ -3,8 +3,9 @@ import { CinemasService } from '../../../../shared/services/cinemas.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { CinemaDto } from '../../../../shared/dtos/cinemasDto.dto';
 import { Router } from '@angular/router';
-import { UserService } from '../../../../shared/services/user.service'; // Import UserService
+import { UserService } from '../../../../shared/services/user.service';
 import { ShowtimesService } from '../../../../shared/services/showtimes.service';
+import { forkJoin, timer } from 'rxjs';
 
 @Component({
   selector: 'app-show-time-dialog',
@@ -28,7 +29,6 @@ export class ShowTimeDialogComponent implements OnInit {
   constructor(
     private cinemasService: CinemasService,
     private showtimesService: ShowtimesService,
-
     private _modalService: BsModalService,
     private router: Router,
     private userService: UserService // Inject UserService
@@ -45,11 +45,17 @@ export class ShowTimeDialogComponent implements OnInit {
     this._modalService.hide();
   }
 
+  // Load cinemas với delay 2 giây
   loadCinemas(id: string): void {
     this.isLoading = true;
+    this.error = null;
 
-    this.cinemasService.getCinemaByFilm(id).subscribe({
-      next: (data) => {
+    // Tạo timer 2 giây và kết hợp với API call
+    const minimumDelay = timer(2000); // 2 giây
+    const apiCall = this.cinemasService.getCinemaByFilm(id);
+
+    forkJoin([minimumDelay, apiCall]).subscribe({
+      next: ([_, data]) => {
         this.allCinemas = data; // Lưu tất cả rạp
         console.log('All cinemas from API:', this.allCinemas);
 
@@ -57,12 +63,20 @@ export class ShowTimeDialogComponent implements OnInit {
         this.filterCinemasByUser();
 
         this.isLoading = false;
+        console.log('Dữ liệu rạp đã được tải sau delay 2 giây');
       },
       error: (err) => {
         this.error = err.message || 'Đã xảy ra lỗi khi tải danh sách rạp';
         this.isLoading = false;
+        console.error('Error loading cinemas:', err);
       }
     });
+  }
+
+  // Refresh dữ liệu với delay
+  refreshCinemas(): void {
+    console.log('Đang làm mới dữ liệu rạp...');
+    this.loadCinemas(this.id);
   }
 
   // Filter rạp theo user hiện tại
@@ -85,5 +99,11 @@ export class ShowTimeDialogComponent implements OnInit {
   showRomDialog(idRoom: string, showtimeId: string = ''): void {
     this._modalService.hide();
     this.router.navigate(['/layout/room', idRoom, showtimeId, '0']);
+  }
+
+  // Retry khi có lỗi
+  retryLoading(): void {
+    this.error = null;
+    this.loadCinemas(this.id);
   }
 }
