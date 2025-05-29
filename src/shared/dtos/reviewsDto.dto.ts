@@ -6,6 +6,7 @@ export interface IReviewsDto {
   movie_id: string;
   comment?: string;
   date?: string;
+  status_review?: string; // Add this line
 }
 
 export class ReviewsDto implements IReviewsDto {
@@ -16,6 +17,7 @@ export class ReviewsDto implements IReviewsDto {
   movie_id!: string;
   comment?: string;
   date?: string;
+  status_review?: string; // Add this line
 
   constructor(data?: IReviewsDto) {
     if (data) Object.assign(this, data);
@@ -23,10 +25,10 @@ export class ReviewsDto implements IReviewsDto {
 
   init(data?: any): void {
     if (!data) return;
-    this.id        = data._id;
+    this.id = data._id;
     this.review_id = data.review_id;
     if (data.user_id && typeof data.user_id === 'object') {
-      this.user_id   = data.user_id._id;
+      this.user_id = data.user_id._id;
       this.userEmail = data.user_id.email;
     } else {
       this.user_id = data.user_id;
@@ -35,11 +37,12 @@ export class ReviewsDto implements IReviewsDto {
       ? data.movie_id._id
       : data.movie_id;
     this.comment = data.comment;
-    this.date    = data.date
+    this.date = data.date
       ? (typeof data.date === 'string'
-         ? data.date
-         : new Date(data.date).toISOString())
+        ? data.date
+        : new Date(data.date).toISOString())
       : '';
+    this.status_review = data.status_review; // Add this line
   }
 
   static fromJS(data: any): ReviewsDto {
@@ -51,10 +54,11 @@ export class ReviewsDto implements IReviewsDto {
   toJSON(): any {
     return {
       review_id: this.review_id,
-      user_id:   this.user_id,
-      movie_id:  this.movie_id,
-      comment:   this.comment,
-      date:      this.date
+      user_id: this.user_id,
+      movie_id: this.movie_id,
+      comment: this.comment,
+      date: this.date,
+      status_review: this.status_review // Add this line
     };
   }
 

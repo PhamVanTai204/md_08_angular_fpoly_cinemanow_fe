@@ -260,7 +260,7 @@ export class RoomComponent implements OnInit {
 
   list(): void {
     console.log("Fetching seats for Room ID:", this.idRoom);
-    this.seatService.getSeatByRoomId(this.idRoom).subscribe(
+    this.seatService.getSeatByRoomId(this.idRoom, this.showtime_id).subscribe(
       data => {
         this.seats = data;
         console.log('Seats:', this.seats);

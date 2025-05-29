@@ -8,7 +8,7 @@ import { ISeatDto, SeatDto } from "../dtos/seatDto.dto";
     providedIn: 'root'
 })
 export class SeatService {
-    private apiUrlGetbyrom = "http://127.0.0.1:3000/cinema/rooms/seats"; // Base URL
+    private apiUrlGetbyrom = "http://127.0.0.1:3000/cinema/rooms"; // Base URL
     private apiUrlAddMultiple = "http://127.0.0.1:3000/seats/addmuti"; // URL để tạo hàng loạt ghế
     private apiUrlUpdateSeat = "http://127.0.0.1:3000/seats/update/"; // URL để tạo hàng loạt ghế
     private apiUrlCreateMutiSeat = "http://127.0.0.1:3000/seats/addmuti"; // URL để tạo hàng loạt ghế
@@ -30,8 +30,6 @@ export class SeatService {
             catchError(this.handleError)
         );
     }
-
-
     // Phương thức thêm nhiều ghế
     addMultipleSeats(room_id: string, rows: number, cols: number, price_seat: number): Observable<any> {
         const data = {
@@ -50,8 +48,9 @@ export class SeatService {
                 catchError(this.handleError)
             );
     }
-    getSeatByRoomId(roomId: string): Observable<SeatDto[]> {
-        return this.http.get<{ code: number, error: any, data: SeatDto[] }>(`${this.apiUrlGetbyrom}/${roomId}`)
+    //   /rooms/seats1/:room_id/showtime1/:showtime_id
+    getSeatByRoomId(roomId: string, showtimeId: string): Observable<SeatDto[]> {
+        return this.http.get<{ code: number, error: any, data: SeatDto[] }>(`${this.apiUrlGetbyrom}/seats1/${roomId}/showtime1/${showtimeId}`)
             .pipe(
                 map(response => {
                     if (response.code === 200 && response.data) {

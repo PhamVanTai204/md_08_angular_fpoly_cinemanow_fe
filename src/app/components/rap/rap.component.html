@@ -9,10 +9,7 @@
   <!-- Search section -->
   <div class="mb-6">
     <div class="relative w-full md:w-64">
-      <input type="text" 
-        [(ngModel)]="searchTerm"
-        [placeholder]="currentUser.role === 4 ? 'Tìm kiếm rạp' : 'Tìm kiếm phòng'"
-        (input)="currentUser.role === 4 ? onSearchCinemas() : onSearchRooms()"
+
         class="w-full border border-gray-300 rounded-lg py-2 px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700" />
       <button
         class="absolute right-1 top-1 bottom-1 px-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
@@ -30,7 +27,7 @@
           <h2 class="text-xl font-semibold text-gray-800">{{ rap.cinemaName }}</h2>
           <div class="flex space-x-2">
             <!-- Only show delete button for System Admin (role 4) -->
-            <button *ngIf="canDeleteCinema" (click)="deleteRap(rap)" 
+            <button *ngIf="canDeleteCinema" (click)="deleteRap(rap)"
               class="text-red-500 hover:text-red-600 p-1 rounded transition-all" title="Xóa">
               <i class="fas fa-trash"></i>
             </button>
@@ -63,8 +60,8 @@
               class="text-blue-500 hover:text-blue-600 p-1 rounded transition-all" title="Chỉnh sửa ghế">
               <i class="fas fa-edit"></i>
             </button>
-            <button (click)="deleteUserRoom(room)" 
-              class="text-red-500 hover:text-red-600 p-1 rounded transition-all" title="Xóa phòng">
+            <button (click)="deleteUserRoom(room)" class="text-red-500 hover:text-red-600 p-1 rounded transition-all"
+              title="Xóa phòng">
               <i class="fas fa-trash"></i>
             </button>
           </div>
@@ -95,8 +92,8 @@
   <!-- Hiển thị thông báo khi không có dữ liệu -->
   <div *ngIf="(currentUser.role === 4 && filteredRapList.length === 0) || (currentUser.role === 2 && filteredUserRooms.length === 0)"
     class="flex flex-col items-center justify-center py-12 bg-white rounded-lg shadow-sm mt-6 empty-state">
-    <i [ngClass]="currentUser.role === 4 ? 'fas fa-theater-masks' : 'fas fa-couch'" 
-       class="text-5xl text-gray-300 mb-4"></i>
+    <i [ngClass]="currentUser.role === 4 ? 'fas fa-theater-masks' : 'fas fa-couch'"
+      class="text-5xl text-gray-300 mb-4"></i>
     <p class="text-gray-500 text-xl mb-4">
       <span *ngIf="currentUser.role === 4 && rapList.length === 0">Chưa có rạp nào được thêm</span>
       <span *ngIf="currentUser.role === 4 && rapList.length > 0 && filteredRapList.length === 0">Không tìm thấy rạp phù hợp</span>
@@ -219,7 +216,8 @@
 
       <form (ngSubmit)="saveNewRoom()" class="space-y-4">
         <!-- Hiển thị thông tin rạp cho Cinema Admin -->
-        <div *ngIf="currentUser.role === 2 && userCinemaName" class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div *ngIf="currentUser.role === 2 && userCinemaName"
+          class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <div class="flex items-center">
             <i class="fas fa-info-circle text-blue-500 mr-2"></i>
             <span class="text-sm text-blue-700">
@@ -335,7 +333,8 @@
 
         <!-- Giá ghế -->
         <div>
-          <label for="price_seat" class="block text-gray-700 font-medium mb-1">Giá mỗi ghế (VNĐ) <span class="text-red-500">*</span></label>
+
+          <label for="price_seat" class="block text-gray-700 font-medium mb-1">Giá mỗi ghế (ghế thường VNĐ) <span class="text-red-500">*</span></label>
           <input type="number" 
             id="price_seat" 
             [(ngModel)]="price_seat" 
@@ -353,6 +352,7 @@
           <div *ngIf="price_seat > 0" class="text-gray-400 text-xs mt-1">
             Định dạng: {{ price_seat | number:'1.0-0':'vi' }} VNĐ
           </div>
+
         </div>
 
         <div class="flex justify-end space-x-2 mt-6">

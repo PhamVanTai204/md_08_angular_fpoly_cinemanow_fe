@@ -8,12 +8,8 @@
       <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
         <i class="material-icons">search</i>
       </span>
-      <input
-        [(ngModel)]="searchTerm"
-        (ngModelChange)="onSearchChange()"
-        placeholder="Tìm phim..."
-        class="w-full border px-3 py-2 pl-10 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      <input [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" placeholder="Tìm phim..."
+        class="w-full border px-3 py-2 pl-10 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
     </div>
 
     <!-- loading -->
@@ -49,32 +45,23 @@
       </p>
 
       <div class="flex items-center space-x-2">
-        <button
-          (click)="prevPage()"
-          [disabled]="currentPage === 1"
-          class="px-3 py-1 rounded border text-sm disabled:opacity-50 hover:bg-gray-100"
-        >
+        <button (click)="prevPage()" [disabled]="currentPage === 1"
+          class="px-3 py-1 rounded border text-sm disabled:opacity-50 hover:bg-gray-100">
           Trước
         </button>
 
         <ng-container *ngFor="let p of pages">
-          <button
-            (click)="goToPage(p)"
-            [ngClass]="{
+          <button (click)="goToPage(p)" [ngClass]="{
               'bg-blue-600 text-white': p === currentPage,
               'border': true,
               'px-3 py-1 rounded text-sm hover:bg-gray-100': true
-            }"
-          >
+            }">
             {{ p }}
           </button>
         </ng-container>
 
-        <button
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages"
-          class="px-3 py-1 rounded border text-sm disabled:opacity-50 hover:bg-gray-100"
-        >
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+          class="px-3 py-1 rounded border text-sm disabled:opacity-50 hover:bg-gray-100">
           Sau
         </button>
       </div>
@@ -86,6 +73,20 @@
     <button (click)="backToList()" class="mb-4 text-sm text-gray-600 hover:underline">« Quay lại</button>
     <h3 class="text-lg font-semibold mb-4">Đánh giá</h3>
 
+    <!-- Add this radio button group -->
+    <div class="flex items-center space-x-4 mb-4">
+      <label class="inline-flex items-center">
+        <input type="radio" name="reviewFilter" [(ngModel)]="reviewFilter" value="all" (change)="loadReviews()"
+          class="form-radio h-4 w-4 text-blue-600">
+        <span class="ml-2">Tất cả đánh giá</span>
+      </label>
+      <label class="inline-flex items-center">
+        <input type="radio" name="reviewFilter" [(ngModel)]="reviewFilter" value="reported" (change)="loadReviews()"
+          class="form-radio h-4 w-4 text-blue-600">
+        <span class="ml-2">Đánh giá bị báo cáo</span>
+      </label>
+    </div>
+
     <div *ngIf="loadingReviews" class="text-center text-gray-500">Đang tải...</div>
 
     <ng-container *ngIf="!loadingReviews">
@@ -95,6 +96,11 @@
             <p class="font-medium text-indigo-600">{{ r.userEmail || r.user_id }}</p>
             <p class="mt-1">{{ r.comment }}</p>
             <p class="mt-1 text-xs text-gray-500">{{ r.date | date:'short' }}</p>
+            <!-- Show report status if it's a reported review -->
+            <span *ngIf="r.status_review === 'reported'"
+              class="inline-block mt-1 px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded">
+              Đã bị báo cáo
+            </span>
           </div>
           <button (click)="confirmDelete(r.id)" class="self-start p-2 hover:text-red-600">
             <i class="material-icons">delete</i>

@@ -17,23 +17,23 @@ import { ReviewsDto } from '../../../shared/dtos/reviewsDto.dto';
 export class KhuyenMaiComponent implements OnInit, OnDestroy {
   /* ---------- PHIM ---------- */
   films: { movieId: string; movieName: string }[] = [];
-  searchTerm   = '';
+  searchTerm = '';
   loadingFilms = false;
 
   currentPage = 1;
-  pageSize    = 10;
-  totalFilms  = 0;
-  totalPages  = 0;
+  pageSize = 10;
+  totalFilms = 0;
+  totalPages = 0;
   pages: number[] = [];
 
   /* ---------- REVIEWS ---------- */
   selectedMovieId: string | null = null;
   reviews: ReviewsDto[] = [];
   loadingReviews = false;
-
+  reviewFilter: 'all' | 'reported' = 'all'; // Add this line
   private destroy$ = new Subject<void>();
 
-  constructor(private reviewsSvc: ReviewsService) {}
+  constructor(private reviewsSvc: ReviewsService) { }
 
   /* ========== LIFE CYCLE ========== */
   ngOnInit(): void { this.loadFilms(); }
@@ -51,10 +51,10 @@ export class KhuyenMaiComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
-          this.films      = res.items;
+          this.films = res.items;
           this.totalFilms = res.total;
           this.totalPages = res.totalPages;
-          this.pages      = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+          this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
           this.loadingFilms = false;
         },
         error: () => (this.loadingFilms = false)
@@ -98,12 +98,17 @@ export class KhuyenMaiComponent implements OnInit, OnDestroy {
   loadReviews(): void {
     if (!this.selectedMovieId) return;
     this.loadingReviews = true;
-    this.reviewsSvc
-      .getReviewsByMovie(this.selectedMovieId)
+
+    // Choose the appropriate service method based on filter
+    const reviewObservable = this.reviewFilter === 'reported'
+      ? this.reviewsSvc.getReportedComments(this.selectedMovieId)
+      : this.reviewsSvc.getReviewsByMovie(this.selectedMovieId);
+
+    reviewObservable
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: data => {
-          this.reviews        = data;
+          this.reviews = data;
           this.loadingReviews = false;
         },
         error: () => (this.loadingReviews = false)
