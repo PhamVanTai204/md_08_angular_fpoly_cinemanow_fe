@@ -1,3 +1,4 @@
+<!-- rap.component.html - Enhanced with validation -->
 <div>
   <!-- Title thay đổi theo role -->
   <h1 class="text-3xl font-bold mb-6 text-gray-800">
@@ -8,7 +9,7 @@
   <!-- Search section -->
   <div class="mb-6">
     <div class="relative w-full md:w-64">
-      <input type="text" [placeholder]="currentUser.role === 4 ? 'Tìm kiếm rạp' : 'Tìm kiếm phòng'"
+
         class="w-full border border-gray-300 rounded-lg py-2 px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700" />
       <button
         class="absolute right-1 top-1 bottom-1 px-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
@@ -19,7 +20,7 @@
 
   <!-- Card grid for cinemas (System Admin only) -->
   <div *ngIf="currentUser.role === 4" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let rap of rapList; let i = index"
+    <div *ngFor="let rap of filteredRapList; let i = index"
       class="bg-white rounded-lg shadow hover:shadow-lg transition-all border-l-4 border-red-500 card-hover">
       <div class="p-4">
         <div class="flex justify-between items-start mb-3">
@@ -49,7 +50,7 @@
 
   <!-- Card grid for rooms (Cinema Admin only) -->
   <div *ngIf="currentUser.role === 2" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let room of userRooms; let i = index"
+    <div *ngFor="let room of filteredUserRooms; let i = index"
       class="bg-white rounded-lg shadow hover:shadow-lg transition-all border-l-4 border-green-500 card-hover">
       <div class="p-4">
         <div class="flex justify-between items-start mb-3">
@@ -89,19 +90,21 @@
   </div>
 
   <!-- Hiển thị thông báo khi không có dữ liệu -->
-  <div *ngIf="(currentUser.role === 4 && rapList.length === 0) || (currentUser.role === 2 && userRooms.length === 0)"
+  <div *ngIf="(currentUser.role === 4 && filteredRapList.length === 0) || (currentUser.role === 2 && filteredUserRooms.length === 0)"
     class="flex flex-col items-center justify-center py-12 bg-white rounded-lg shadow-sm mt-6 empty-state">
     <i [ngClass]="currentUser.role === 4 ? 'fas fa-theater-masks' : 'fas fa-couch'"
       class="text-5xl text-gray-300 mb-4"></i>
     <p class="text-gray-500 text-xl mb-4">
-      <span *ngIf="currentUser.role === 4">Chưa có rạp nào được thêm</span>
-      <span *ngIf="currentUser.role === 2">Chưa có phòng nào được thêm</span>
+      <span *ngIf="currentUser.role === 4 && rapList.length === 0">Chưa có rạp nào được thêm</span>
+      <span *ngIf="currentUser.role === 4 && rapList.length > 0 && filteredRapList.length === 0">Không tìm thấy rạp phù hợp</span>
+      <span *ngIf="currentUser.role === 2 && userRooms.length === 0">Chưa có phòng nào được thêm</span>
+      <span *ngIf="currentUser.role === 2 && userRooms.length > 0 && filteredUserRooms.length === 0">Không t ìm thấy phòng phù hợp</span>
     </p>
-    <button *ngIf="canAddCinema" (click)="openAddModal()"
+    <button *ngIf="canAddCinema && rapList.length === 0" (click)="openAddModal()"
       class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-md">
       <i class="fas fa-plus mr-2"></i> Thêm rạp mới
     </button>
-    <button *ngIf="canAddRoom" (click)="openAddRoomModal()"
+    <button *ngIf="canAddRoom && userRooms.length === 0" (click)="openAddRoomModal()"
       class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors shadow-md">
       <i class="fas fa-plus mr-2"></i> Thêm phòng mới
     </button>
@@ -136,34 +139,59 @@
         <!-- Tên rạp -->
         <div class="mb-4">
           <label class="block font-medium mb-1 text-gray-700">Tên rạp <span class="text-red-500">*</span></label>
-          <input type="text" name="cinemaName" [(ngModel)]="newRap.cinemaName" required #cinemaName="ngModel"
-            class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-            placeholder="Nhập tên rạp" />
-          <div *ngIf="cinemaName.invalid && cinemaName.touched" class="text-red-500 text-sm mt-1">
-            Vui lòng nhập tên rạp
+          <input type="text" 
+            name="cinemaName" 
+            [(ngModel)]="newRap.cinemaName" 
+            (input)="onCinemaNameChange()"
+            required 
+            #cinemaName="ngModel"
+            [class]="'border rounded-lg w-full px-3 py-2 focus:ring-2 focus:border-transparent outline-none transition-all ' + 
+                     (!cinemaValidation.cinemaName.isValid ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500')"
+            placeholder="Nhập tên rạp" 
+            maxlength="100" />
+          <div *ngIf="!cinemaValidation.cinemaName.isValid" class="text-red-500 text-sm mt-1">
+            {{ cinemaValidation.cinemaName.message }}
+          </div>
+          <div class="text-gray-400 text-xs mt-1">
+            {{ newRap.cinemaName.length || 0 }}/100 ký tự
           </div>
         </div>
 
         <!-- Địa chỉ -->
         <div class="mb-4">
           <label class="block font-medium mb-1 text-gray-700">Thành Phố <span class="text-red-500">*</span></label>
-          <input type="text" name="location" [(ngModel)]="newRap.location" required #location="ngModel"
-            class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
-            placeholder="Nhập địa chỉ" />
-          <div *ngIf="location.invalid && location.touched" class="text-red-500 text-sm mt-1">
-            Vui lòng nhập thành phố
+          <input type="text" 
+            name="location" 
+            [(ngModel)]="newRap.location" 
+            (input)="onLocationChange()"
+            required 
+            #location="ngModel"
+            [class]="'border rounded-lg w-full px-3 py-2 focus:ring-2 focus:border-transparent outline-none transition-all ' + 
+                     (!cinemaValidation.location.isValid ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500')"
+            placeholder="Nhập thành phố" 
+            maxlength="100" />
+          <div *ngIf="!cinemaValidation.location.isValid" class="text-red-500 text-sm mt-1">
+            {{ cinemaValidation.location.message }}
+          </div>
+          <div class="text-gray-400 text-xs mt-1">
+            {{ newRap.location.length || 0 }}/100 ký tự
           </div>
         </div>
 
         <div class="flex justify-end space-x-2 mt-6">
           <button type="button" (click)="closeAddModal()"
-            class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-colors">
+            class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-colors"
+            [disabled]="isSubmittingCinema">
             Đóng
           </button>
           <button type="submit"
-            class="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-colors shadow-md"
-            [disabled]="addRapForm.invalid">
-            Lưu
+            [class]="'px-4 py-2 rounded-lg font-medium transition-colors shadow-md ' + 
+                     (validateCinemaForm() && !isSubmittingCinema ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed')"
+            [disabled]="!validateCinemaForm() || isSubmittingCinema">
+            <span *ngIf="isSubmittingCinema" class="mr-2">
+              <i class="fas fa-spinner fa-spin"></i>
+            </span>
+            {{ isSubmittingCinema ? 'Đang lưu...' : 'Lưu' }}
           </button>
         </div>
       </form>
@@ -173,7 +201,7 @@
   <!-- ========== DIALOG THÊM PHÒNG ========== -->
   <div *ngIf="isAddRoomModalOpen && canAddRoom"
     class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50 backdrop-blur-sm">
-    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all max-h-screen overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-gray-800">
           Thêm phòng mới
@@ -200,67 +228,147 @@
 
         <!-- ID Rạp - Chỉ hiển thị cho System Admin hoặc khi debug -->
         <div *ngIf="currentUser.role === 4">
-          <label for="cinema_id" class="block text-gray-700 font-medium mb-1">ID Rạp <span
-              class="text-red-500">*</span></label>
-          <input type="text" id="cinema_id" [(ngModel)]="selectedCinemaId" name="cinema_id" required
+          <label for="cinema_id" class="block text-gray-700 font-medium mb-1">ID Rạp <span class="text-red-500">*</span></label>
+          <input type="text" 
+            id="cinema_id" 
+            [(ngModel)]="selectedCinemaId" 
+            name="cinema_id" 
+            required
             class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
             placeholder="Nhập ID rạp" />
         </div>
 
         <!-- Tên phòng -->
         <div>
-          <label for="room_name" class="block text-gray-700 font-medium mb-1">Tên phòng <span
-              class="text-red-500">*</span></label>
-          <input type="text" id="room_name" [(ngModel)]="room_name" name="room_name" required
-            class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-            placeholder="Nhập tên phòng" />
+          <label for="room_name" class="block text-gray-700 font-medium mb-1">Tên phòng <span class="text-red-500">*</span></label>
+          <input type="text" 
+            id="room_name" 
+            [(ngModel)]="room_name" 
+            (input)="onRoomNameChange()"
+            name="room_name" 
+            required
+            [class]="'border rounded-lg w-full px-3 py-2 focus:ring-2 focus:border-transparent outline-none transition-all ' + 
+                     (!roomValidation.room_name.isValid ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-green-500')"
+            placeholder="Nhập tên phòng" 
+            maxlength="50" />
+          <div *ngIf="!roomValidation.room_name.isValid" class="text-red-500 text-sm mt-1">
+            {{ roomValidation.room_name.message }}
+          </div>
+          <div class="text-gray-400 text-xs mt-1">
+            {{ room_name.length || 0 }}/50 ký tự
+          </div>
         </div>
 
         <!-- Loại phòng -->
         <div>
-          <label for="room_style" class="block text-gray-700 font-medium mb-1">Loại phòng <span
-              class="text-red-500">*</span></label>
-          <select id="room_style" [(ngModel)]="room_style" name="room_style" required
-            class="border border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all">
+          <label for="room_style" class="block text-gray-700 font-medium mb-1">Loại phòng <span class="text-red-500">*</span></label>
+          <select id="room_style" 
+            [(ngModel)]="room_style" 
+            (change)="onRoomStyleChange()"
+            name="room_style" 
+            required
+            [class]="'border rounded-lg w-full px-3 py-2 focus:ring-2 focus:border-transparent outline-none transition-all ' + 
+                     (!roomValidation.room_style.isValid ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-green-500')">
             <option value="" disabled selected>Chọn loại phòng</option>
-            <option value="2D">2D</option>
-            <option value="3D">3D</option>
-            <option value="IMAX">IMAX</option>
+            <option value="2D">2D - Phòng chiếu thông thường</option>
+            <option value="3D">3D - Phòng chiếu 3D</option>
+            <option value="IMAX">IMAX - Phòng chiếu IMAX</option>
           </select>
+          <div *ngIf="!roomValidation.room_style.isValid" class="text-red-500 text-sm mt-1">
+            {{ roomValidation.room_style.message }}
+          </div>
         </div>
 
-        <!-- Số hàng -->
-        <div>
-          <label for="rows" class="block text-gray-700 font-medium mb-1">Số hàng ghế <span
-              class="text-red-500">*</span></label>
-          <input type="number" id="rows" [(ngModel)]="rows" name="rows" required min="1"
-            class="border border-gray-300 rounded-lg w-full px-3 py-2" placeholder="Nhập số hàng" />
+        <!-- Số hàng và cột trong một hàng -->
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Số hàng -->
+          <div>
+            <label for="rows" class="block text-gray-700 font-medium mb-1">Số hàng ghế <span class="text-red-500">*</span></label>
+            <input type="number" 
+              id="rows" 
+              [(ngModel)]="rows" 
+              (input)="onRowsChange()"
+              name="rows" 
+              required 
+              min="1" 
+              max="30"
+              [class]="'border rounded-lg w-full px-3 py-2 focus:ring-2 focus:border-transparent outline-none transition-all ' + 
+                       (!roomValidation.rows.isValid ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-green-500')"
+              placeholder="1-30" />
+            <div *ngIf="!roomValidation.rows.isValid" class="text-red-500 text-sm mt-1">
+              {{ roomValidation.rows.message }}
+            </div>
+          </div>
+
+          <!-- Số cột -->
+          <div>
+            <label for="cols" class="block text-gray-700 font-medium mb-1">Số cột ghế <span class="text-red-500">*</span></label>
+            <input type="number" 
+              id="cols" 
+              [(ngModel)]="cols" 
+              (input)="onColsChange()"
+              name="cols" 
+              required 
+              min="1" 
+              max="50"
+              [class]="'border rounded-lg w-full px-3 py-2 focus:ring-2 focus:border-transparent outline-none transition-all ' + 
+                       (!roomValidation.cols.isValid ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-green-500')"
+              placeholder="1-50" />
+            <div *ngIf="!roomValidation.cols.isValid" class="text-red-500 text-sm mt-1">
+              {{ roomValidation.cols.message }}
+            </div>
+          </div>
         </div>
 
-        <!-- Số cột -->
-        <div>
-          <label for="cols" class="block text-gray-700 font-medium mb-1">Số cột ghế <span
-              class="text-red-500">*</span></label>
-          <input type="number" id="cols" [(ngModel)]="cols" name="cols" required min="1"
-            class="border border-gray-300 rounded-lg w-full px-3 py-2" placeholder="Nhập số cột" />
+        <!-- Tổng số ghế (hiển thị tự động) -->
+        <div *ngIf="rows > 0 && cols > 0" class="bg-gray-50 p-3 rounded-lg border">
+          <div class="flex items-center">
+            <i class="fas fa-calculator text-gray-500 mr-2"></i>
+            <span class="text-gray-700">
+              Tổng số ghế: <strong [class]="rows * cols > 500 ? 'text-red-600' : 'text-green-600'">{{ rows * cols }}</strong>
+              <span *ngIf="rows * cols > 500" class="text-red-500 text-sm ml-2">(Vượt quá giới hạn 500 ghế)</span>
+            </span>
+          </div>
         </div>
 
         <!-- Giá ghế -->
         <div>
-          <label for="price_seat" class="block text-gray-700 font-medium mb-1">Giá mỗi ghế(ghế thường)<span
-              class="text-red-500">*</span></label>
-          <input type="number" id="price_seat" [(ngModel)]="price_seat" name="price_seat" required min="0"
-            class="border border-gray-300 rounded-lg w-full px-3 py-2" placeholder="Nhập giá ghế" />
+
+          <label for="price_seat" class="block text-gray-700 font-medium mb-1">Giá mỗi ghế (ghế thường VNĐ) <span class="text-red-500">*</span></label>
+          <input type="number" 
+            id="price_seat" 
+            [(ngModel)]="price_seat" 
+            (input)="onSeatPriceChange()"
+            name="price_seat" 
+            required 
+            min="10000" 
+            max="1000000"
+            [class]="'border rounded-lg w-full px-3 py-2 focus:ring-2 focus:border-transparent outline-none transition-all ' + 
+                     (!roomValidation.price_seat.isValid ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-green-500')"
+            placeholder="10,000 - 1,000,000" />
+          <div *ngIf="!roomValidation.price_seat.isValid" class="text-red-500 text-sm mt-1">
+            {{ roomValidation.price_seat.message }}
+          </div>
+          <div *ngIf="price_seat > 0" class="text-gray-400 text-xs mt-1">
+            Định dạng: {{ price_seat | number:'1.0-0':'vi' }} VNĐ
+          </div>
+
         </div>
 
         <div class="flex justify-end space-x-2 mt-6">
           <button type="button" (click)="closeAddRoomModal()"
-            class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-colors">
+            class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-colors"
+            [disabled]="isSubmittingRoom">
             Hủy
           </button>
           <button type="submit"
-            class="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-medium transition-colors shadow-md">
-            Lưu
+            [class]="'px-4 py-2 rounded-lg font-medium transition-colors shadow-md ' + 
+                     (validateRoomForm() && !isSubmittingRoom ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed')"
+            [disabled]="!validateRoomForm() || isSubmittingRoom">
+            <span *ngIf="isSubmittingRoom" class="mr-2">
+              <i class="fas fa-spinner fa-spin"></i>
+            </span>
+            {{ isSubmittingRoom ? 'Đang lưu...' : 'Lưu' }}
           </button>
         </div>
       </form>

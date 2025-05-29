@@ -133,12 +133,12 @@ export class PhanQuyenService {
     return this.registerUser(userData);
   }
 
-  // Cập nhật thông tin người dùng
+  // Cập nhật thông tin người dùng - CHANGED FROM PATCH TO PUT
   updateUser(userId: string, userData: UserCreateUpdate): Observable<ApiResponse> {
     console.log('Service updateUser called with ID:', userId);
     console.log('Update data:', userData);
 
-    return this.http.patch<ApiResponse>(
+    return this.http.put<ApiResponse>(  // Changed from patch to put
       `${this.baseUrl}/update-profile/${userId}`,
       userData,
       { headers: this.getHeaders() }

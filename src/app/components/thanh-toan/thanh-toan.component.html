@@ -1,118 +1,467 @@
-<!-- Header với tiêu đề và ô tìm kiếm -->
-<div class="flex items-center justify-between mb-6">
-  <h2 class="text-xl font-bold text-gray-800">Danh sách giao dịch</h2>
-  <div class="relative w-4/12">
-    <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()"
-      placeholder="Nhập vào email người dùng, mã vé, tên phim"
-      class="w-full border border-gray-300 rounded-md px-3 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none"
-      viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
+<!-- thanh-toan.component.html - Fixed and Complete -->
+<div>
+  <!-- Header với tiêu đề và ô tìm kiếm -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-bold text-gray-800">Danh sách giao dịch</h2>
+    <div class="relative w-4/12">
+      <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()"
+        placeholder="Nhập vào email người dùng, mã vé, tên phim"
+        class="w-full border border-gray-300 rounded-md px-3 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
   </div>
-</div>
 
-<!-- Bảng danh sách -->
-<div class="overflow-hidden rounded-lg shadow border border-gray-200">
-  <div class="overflow-x-auto w-full">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <ng-container
-            *ngFor="let header of ['Mã GD', 'Mã vé', 'Khách hàng', 'Số ghế', 'Combo', 'Trạng thái', 'Tổng tiền', 'Ngày tạo', 'Thao tác']">
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {{ header }}
-            </th>
-          </ng-container>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200 bg-white">
-        <tr *ngFor="let item of thanhToanList; let i = index" [ngClass]="{'bg-gray-50': i % 2 === 1}"
-          class="hover:bg-blue-50 transition-colors duration-150">
-          <td class="px-6 py-4 text-sm font-semibold text-gray-800">{{ item.payment_id }}</td>
-          <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.ticket_id }}</td>
-          <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.user.email || 'Không rõ' }}</td>
-          <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.seats.length || 0 }} ghế</td>
-          <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.combos.length || 0 }} combo</td>
-          <td class="px-6 py-4 text-sm">
-            <span [ngClass]="{
-                'inline-block px-3 py-1 text-xs font-medium rounded-full': true,
-                'bg-green-100 text-green-800': item.status_order === 'completed',
-                'bg-red-100 text-red-800': item.status_order === 'failed' || item.status_order === 'cancelled',
-                'bg-yellow-100 text-yellow-800': item.status_order === 'pending'
-              }">
-              {{ getStatusText(item.status_order) }}
-            </span>
-          </td>
-          <td class="px-6 py-4 text-sm text-gray-900 font-medium">
-            {{ item.ticket.total_amount | currency:'VND':'symbol':'1.0-0' }}
-          </td>
-          <td class="px-6 py-4 text-sm text-gray-600">{{ item.vnp_PayDate ? formatDate(item.vnp_PayDate) : 'N/A' }}
-          </td>
-          <!-- Trong phần tbody, thêm cột cuối cùng -->
-          <td class="px-6 py-4 text-sm text-gray-600">
-            <button (click)="printAllInOneWindow(item)"
-              class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-              In vé ({{ (item.ticket?.seats?.length || 0) + (item.ticket?.combos?.length || 0) }})
-            </button>
-          </td>
-        </tr>
+  <!-- Bảng danh sách -->
+  <div class="overflow-hidden rounded-lg shadow border border-gray-200">
+    <div class="overflow-x-auto w-full">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <ng-container
+              *ngFor="let header of ['Mã GD', 'Mã vé', 'Khách hàng', 'Số ghế', 'Combo', 'Trạng thái', 'Tổng tiền', 'Ngày tạo', 'Thao tác']">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ header }}
+              </th>
+            </ng-container>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 bg-white">
+          <tr *ngFor="let item of thanhToanList; let i = index" [ngClass]="{'bg-gray-50': i % 2 === 1}"
+            class="hover:bg-blue-50 transition-colors duration-150">
+            <!-- Mã GD -->
+            <td class="px-6 py-4 text-sm font-semibold text-gray-800">{{ item.payment_id }}</td>
+            <!-- Mã vé -->
+            <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.ticket_id }}</td>
+            <!-- Khách hàng -->
+            <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.user.email || 'Không rõ' }}</td>
+            <!-- Số ghế -->
+            <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.seats.length || 0 }} ghế</td>
+            <!-- Combo -->
+            <td class="px-6 py-4 text-sm text-gray-600">{{ item.ticket.combos.length || 0 }} combo</td>
+            <!-- Trạng thái -->
+            <td class="px-6 py-4 text-sm">
+              <span [ngClass]="{
+                  'inline-block px-3 py-1 text-xs font-medium rounded-full': true,
+                  'bg-green-100 text-green-800': item.status_order === 'completed',
+                  'bg-red-100 text-red-800': item.status_order === 'failed' || item.status_order === 'cancelled',
+                  'bg-yellow-100 text-yellow-800': item.status_order === 'pending'
+                }">
+                {{ getStatusText(item.status_order) }}
+              </span>
+            </td>
+            <!-- Tổng tiền -->
+            <td class="px-6 py-4 text-sm text-gray-900 font-medium">
+              {{ item.ticket.total_amount | currency:'VND':'symbol':'1.0-0' }}
+            </td>
+            <!-- Ngày tạo -->
+            <td class="px-6 py-4 text-sm text-gray-600">{{ item.vnp_PayDate ? formatDate(item.vnp_PayDate) : 'N/A' }}
+            </td>
+            <!-- Cột thao tác với các nút -->
+            <td class="px-6 py-4 text-sm text-gray-600">
+              <div class="flex space-x-2">
+                <!-- Button Xem chi tiết -->
+                <button (click)="openDetailDialog(item)"
+                  class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200">
+                  <i class="fas fa-eye mr-1"></i>
+                  Chi tiết
+                </button>
 
-        <!-- Không có kết quả -->
-        <tr *ngIf="thanhToanList.length === 0">
-          <td colspan="8" class="px-6 py-10 text-center text-sm text-gray-500">
-            Không tìm thấy giao dịch phù hợp
-          </td>
-        </tr>
-      </tbody>
-    </table>
+                <!-- Button In vé - chỉ hiển thị khi đã thanh toán thành công -->
+                <button *ngIf="canPrintTickets(item)" (click)="printAllInOneWindow(item)"
+                  class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200">
+                  <i class="fas fa-print mr-1"></i>
+                  In vé ({{ getTotalItems(item) }})
+                </button>
 
-    <!-- Thanh phân trang -->
-    <div class="flex flex-wrap justify-center items-center px-4 py-6">
-      <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
-        <!-- Previous -->
-        <button (click)="goToPreviousPage()" [disabled]="currentPage === 0"
-          class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-              clip-rule="evenodd" />
-          </svg>
-        </button>
+                <!-- Button không khả dụng khi chưa thanh toán -->
+                <button *ngIf="!canPrintTickets(item)"
+                  class="px-3 py-1 bg-gray-300 text-gray-500 rounded cursor-not-allowed transition-colors duration-200"
+                  disabled title="Chỉ có thể in vé khi giao dịch đã hoàn thành">
+                  <i class="fas fa-print mr-1"></i>
+                  In vé ({{ getTotalItems(item) }})
+                </button>
+              </div>
+            </td>
+          </tr>
 
-        <!-- Page numbers -->
-        <ng-container *ngFor="let page of getPageNumbers()">
-          <button (click)="goToPage(page)" [ngClass]="{
-              'px-4 py-2 border border-gray-300 font-medium': true,
-              'bg-blue-50 text-blue-600': page === currentPage + 1,
-              'bg-white text-gray-700 hover:bg-gray-50': page !== currentPage + 1
-            }">
-            {{ page }}
+          <!-- Không có kết quả -->
+          <tr *ngIf="thanhToanList.length === 0">
+            <td colspan="9" class="px-6 py-10 text-center text-sm text-gray-500">
+              <div class="flex flex-col items-center">
+                <i class="fas fa-receipt text-4xl text-gray-300 mb-4"></i>
+                <p class="text-lg font-medium text-gray-600 mb-2">Không tìm thấy giao dịch</p>
+                <p class="text-sm text-gray-500">Hãy thử với từ khóa tìm kiếm khác</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Thanh phân trang -->
+      <div class="flex flex-wrap justify-center items-center px-4 py-6">
+        <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+          <!-- Previous -->
+          <button (click)="goToPreviousPage()" [disabled]="currentPage === 0"
+            class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clip-rule="evenodd" />
+            </svg>
           </button>
-        </ng-container>
 
-        <!-- Next -->
-        <button (click)="goToNextPage()" [disabled]="isLastPage()"
-          class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd" />
-          </svg>
+          <!-- Page numbers -->
+          <ng-container *ngFor="let page of getPageNumbers()">
+            <button (click)="goToPage(page)" [ngClass]="{
+                'px-4 py-2 border border-gray-300 font-medium': true,
+                'bg-blue-50 text-blue-600': page === currentPage + 1,
+                'bg-white text-gray-700 hover:bg-gray-50': page !== currentPage + 1
+              }">
+              {{ page }}
+            </button>
+          </ng-container>
+
+          <!-- Next -->
+          <button (click)="goToNextPage()" [disabled]="isLastPage()"
+            class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+        </nav>
+
+        <!-- Rows per page dropdown -->
+        <div class="ml-4 mt-4 sm:mt-0 flex items-center">
+          <span class="text-sm text-gray-700 mr-2">Hiển thị</span>
+          <select [(ngModel)]="rows" (change)="onRowsPerPageChange()"
+            class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+          </select>
+          <span class="text-sm text-gray-700 ml-2">trên mỗi trang</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== DIALOG CHI TIẾT HÓA ĐƠN ========== -->
+  <div *ngIf="isDetailDialogOpen"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-screen overflow-hidden">
+      <!-- Header của dialog -->
+      <div
+        class="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Chi tiết hóa đơn</h2>
+          <p class="text-sm text-gray-600 mt-1" *ngIf="selectedPayment">
+            Mã giao dịch: <span class="font-semibold">{{ selectedPayment.payment_id }}</span>
+          </p>
+        </div>
+        <button (click)="closeDetailDialog()"
+          class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <i class="fas fa-times text-xl"></i>
         </button>
-      </nav>
+      </div>
 
-      <!-- Rows per page dropdown -->
-      <div class="ml-4 mt-4 sm:mt-0 flex items-center">
-        <span class="text-sm text-gray-700 mr-2">Hiển thị</span>
-        <select [(ngModel)]="rows" (change)="onRowsPerPageChange()"
-          class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          <option [value]="5">5</option>
-          <option [value]="10">10</option>
-          <option [value]="20">20</option>
-        </select>
-        <span class="text-sm text-gray-700 ml-2">trên mỗi trang</span>
+      <!-- Content của dialog -->
+      <div class="overflow-y-auto max-h-[calc(100vh-200px)]" *ngIf="selectedPayment">
+        <div class="p-6 space-y-6">
+
+          <!-- Thông tin giao dịch -->
+          <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fas fa-credit-card text-blue-500 mr-2"></i>
+              Thông tin giao dịch
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Mã giao dịch:</span>
+                  <span class="font-semibold">{{ selectedPayment.payment_id }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Mã vé:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.ticket_id }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">Phương thức thanh toán:</span>
+                  <div class="flex items-center">
+                    <i
+                      [class]="getPaymentMethodIcon(selectedPayment.payment_method) + ' mr-2 ' + getPaymentMethodColorClass(selectedPayment.payment_method)"></i>
+                    <span class="font-semibold">{{ getPaymentMethodText(selectedPayment.payment_method) }}</span>
+                  </div>
+                </div>
+                <!-- Hiển thị ngân hàng nếu là VNPay -->
+                <div *ngIf="selectedPayment.payment_method === 1 && selectedPayment.vnp_BankCode"
+                  class="flex justify-between">
+                  <span class="text-gray-600">Ngân hàng:</span>
+                  <span class="font-semibold">{{ getBankName(selectedPayment.vnp_BankCode) }}</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Trạng thái:</span>
+                  <span
+                    [ngClass]="'inline-block px-3 py-1 text-xs font-medium rounded-full border ' + getStatusBadgeClass(selectedPayment.status_order)">
+                    {{ getStatusText(selectedPayment.status_order) }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Ngày thanh toán:</span>
+                  <span class="font-semibold">{{ formatDateTime(selectedPayment.vnp_PayDate) }}</span>
+                </div>
+                <!-- Thông tin VNPay chi tiết -->
+                <div *ngIf="selectedPayment.payment_method === 1">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Mã giao dịch VNPay:</span>
+                    <span class="font-semibold">{{ selectedPayment.vnp_TransactionNo || 'N/A' }}</span>
+                  </div>
+                  <div *ngIf="selectedPayment.vnp_ResponseCode" class="flex justify-between">
+                    <span class="text-gray-600">Kết quả:</span>
+                    <span
+                      [class]="selectedPayment.vnp_ResponseCode === '00' ? 'font-semibold text-green-600' : 'font-semibold text-red-600'">
+                      {{ getVNPayResponseText(selectedPayment.vnp_ResponseCode) }}
+                    </span>
+                  </div>
+                </div>
+                <!-- Thông tin tiền mặt -->
+                <div *ngIf="selectedPayment.payment_method === 0" class="flex justify-between">
+                  <span class="text-gray-600">Ghi chú:</span>
+                  <span class="font-semibold text-green-600">Thanh toán tại quầy</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- VNPay Details Card - Chỉ hiển thị khi là VNPay -->
+            <div *ngIf="selectedPayment.payment_method === 1"
+              class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <h4 class="text-sm font-semibold text-blue-800 mb-2 flex items-center">
+                <i class="fas fa-info-circle mr-1"></i>
+                Chi tiết giao dịch VNPay
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-blue-600">Mã phản hồi:</span>
+                  <span class="font-medium">{{ selectedPayment.vnp_ResponseCode || 'N/A' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-blue-600">Mã ngân hàng:</span>
+                  <span class="font-medium">{{ selectedPayment.vnp_BankCode || 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cash Payment Card - Chỉ hiển thị khi là tiền mặt -->
+            <div *ngIf="selectedPayment.payment_method === 0"
+              class="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+              <h4 class="text-sm font-semibold text-green-800 mb-2 flex items-center">
+                <i class="fas fa-money-bill-wave mr-1"></i>
+                Thông tin thanh toán tiền mặt
+              </h4>
+              <p class="text-sm text-green-700">
+                Khách hàng đã thanh toán bằng tiền mặt tại quầy vé.
+                Giao dịch được xác nhận bởi nhân viên bán vé.
+              </p>
+            </div>
+          </div>
+
+          <!-- Thông tin khách hàng -->
+          <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fas fa-user text-green-500 mr-2"></i>
+              Thông tin khách hàng
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Họ tên:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.user.full_name || 'N/A' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Email:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.user.email || 'N/A' }}</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Số điện thoại:</span>
+                  <span class="font-semibold">0{{ selectedPayment.ticket.user.phone_number || 'N/A' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Tên đăng nhập:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.user.user_name || 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thông tin phim và rạp -->
+          <div class="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fas fa-film text-purple-500 mr-2"></i>
+              Thông tin phim & rạp
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Tên phim:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.showtime.movie.title }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Rạp chiếu:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.showtime.room.cinema.cinema_name }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Địa chỉ:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.showtime.room.cinema.location }}</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Phòng chiếu:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.showtime.room.room_name }} - {{
+                    selectedPayment.ticket.showtime.room.room_style }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Suất chiếu:</span>
+                  <span class="font-semibold">{{ selectedPayment.ticket.showtime.start_time }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Ngày chiếu:</span>
+                  <span class="font-semibold">{{ formatDate(selectedPayment.ticket.showtime.show_date) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chi tiết ghế và combo -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Danh sách ghế -->
+            <div class="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <i class="fas fa-chair text-yellow-500 mr-2"></i>
+                Danh sách ghế ({{ selectedPayment.ticket.seats.length }})
+              </h3>
+              <div *ngIf="selectedPayment.ticket.seats.length > 0; else noSeats" class="space-y-2">
+                <div *ngFor="let seat of selectedPayment.ticket.seats"
+                  class="flex justify-between items-center p-2 bg-white rounded border">
+                  <div class="flex items-center">
+                    <i class="fas fa-chair text-yellow-600 mr-2"></i>
+                    <span class="font-semibold">
+                      Ghế {{ seat.seatDetails.row_of_seat }}{{ seat.seatDetails.column_of_seat }}
+                    </span>
+                  </div>
+                  <span class="text-yellow-700 font-bold">
+                    {{ seat.price | currency:'VND':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between font-bold text-yellow-800">
+                    <span>Tổng tiền vé:</span>
+                    <span>{{ getTotalSeatPrice(selectedPayment.ticket.seats) | currency:'VND':'symbol':'1.0-0' }}</span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noSeats>
+                <p class="text-gray-500 italic text-center py-4">Không có ghế nào được đặt</p>
+              </ng-template>
+            </div>
+
+            <!-- Danh sách combo -->
+            <div class="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-500">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <i class="fas fa-popcorn text-orange-500 mr-2"></i>
+                Danh sách combo ({{ selectedPayment.ticket.combos.length }})
+              </h3>
+              <div *ngIf="selectedPayment.ticket.combos.length > 0; else noCombos" class="space-y-2">
+                <div *ngFor="let combo of selectedPayment.ticket.combos"
+                  class="flex justify-between items-center p-2 bg-white rounded border">
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <i class="fas fa-utensils text-orange-600 mr-2"></i>
+                      <span class="font-semibold">{{ combo.comboDetails.name_combo }}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                      Số lượng: {{ combo.quantity }}
+                    </div>
+                  </div>
+                  <span class="text-orange-700 font-bold">
+                    {{ combo.price | currency:'VND':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+                <div class="border-t pt-2 mt-2">
+                  <div class="flex justify-between font-bold text-orange-800">
+                    <span>Tổng tiền combo:</span>
+                    <span>{{ getTotalComboPrice(selectedPayment.ticket.combos) | currency:'VND':'symbol':'1.0-0'
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noCombos>
+                <p class="text-gray-500 italic text-center py-4">Không có combo nào được đặt</p>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Tổng kết -->
+          <div class="bg-red-50 rounded-lg p-4 border-l-4 border-red-500">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fas fa-calculator text-red-500 mr-2"></i>
+              Tổng kết hóa đơn
+            </h3>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Tiền vé ({{ selectedPayment.ticket.seats.length }} ghế):</span>
+                <span class="font-semibold">{{ getTotalSeatPrice(selectedPayment.ticket.seats) |
+                  currency:'VND':'symbol':'1.0-0' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Tiền combo ({{ getTotalComboQuantity(selectedPayment.ticket.combos) }}
+                  món):</span>
+                <span class="font-semibold">{{ getTotalComboPrice(selectedPayment.ticket.combos) |
+                  currency:'VND':'symbol':'1.0-0' }}</span>
+              </div>
+              <div class="border-t pt-2">
+                <div class="flex justify-between text-lg font-bold text-red-800">
+                  <span>Tổng cộng:</span>
+                  <span>{{ selectedPayment.ticket.total_amount | currency:'VND':'symbol':'1.0-0' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer của dialog -->
+      <div class="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+        <button (click)="closeDetailDialog()"
+          class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors">
+          <i class="fas fa-times mr-2"></i>
+          Đóng
+        </button>
+
+        <!-- Button In vé chỉ hiển thị khi đã thanh toán thành công -->
+        <button *ngIf="selectedPayment && canPrintTickets(selectedPayment)" (click)="printTicketsFromDialog()"
+          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors">
+          <i class="fas fa-print mr-2"></i>
+          In vé ({{ getTotalItems(selectedPayment) }})
+        </button>
+
+        <!-- Button In vé disabled khi chưa thanh toán -->
+        <button *ngIf="selectedPayment && !canPrintTickets(selectedPayment)"
+          class="px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed transition-colors" disabled
+          title="Chỉ có thể in vé khi giao dịch đã hoàn thành">
+          <i class="fas fa-print mr-2"></i>
+          In vé ({{ getTotalItems(selectedPayment) }})
+        </button>
       </div>
     </div>
   </div>
