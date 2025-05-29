@@ -7,12 +7,54 @@ import { catchError, map, switchMap } from 'rxjs/operators';
 @Injectable({ providedIn: 'root' })
 export class ReviewsService {
   private reviewsUrl = 'http://127.0.0.1:3000/reviews';
-  private usersUrl   = 'http://127.0.0.1:3000/users';
-  private filmsUrl   = 'http://127.0.0.1:3000/films/getfilm';
+  private usersUrl = 'http://127.0.0.1:3000/users';
+  private filmsUrl = 'http://127.0.0.1:3000/films/getfilm';
+
+
+
+  getReportedComments(movieId: string): Observable<ReviewsDto[]> {
+    return this.http
+      .get<any>(`${this.reviewsUrl}/reported-comments/${movieId}`)
+      .pipe(
+        map(resp => {
+          // Extract reviews from the response structure
+          const reviewsData = resp.data ?? [resp];
+          return reviewsData.map((item: any) => {
+            // If the review is nested under 'review' property
+            const review = item.review ? ReviewsDto.fromJS(item.review) : ReviewsDto.fromJS(item);
+            return review;
+          });
+        }),
+        switchMap((reviews: ReviewsDto[]) => {
+          // Enrich with user email if needed (similar to getReviewsByMovie)
+          const ids = Array.from(new Set(reviews.map(r => r.user_id).filter(id => !!id)));
+          if (!ids.length) return of(reviews);
+
+          const calls = ids.map(id =>
+            this.http.get<any>(`${this.usersUrl}/getById/${id}`).pipe(catchError(() => of(null)))
+          );
+
+          return forkJoin(calls).pipe(
+            map(users => {
+              users.forEach((u, i) => {
+                if (!u) return;
+                const email = u.data?.email ?? u.email;
+                const uid = ids[i];
+                reviews
+                  .filter(r => r.user_id === uid)
+                  .forEach(r => (r.userEmail = email));
+              });
+              return reviews;
+            })
+          );
+        }),
+        catchError(this.handleError)
+      );
+  }
 
   /* ========= PHIM (có phân trang) ========= */
   getMoviesPage(
-    page  = 1,
+    page = 1,
     limit = 10,
     search = ''
   ): Observable<{
@@ -26,20 +68,20 @@ export class ReviewsService {
     return this.http.get<any>(this.filmsUrl, { params }).pipe(
       map(resp => {
         // ---- tuỳ cấu trúc backend ----
-        const root       = resp.data ?? resp;                // data | root
-        const filmsRaw   = root.films ?? root.items ?? root; // mảng phim
-        const total      =
+        const root = resp.data ?? resp;                // data | root
+        const filmsRaw = root.films ?? root.items ?? root; // mảng phim
+        const total =
           root.total ?? root.totalItems ?? root.count ?? root.pagination?.totalItems ?? filmsRaw.length;
 
         /* 👇 thêm ngoặc quanh chuỗi ?? trước khi dùng || */
         const totalPages =
           (root.totalPages ??
-           root.lastPage ??
-           root.pagination?.totalPages ??
-           Math.ceil(total / limit)) || 1;
+            root.lastPage ??
+            root.pagination?.totalPages ??
+            Math.ceil(total / limit)) || 1;
 
         const items = (filmsRaw as any[]).map(f => ({
-          movieId:   f._id,
+          movieId: f._id,
           movieName: f.title || f.name
         }));
 
@@ -68,7 +110,7 @@ export class ReviewsService {
               users.forEach((u, i) => {
                 if (!u) return;
                 const email = u.data?.email ?? u.email;
-                const uid   = ids[i];
+                const uid = ids[i];
                 reviews
                   .filter(r => r.user_id === uid)
                   .forEach(r => (r.userEmail = email));
@@ -88,7 +130,7 @@ export class ReviewsService {
   }
 
   /* ========= COMMON ========= */
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private handleError(err: HttpErrorResponse) {
     console.error('ReviewsService Error:', err);
