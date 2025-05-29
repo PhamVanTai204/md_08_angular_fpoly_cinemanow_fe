@@ -3,7 +3,9 @@ import { CinemaAdminService, Cinema, CinemaAdmin } from '../../../shared/service
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, timer } from 'rxjs';
+import { finalize, forkJoin, timer } from 'rxjs';
+import { User } from '../../../shared/services/user.service';
+import { PhanQuyenService } from '../../../shared/services/phanquyen.service';
 
 @Component({
   selector: 'app-admin-rap',
@@ -38,7 +40,9 @@ export class AdminRapComponent implements OnInit {
 
   constructor(
     private cinemaAdminService: CinemaAdminService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private phanQuyenService: PhanQuyenService,
+
   ) {
     this.addAdminForm = this.fb.group({
       user_name: ['', [Validators.required, Validators.minLength(3)]],
@@ -56,13 +60,13 @@ export class AdminRapComponent implements OnInit {
   loadCinemas(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     const page = this.cinemaCurrentPage + 1;
-    
+
     // Tạo timer 2 giây và kết hợp với API call
     const minimumDelay = timer(2000);
     const apiCall = this.cinemaAdminService.getAllCinemas(page, this.cinemaRows, this.cinemaSearchTerm);
-    
+
     forkJoin([minimumDelay, apiCall]).subscribe({
       next: ([_, data]) => {
         this.cinemaList = data.cinemas;
@@ -98,9 +102,9 @@ export class AdminRapComponent implements OnInit {
 
     this.isLoading = true;
     this.errorMessage = '';
-    
+
     const page = this.adminCurrentPage + 1;
-    
+
     // Tạo timer 2 giây và kết hợp với API call
     const minimumDelay = timer(2000);
     const apiCall = this.cinemaAdminService.getAdminsByCinema(this.selectedCinema._id, page, this.adminRows);
@@ -170,7 +174,7 @@ export class AdminRapComponent implements OnInit {
         this.adminCurrentPage = 0;
         this.loadAdmins(); // Sẽ có delay thêm 2 giây nữa
         console.log('Admin đã được thêm sau delay 2 giây');
-        
+
         // Xóa thông báo thành công sau 5 giây
         setTimeout(() => {
           this.successMessage = '';
@@ -220,7 +224,7 @@ export class AdminRapComponent implements OnInit {
           this.adminCurrentPage = 0;
           this.loadAdmins(); // Sẽ có delay thêm 2 giây nữa
           console.log('Admin đã được xóa sau delay 2 giây');
-          
+
           // Xóa thông báo thành công sau 5 giây
           setTimeout(() => {
             this.successMessage = '';
@@ -237,7 +241,35 @@ export class AdminRapComponent implements OnInit {
       });
     }
   }
+  deleteUser(admin: CinemaAdmin): void {
 
+
+    if (confirm(`Bạn có chắc chắn muốn xóa nhân viên ${admin.user_name}?`)) {
+      this.isLoading = true;
+
+      const sub = this.phanQuyenService.deleteUser(admin._id)
+        .pipe(finalize(() => this.isLoading = false))
+        .subscribe({
+          next: (response) => {
+            if (response.code === 200) {
+              this.successMessage = `Đã xóa nhân viên ${admin.user_name}`;
+              this.loadAdmins(); // Sẽ có delay thêm 2 giây nữa
+
+              setTimeout(() => {
+                this.successMessage = '';
+              }, 3000);
+            } else {
+              this.errorMessage = response.error || 'Có lỗi xảy ra khi xóa';
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting user:', error);
+            this.errorMessage = 'Lỗi kết nối máy chủ';
+          }
+        });
+
+    }
+  }
   // Phân trang
   onCinemaPageChange(page: number): void {
     this.cinemaCurrentPage = page;
